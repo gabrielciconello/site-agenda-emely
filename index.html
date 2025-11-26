@@ -385,6 +385,7 @@
             if(!db.extras) db.extras=[]; 
             if(!db.appointments) db.appointments=[]; 
             if(!db.clients) db.clients=[]; 
+            if(!db.meta) db.meta = {};
         }
 
         function router(view) {
@@ -856,6 +857,71 @@
             const btn = document.getElementById('cloud-btn'); 
             if (hasUnsaved) btn.classList.add('unsaved-badge'); 
             else btn.classList.remove('unsaved-badge'); 
+        }
+
+        function saveCloudUrl() {
+            const url = document.getElementById('cloud-url').value;
+            if (url) {
+                localStorage.setItem('emelyCloudUrl', url);
+                alert('URL da nuvem salva!');
+            } else {
+                alert('Por favor, insira uma URL.');
+            }
+        }
+
+        async function syncUpload() {
+            const url = document.getElementById('cloud-url').value;
+            if (!url) return alert('URL da nuvem não configurada.');
+            const btn = document.getElementById('btn-upload');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Enviando...';
+
+            db.meta = { lastUpload: new Date().toISOString() };
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(db)
+                });
+                if (!response.ok) throw new Error('Falha no servidor: ' + response.statusText);
+                hasUnsaved = false;
+                saveLocalData();
+                checkUnsavedStatus();
+                alert('Dados enviados com sucesso!');
+            } catch (error) {
+                console.error('Erro no upload:', error);
+                alert('Erro ao enviar dados: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Enviar';
+            }
+        }
+
+        async function syncDownload() {
+            const url = document.getElementById('cloud-url').value;
+            if (!url) return alert('URL da nuvem não configurada.');
+            if (!confirm('Isso irá substituir TODOS os dados locais. Deseja continuar?')) return;
+            const btn = document.getElementById('btn-download');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Baixando...';
+
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Falha no servidor: ' + response.statusText);
+                const cloudDb = await response.json();
+                db = cloudDb;
+                hasUnsaved = false;
+                saveLocalData();
+                alert('Dados baixados e sincronizados!');
+                window.location.reload(); // Recarrega a página para aplicar todos os dados
+            } catch (error) {
+                console.error('Erro no download:', error);
+                alert('Erro ao baixar dados: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-down"></i> Baixar';
+            }
         }
 
         const style = document.createElement('style');
