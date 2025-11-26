@@ -17,12 +17,14 @@
 
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     fontFamily: { serif: ['Lora', 'serif'], sans: ['Inter', 'sans-serif'] },
                     colors: {
                         gold: { 50: '#FCF9EE', 100: '#F8F1D6', 200: '#EFDEAA', 300: '#E5C679', 400: '#DDAF50', 500: '#D4AF37', 600: '#AA8C2C', 700: '#806921', 800: '#554616', 900: '#2B230B' },
-                        cream: { 50: '#FDFCF8', 100: '#FAF7F0', 200: '#F0EAD6', 300: '#E6DCC0', 800: '#5C5645', 900: '#2E2B22' }
+                        cream: { 50: '#FDFCF8', 100: '#FAF7F0', 200: '#F0EAD6', 300: '#E6DCC0', 800: '#5C5645', 900: '#2E2B22' },
+                        dark: { 900: '#121212', 800: '#1E1E1E', 700: '#2C2C2C', 600: '#3D3D3D' }
                     },
                     boxShadow: { 'soft': '0 4px 20px -2px rgba(46, 43, 34, 0.05)' },
                     spacing: { 'safe-bottom': 'env(safe-area-inset-bottom)' }
@@ -31,7 +33,20 @@
         }
     </script>
     <style>
-        body { background-color: #FDFCF8; color: #2E2B22; -webkit-tap-highlight-color: transparent; height: 100dvh; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; overflow: hidden; }
+        body { background-color: #FDFCF8; color: #2E2B22; -webkit-tap-highlight-color: transparent; height: 100dvh; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; overflow: hidden; transition: background-color 0.3s, color 0.3s; }
+        
+        /* Dark Mode overrides */
+        .dark body { background-color: #121212; color: #F0EAD6; }
+        .dark .input-elegant, .dark .bg-white { background-color: #1E1E1E; border-color: #2C2C2C; color: #F0EAD6; }
+        .dark .text-cream-900 { color: #F0EAD6; }
+        .dark .text-cream-500, .dark .text-cream-400 { color: #9CA3AF; }
+        .dark .bg-cream-50 { background-color: #121212; }
+        .dark .border-cream-200, .dark .border-cream-100 { border-color: #2C2C2C; }
+        .dark .glass-nav { background: rgba(30, 30, 30, 0.98); border-top: 1px solid rgba(255,255,255,0.05); }
+        .dark .calendar-day { background-color: #1E1E1E; border-color: #2C2C2C; color: #F0EAD6; }
+        .dark .calendar-day.active { background-color: #D4AF37; color: #121212; border-color: #D4AF37; }
+        .dark select.custom-select { background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%239CA3AF' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3e"); }
+        
         h1, h2, h3 { font-family: 'Lora', serif; letter-spacing: -0.01em; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -58,61 +73,105 @@
         
         @keyframes pulse-red { 0% { background-color: #fee2e2; } 50% { background-color: #fecaca; } 100% { background-color: #fee2e2; } }
         .animate-pulse-red { animation: pulse-red 2s infinite; }
+        .dark .animate-pulse-red { animation: none; background-color: #7f1d1d; border-color: #991b1b; color: #fca5a5; }
 
         .tag-pill { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 99px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.02em; color: #2E2B22; border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-        
-        /* Checkmark animado para seleção de cor */
         .color-option.selected { transform: scale(1.1); box-shadow: 0 0 0 2px #fff, 0 0 0 4px #D4AF37; }
+        .dark .color-option.selected { box-shadow: 0 0 0 2px #1E1E1E, 0 0 0 4px #D4AF37; }
     </style>
 </head>
 <body class="bg-cream-50">
 
-    <header class="bg-white px-4 py-5 z-30 flex justify-between items-center flex-shrink-0 border-b border-cream-200">
+    <header class="bg-white px-4 py-5 z-30 flex justify-between items-center flex-shrink-0 border-b border-cream-200 transition-colors">
         <div>
             <h1 class="font-serif font-bold text-2xl text-cream-900 tracking-tight">Emely</h1>
             <p class="text-[10px] text-gold-600 uppercase tracking-[0.2em] font-sans font-semibold mt-0.5">Nail Designer</p>
         </div>
-        <button onclick="router('cloud')" class="relative w-10 h-10 rounded-full bg-cream-50 flex items-center justify-center text-gold-600 active:scale-95 transition border border-cream-100" id="cloud-btn">
-            <i class="fa-solid fa-cloud"></i>
-        </button>
+        <div class="flex gap-2">
+            <button onclick="router('ia')" class="w-10 h-10 rounded-full bg-cream-50 flex items-center justify-center text-gold-600 active:scale-95 transition border border-cream-100 dark:bg-dark-700 dark:border-dark-600 dark:text-gold-400" title="Assistente IA">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+            </button>
+            <button onclick="toggleTheme()" class="w-10 h-10 rounded-full bg-cream-50 flex items-center justify-center text-gold-600 active:scale-95 transition border border-cream-100 dark:bg-dark-700 dark:border-dark-600 dark:text-gold-400">
+                <i class="fa-solid fa-moon dark:hidden"></i>
+                <i class="fa-solid fa-sun hidden dark:block"></i>
+            </button>
+            <button onclick="router('cloud')" class="relative w-10 h-10 rounded-full bg-cream-50 flex items-center justify-center text-gold-600 active:scale-95 transition border border-cream-100 dark:bg-dark-700 dark:border-dark-600 dark:text-gold-400" id="cloud-btn">
+                <i class="fa-solid fa-cloud"></i>
+            </button>
+        </div>
     </header>
 
     <main class="flex-1 overflow-y-auto overflow-x-hidden pb-32 no-scrollbar" id="main-scroll">
         
-        <div id="view-agenda" class="view-section fade-in">
-            <div class="pt-4 pb-4 mb-2 sticky top-0 z-20 bg-cream-50/95 backdrop-blur-sm border-b border-cream-200">
+        <div id="view-home" class="view-section fade-in px-4 pt-6">
+            <div class="mb-6">
+                <h2 class="text-2xl font-serif font-bold text-cream-900">Olá, <span class="text-gold-600">Emely</span></h2>
+                <p class="text-sm text-cream-500" id="home-date">Carregando...</p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div class="bg-gold-500 text-white p-4 rounded-2xl shadow-lg relative overflow-hidden dark:bg-gold-600">
+                    <div class="absolute top-0 right-0 w-16 h-16 bg-white opacity-20 rounded-full -mr-6 -mt-6"></div>
+                    <p class="text-[10px] font-bold uppercase tracking-wider opacity-90">Hoje</p>
+                    <h3 class="text-2xl font-serif font-bold mt-1" id="home-today-total">R$ 0,00</h3>
+                </div>
+                <div class="bg-white border border-cream-200 p-4 rounded-2xl shadow-soft dark:bg-dark-800 dark:border-dark-700">
+                    <p class="text-[10px] font-bold uppercase tracking-wider text-cream-400">Restantes</p>
+                    <h3 class="text-2xl font-serif font-bold text-cream-900 mt-1" id="home-remaining-count">0</h3>
+                </div>
+            </div>
+
+            <div class="mb-8">
+                <h3 class="font-bold text-cream-900 text-xs uppercase tracking-widest mb-3 border-b border-cream-200 pb-2 dark:border-dark-700">Próxima Cliente</h3>
+                <div id="home-next-client" class="bg-white p-5 rounded-2xl shadow-soft border border-gold-200 flex items-center gap-4 dark:bg-dark-800 dark:border-dark-600">
+                    <p class="text-sm text-cream-400 italic">Nenhum agendamento próximo hoje.</p>
+                </div>
+            </div>
+
+            <h3 class="font-bold text-cream-900 text-xs uppercase tracking-widest mb-3 border-b border-cream-200 pb-2 dark:border-dark-700">Acesso Rápido</h3>
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="router('agenda'); openNewAppointment()" class="p-4 bg-white border border-cream-100 rounded-2xl shadow-sm text-left active:scale-98 transition dark:bg-dark-800 dark:border-dark-700">
+                    <div class="w-8 h-8 rounded-full bg-gold-100 text-gold-600 flex items-center justify-center mb-2 dark:bg-gold-900/30"><i class="fa-solid fa-plus"></i></div>
+                    <span class="font-bold text-sm text-cream-900">Novo Agendamento</span>
+                </button>
+                <button onclick="router('clients'); openClientModal()" class="p-4 bg-white border border-cream-100 rounded-2xl shadow-sm text-left active:scale-98 transition dark:bg-dark-800 dark:border-dark-700">
+                    <div class="w-8 h-8 rounded-full bg-cream-100 text-cream-600 flex items-center justify-center mb-2 dark:bg-dark-700 dark:text-cream-400"><i class="fa-solid fa-user-plus"></i></div>
+                    <span class="font-bold text-sm text-cream-900">Nova Cliente</span>
+                </button>
+            </div>
+        </div>
+
+        <div id="view-agenda" class="view-section hidden fade-in relative min-h-full">
+            <div class="pt-4 pb-4 mb-2 sticky top-0 z-20 bg-cream-50/95 backdrop-blur-sm border-b border-cream-200 dark:bg-dark-900/95 dark:border-dark-700">
                 <div class="flex justify-between items-center px-4 mb-4">
                     <div class="flex items-center gap-3">
                         <h2 class="text-lg font-bold text-cream-900 capitalize" id="month-display">Agenda</h2>
                         <div class="relative">
-                            <button onclick="document.getElementById('date-jumper').showPicker ? document.getElementById('date-jumper').showPicker() : document.getElementById('date-jumper').click()" class="w-8 h-8 flex items-center justify-center bg-cream-100 rounded-full text-gold-600 hover:bg-gold-100 transition">
+                            <button onclick="document.getElementById('date-jumper').showPicker ? document.getElementById('date-jumper').showPicker() : document.getElementById('date-jumper').click()" class="w-8 h-8 flex items-center justify-center bg-cream-100 rounded-full text-gold-600 hover:bg-gold-100 transition dark:bg-dark-700 dark:text-gold-400">
                                 <i class="fa-regular fa-calendar-days text-sm"></i>
                             </button>
                             <input type="date" id="date-jumper" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full" onchange="jumpToDate(this.value)">
                         </div>
                     </div>
                     
-                    <button onclick="goToToday()" class="text-[10px] font-bold text-cream-800 bg-white border border-cream-300 px-3 py-1.5 rounded-full uppercase tracking-wider">Hoje</button>
+                    <button onclick="goToToday()" class="text-[10px] font-bold text-cream-800 bg-white border border-cream-300 px-3 py-1.5 rounded-full uppercase tracking-wider dark:bg-dark-800 dark:border-dark-600 dark:text-cream-300">Hoje</button>
                 </div>
                 <div class="flex overflow-x-auto px-4 gap-3 no-scrollbar pb-2 scroll-smooth" id="horizontal-calendar"></div>
             </div>
 
             <div class="px-4">
                 <div class="flex gap-3 mb-6">
-                    <select id="filter-status" onchange="renderAppointments()" class="custom-select flex-1 h-12 bg-white border border-cream-300 rounded-xl px-3 text-sm text-cream-900 outline-none transition focus:border-gold-500">
+                    <select id="filter-status" onchange="renderAppointments()" class="custom-select flex-1 h-12 bg-white border border-cream-300 rounded-xl px-3 text-sm text-cream-900 outline-none transition focus:border-gold-500 dark:bg-dark-800 dark:border-dark-700 dark:text-cream-200">
                         <option value="all">Todos os Status</option>
                         <option value="scheduled" selected>Pendentes</option>
                         <option value="completed">Concluídos</option>
                         <option value="cancelled">Cancelados</option>
                     </select>
-                    <button onclick="openNewAppointment()" class="bg-gold-600 text-white px-5 rounded-xl font-medium text-sm shadow-md flex items-center gap-2 active:scale-95 transition">
-                        <i class="fa-solid fa-plus"></i> Novo
-                    </button>
                 </div>
 
                 <div class="flex justify-between items-center mb-3">
                     <span class="text-xs font-bold text-cream-400 uppercase tracking-wider">Lista de Horários</span>
-                    <span class="text-xs font-bold text-cream-900 bg-gold-100 px-2 py-1 rounded-lg text-gold-800" id="daily-total">R$ 0,00</span>
+                    <span class="text-xs font-bold text-cream-900 bg-gold-100 px-2 py-1 rounded-lg text-gold-800 dark:bg-gold-900 dark:text-gold-200" id="daily-total">R$ 0,00</span>
                 </div>
                 <div id="appointments-list" class="space-y-3 pb-20"></div>
                 <div id="empty-agenda" class="flex flex-col items-center justify-center py-16 text-cream-300 hidden">
@@ -125,7 +184,7 @@
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-serif font-bold text-cream-900">Clientes</h2>
                 <div class="flex gap-2">
-                    <button onclick="openTagsModal()" class="bg-white border border-cream-300 text-cream-600 w-10 h-10 rounded-full shadow-sm flex items-center justify-center active:scale-95 transition hover:bg-cream-50" title="Gerenciar Etiquetas"><i class="fa-solid fa-tags"></i></button>
+                    <button onclick="openTagsModal()" class="bg-white border border-cream-300 text-cream-600 w-10 h-10 rounded-full shadow-sm flex items-center justify-center active:scale-95 transition hover:bg-cream-50 dark:bg-dark-800 dark:border-dark-600 dark:text-cream-400" title="Gerenciar Etiquetas"><i class="fa-solid fa-tags"></i></button>
                     <button onclick="openClientModal()" class="bg-gold-600 text-white w-10 h-10 rounded-full shadow-sm flex items-center justify-center active:scale-95 transition"><i class="fa-solid fa-plus"></i></button>
                 </div>
             </div>
@@ -136,11 +195,11 @@
         <div id="view-servicos" class="view-section hidden fade-in px-4 pt-6">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-serif font-bold text-cream-900">Catálogo</h2>
-                <button onclick="openModal('modal-service')" class="text-xs font-bold uppercase text-gold-700 border border-gold-200 px-4 py-2 rounded-full bg-gold-50 hover:bg-gold-100">Adicionar</button>
+                <button onclick="openModal('modal-service')" class="text-xs font-bold uppercase text-gold-700 border border-gold-200 px-4 py-2 rounded-full bg-gold-50 hover:bg-gold-100 dark:bg-gold-900/30 dark:border-gold-800 dark:text-gold-400">Adicionar</button>
             </div>
             <div class="space-y-8 pb-20">
-                <div><h3 class="font-bold text-cream-900 text-xs uppercase tracking-widest mb-3 border-b border-cream-200 pb-2">Procedimentos</h3><div class="space-y-3" id="services-grid"></div></div>
-                <div><h3 class="font-bold text-cream-900 text-xs uppercase tracking-widest mb-3 border-b border-cream-200 pb-2">Adicionais</h3><div class="space-y-3" id="extras-grid"></div></div>
+                <div><h3 class="font-bold text-cream-900 text-xs uppercase tracking-widest mb-3 border-b border-cream-200 pb-2 dark:border-dark-700">Procedimentos</h3><div class="space-y-3" id="services-grid"></div></div>
+                <div><h3 class="font-bold text-cream-900 text-xs uppercase tracking-widest mb-3 border-b border-cream-200 pb-2 dark:border-dark-700">Adicionais</h3><div class="space-y-3" id="extras-grid"></div></div>
             </div>
         </div>
 
@@ -149,16 +208,16 @@
                 <h2 class="text-2xl font-serif font-bold text-cream-900">Caixa</h2>
                 <input type="month" id="fin-month" class="bg-transparent text-gold-700 font-bold outline-none text-sm w-auto min-w-[140px] text-right" onchange="updateFinancials()">
             </div>
-            <div class="bg-cream-900 rounded-2xl p-6 text-white shadow-lg mb-8 relative overflow-hidden">
+            <div class="bg-cream-900 rounded-2xl p-6 text-white shadow-lg mb-8 relative overflow-hidden dark:bg-black dark:border dark:border-dark-700">
                 <div class="absolute top-0 right-0 w-32 h-32 bg-gold-500 opacity-10 rounded-full -mr-10 -mt-10 blur-xl"></div>
                 <p class="text-gold-300 text-xs font-bold uppercase tracking-widest mb-2">Faturamento Total</p>
                 <h3 class="text-3xl font-serif font-bold text-white" id="fin-total">R$ 0,00</h3>
                 <p class="text-[10px] mt-2 text-cream-400 opacity-80">*Considera apenas concluídos</p>
             </div>
-            <div class="bg-white rounded-2xl shadow-soft border border-cream-200 overflow-hidden mb-20">
+            <div class="bg-white rounded-2xl shadow-soft border border-cream-200 overflow-hidden mb-20 dark:bg-dark-800 dark:border-dark-700">
                 <table class="w-full text-left whitespace-nowrap">
-                    <thead class="bg-cream-50 text-cream-500 text-[10px] uppercase font-bold border-b border-cream-200"><tr><th class="p-4">Data</th><th class="p-4">Cliente</th><th class="p-4 text-right">Valor</th></tr></thead>
-                    <tbody id="financial-table-body" class="text-sm text-cream-900 divide-y divide-cream-100"></tbody>
+                    <thead class="bg-cream-50 text-cream-500 text-[10px] uppercase font-bold border-b border-cream-200 dark:bg-dark-900 dark:border-dark-700"><tr><th class="p-4">Data</th><th class="p-4">Cliente</th><th class="p-4 text-right">Valor</th></tr></thead>
+                    <tbody id="financial-table-body" class="text-sm text-cream-900 divide-y divide-cream-100 dark:text-cream-200 dark:divide-dark-700"></tbody>
                 </table>
             </div>
         </div>
@@ -170,57 +229,61 @@
             </div>
             
             <div class="grid grid-cols-1 gap-4 mb-6">
-                <div class="bg-white p-6 rounded-2xl shadow-soft border border-cream-200 active:scale-98 transition cursor-pointer group" onclick="generateWhatsappMessages()">
+                <div class="bg-white p-6 rounded-2xl shadow-soft border border-cream-200 active:scale-98 transition cursor-pointer group dark:bg-dark-800 dark:border-dark-700" onclick="generateWhatsappMessages()">
                     <div class="flex items-center gap-4">
-                        <div class="bg-green-50 p-3 rounded-full text-green-700 group-hover:bg-green-100 transition"><i class="fa-brands fa-whatsapp text-2xl"></i></div>
+                        <div class="bg-green-50 p-3 rounded-full text-green-700 group-hover:bg-green-100 transition dark:bg-green-900/30 dark:text-green-400"><i class="fa-brands fa-whatsapp text-2xl"></i></div>
                         <div><h3 class="font-bold text-cream-900">Confirmar Agenda</h3><p class="text-xs text-cream-500 mt-1">Gerar mensagens para amanhã.</p></div>
                     </div>
                 </div>
 
-                <div class="bg-white p-6 rounded-2xl shadow-soft border border-cream-200 active:scale-98 transition cursor-pointer group" onclick="generateMaintenanceMessages()">
+                <div class="bg-white p-6 rounded-2xl shadow-soft border border-cream-200 active:scale-98 transition cursor-pointer group dark:bg-dark-800 dark:border-dark-700" onclick="generateMaintenanceMessages()">
                     <div class="flex items-center gap-4">
-                        <div class="bg-purple-50 p-3 rounded-full text-purple-700 group-hover:bg-purple-100 transition"><i class="fa-solid fa-wand-magic-sparkles text-2xl"></i></div>
+                        <div class="bg-purple-50 p-3 rounded-full text-purple-700 group-hover:bg-purple-100 transition dark:bg-purple-900/30 dark:text-purple-400"><i class="fa-solid fa-wand-magic-sparkles text-2xl"></i></div>
                         <div><h3 class="font-bold text-cream-900">Lembrete de Manutenção</h3><p class="text-xs text-cream-500 mt-1">Clientes sem retorno há 20+ dias.</p></div>
                     </div>
                 </div>
             </div>
 
-            <div id="ai-output" class="mt-6 hidden bg-white p-5 rounded-2xl shadow-soft border border-gold-100 mb-20">
-                <div class="flex justify-between items-center mb-3 pb-2 border-b border-cream-100">
+            <div id="ai-output" class="mt-6 hidden bg-white p-5 rounded-2xl shadow-soft border border-gold-100 mb-20 dark:bg-dark-800 dark:border-dark-600">
+                <div class="flex justify-between items-center mb-3 pb-2 border-b border-cream-100 dark:border-dark-700">
                     <h4 class="font-bold text-gold-700 text-xs uppercase tracking-wide" id="ai-title">Mensagens Geradas</h4>
                     <button onclick="document.getElementById('ai-output').classList.add('hidden')" class="text-cream-400 hover:text-gold-600"><i class="fa-solid fa-times"></i></button>
                 </div>
-                <div id="ai-content" class="space-y-4 text-cream-800 text-sm"></div>
+                <div id="ai-content" class="space-y-4 text-cream-800 text-sm dark:text-cream-200"></div>
             </div>
         </div>
 
         <div id="view-cloud" class="view-section hidden fade-in px-4 pt-6">
-            <div class="bg-white p-8 rounded-2xl shadow-soft border border-cream-200 text-center">
+            <div class="bg-white p-8 rounded-2xl shadow-soft border border-cream-200 text-center dark:bg-dark-800 dark:border-dark-700">
                 <h2 class="text-xl font-serif font-bold text-cream-900 mb-2">Nuvem</h2>
                 <p class="text-xs text-cream-400 mb-6">Sincronização de dados.</p>
-                <input type="text" id="cloud-url" placeholder="URL do Script..." class="w-full border border-cream-200 rounded-xl p-3 text-xs mb-3 bg-cream-50 outline-none focus:border-gold-400">
+                <input type="text" id="cloud-url" placeholder="URL do Script..." class="w-full border border-cream-200 rounded-xl p-3 text-xs mb-3 bg-cream-50 outline-none focus:border-gold-400 dark:bg-dark-900 dark:border-dark-600 dark:text-white">
                 <button onclick="saveCloudUrl()" class="text-xs text-gold-600 font-bold mb-6 underline">Salvar URL</button>
                 <div class="space-y-3">
                     <button onclick="syncUpload()" id="btn-upload" class="w-full bg-gold-600 text-white py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 text-sm shadow-md"><i class="fa-solid fa-cloud-arrow-up"></i> Enviar</button>
-                    <button onclick="syncDownload()" id="btn-download" class="w-full bg-white border border-cream-300 text-cream-600 py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 text-sm"><i class="fa-solid fa-cloud-arrow-down"></i> Baixar</button>
+                    <button onclick="syncDownload()" id="btn-download" class="w-full bg-white border border-cream-300 text-cream-600 py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 text-sm dark:bg-dark-700 dark:border-dark-600 dark:text-cream-200"><i class="fa-solid fa-cloud-arrow-down"></i> Baixar</button>
                 </div>
             </div>
         </div>
     </main>
 
+    <button id="fab-add-appointment" onclick="openNewAppointment()" class="hidden fixed bottom-24 right-5 w-14 h-14 bg-gold-600 text-white rounded-full shadow-lg flex items-center justify-center text-2xl z-50 active:scale-95 transition hover:bg-gold-700 animate-fade-in-up">
+        <i class="fa-solid fa-plus"></i>
+    </button>
+
     <nav class="fixed bottom-0 left-0 w-full glass-nav flex justify-around items-center pb-safe-bottom z-40 h-[72px]">
-        <button onclick="router('agenda')" id="nav-agenda" class="nav-item flex-1 h-full flex flex-col items-center justify-center gap-1.5 text-gold-600 transition"><i class="fa-regular fa-calendar text-lg"></i><span class="text-[10px] font-bold uppercase tracking-wide">Agenda</span></button>
+        <button onclick="router('home')" id="nav-home" class="nav-item flex-1 h-full flex flex-col items-center justify-center gap-1.5 text-gold-600 transition"><i class="fa-solid fa-house text-lg"></i><span class="text-[10px] font-bold uppercase tracking-wide">Início</span></button>
+        <button onclick="router('agenda')" id="nav-agenda" class="nav-item flex-1 h-full flex flex-col items-center justify-center gap-1.5 text-cream-400 transition"><i class="fa-regular fa-calendar text-lg"></i><span class="text-[10px] font-bold uppercase tracking-wide">Agenda</span></button>
         <button onclick="router('clients')" id="nav-clients" class="nav-item flex-1 h-full flex flex-col items-center justify-center gap-1.5 text-cream-400 transition"><i class="fa-solid fa-users text-lg"></i><span class="text-[10px] font-bold uppercase tracking-wide">Clientes</span></button>
         <button onclick="router('servicos')" id="nav-servicos" class="nav-item flex-1 h-full flex flex-col items-center justify-center gap-1.5 text-cream-400 transition"><i class="fa-solid fa-list-ul text-lg"></i><span class="text-[10px] font-bold uppercase tracking-wide">Menu</span></button>
         <button onclick="router('financeiro')" id="nav-financeiro" class="nav-item flex-1 h-full flex flex-col items-center justify-center gap-1.5 text-cream-400 transition"><i class="fa-solid fa-chart-pie text-lg"></i><span class="text-[10px] font-bold uppercase tracking-wide">Caixa</span></button>
-        <button onclick="router('ia')" id="nav-ia" class="nav-item flex-1 h-full flex flex-col items-center justify-center gap-1.5 text-cream-400 transition"><i class="fa-solid fa-wand-magic-sparkles text-lg"></i><span class="text-[10px] font-bold uppercase tracking-wide">IA</span></button>
     </nav>
 
     <div id="modal-appointment" class="fixed inset-0 bg-black/40 z-50 hidden flex-col animate-slide-up backdrop-blur-sm">
-        <div class="mt-auto bg-white rounded-t-[32px] h-[90vh] flex flex-col shadow-2xl overflow-hidden">
-            <div class="p-6 border-b border-cream-100 flex justify-between items-center">
+        <div class="mt-auto bg-white rounded-t-[32px] h-[90vh] flex flex-col shadow-2xl overflow-hidden dark:bg-dark-800">
+            <div class="p-6 border-b border-cream-100 flex justify-between items-center dark:border-dark-700">
                 <h3 class="font-serif font-bold text-xl text-cream-900" id="modal-title">Novo Agendamento</h3>
-                <button onclick="closeModal('modal-appointment')" class="w-10 h-10 flex items-center justify-center bg-cream-50 rounded-full text-cream-400 hover:text-gold-600"><i class="fa-solid fa-times"></i></button>
+                <button onclick="closeModal('modal-appointment')" class="w-10 h-10 flex items-center justify-center bg-cream-50 rounded-full text-cream-400 hover:text-gold-600 dark:bg-dark-700"><i class="fa-solid fa-times"></i></button>
             </div>
             <div class="flex-1 overflow-y-auto p-6">
                 <div id="conflict-alert" class="hidden animate-pulse-red mb-4 p-4 rounded-xl border border-red-200 text-red-700 text-sm font-bold flex items-center gap-2">
@@ -233,7 +296,7 @@
                     <div class="relative">
                         <label class="block text-[10px] font-bold text-gold-600 uppercase tracking-wider mb-1.5 ml-1">Cliente</label>
                         <input type="text" id="app-client" required class="w-full h-14 input-elegant rounded-2xl px-4 text-cream-900 font-medium" placeholder="Buscar nome..." autocomplete="off" oninput="searchClients(this.value)">
-                        <div id="client-suggestions" class="absolute top-full left-0 w-full bg-white shadow-xl rounded-xl border border-cream-200 mt-1 hidden z-50 max-h-40 overflow-y-auto"></div>
+                        <div id="client-suggestions" class="absolute top-full left-0 w-full bg-white shadow-xl rounded-xl border border-cream-200 mt-1 hidden z-50 max-h-40 overflow-y-auto dark:bg-dark-800 dark:border-dark-600"></div>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div><label class="block text-[10px] font-bold text-gold-600 uppercase tracking-wider mb-1.5 ml-1">Data</label><input type="date" id="app-date" required class="w-full h-14 input-elegant rounded-2xl px-4 text-cream-900 font-medium bg-transparent cursor-pointer" onchange="checkConflict()"></div>
@@ -245,31 +308,31 @@
                         <input type="tel" id="app-phone" class="w-full h-14 input-elegant rounded-2xl px-4 text-cream-900 font-medium" placeholder="(00) 00000-0000">
                     </div>
 
-                    <div><label class="block text-[10px] font-bold text-gold-600 uppercase tracking-wider mb-1.5 ml-1">Procedimento</label><select id="app-service" onchange="calculateTotal()" required class="custom-select w-full h-14 input-elegant rounded-2xl px-4 bg-transparent text-cream-900 font-medium"></select></div>
-                    <div class="bg-cream-50 p-5 rounded-2xl border border-cream-100"><label class="block text-[10px] font-bold text-cream-400 uppercase tracking-wider mb-3">Extras</label><div id="app-extras-list" class="space-y-3"></div></div>
+                    <div><label class="block text-[10px] font-bold text-gold-600 uppercase tracking-wider mb-1.5 ml-1">Procedimento</label><select id="app-service" onchange="calculateTotal(); checkConflict()" required class="custom-select w-full h-14 input-elegant rounded-2xl px-4 bg-transparent text-cream-900 font-medium"></select></div>
+                    <div class="bg-cream-50 p-5 rounded-2xl border border-cream-100 dark:bg-dark-900 dark:border-dark-700"><label class="block text-[10px] font-bold text-cream-400 uppercase tracking-wider mb-3">Extras</label><div id="app-extras-list" class="space-y-3"></div></div>
                     
                     <div class="flex items-center gap-3">
                         <div class="flex-1">
                             <label class="block text-[10px] font-bold text-gold-600 uppercase tracking-wider mb-1.5 ml-1">Sinal Pago (R$)</label>
                             <input type="number" id="app-deposit" step="0.01" class="w-full h-14 input-elegant rounded-2xl px-4 text-cream-900 font-medium" placeholder="0,00" oninput="calculateTotal()">
                         </div>
-                        <div class="w-px h-10 bg-cream-200 mx-1"></div>
+                        <div class="w-px h-10 bg-cream-200 mx-1 dark:bg-dark-600"></div>
                         <div class="flex-1 text-right">
                             <span class="block text-[10px] font-bold text-cream-400 uppercase tracking-wider mb-0.5">Falta Pagar</span>
                             <span id="app-remaining-display" class="text-xl font-serif font-bold text-gold-600">R$ 0,00</span>
                         </div>
                     </div>
 
-                    <div class="flex justify-between items-center p-5 bg-cream-900 text-white rounded-2xl shadow-lg"><span class="text-xs font-medium opacity-80 uppercase tracking-wide">Valor Total</span><span id="app-total-display" class="text-2xl font-serif font-bold text-gold-300">R$ 0,00</span></div>
+                    <div class="flex justify-between items-center p-5 bg-cream-900 text-white rounded-2xl shadow-lg dark:bg-black"><span class="text-xs font-medium opacity-80 uppercase tracking-wide">Valor Total</span><span id="app-total-display" class="text-2xl font-serif font-bold text-gold-300">R$ 0,00</span></div>
                     <div><label class="block text-[10px] font-bold text-gold-600 uppercase tracking-wider mb-1.5 ml-1">Observações</label><textarea id="app-notes" class="w-full input-elegant rounded-2xl p-4 text-cream-900" rows="2" placeholder="..."></textarea></div>
                 </form>
             </div>
-            <div class="p-6 border-t border-cream-100 bg-white pb-safe-bottom"><button onclick="saveAppointment()" class="w-full h-14 btn-gold bg-gold-600 text-white rounded-2xl font-bold text-sm uppercase tracking-widest shadow-md">Confirmar</button></div>
+            <div class="p-6 border-t border-cream-100 bg-white pb-safe-bottom dark:bg-dark-800 dark:border-dark-700"><button onclick="saveAppointment()" class="w-full h-14 btn-gold bg-gold-600 text-white rounded-2xl font-bold text-sm uppercase tracking-widest shadow-md">Confirmar</button></div>
         </div>
     </div>
 
     <div id="modal-details" class="fixed inset-0 bg-black/40 z-50 hidden flex items-center justify-center backdrop-blur-sm px-4">
-        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl animate-fade-in-up relative overflow-hidden">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl animate-fade-in-up relative overflow-hidden dark:bg-dark-800">
              <div class="absolute top-0 right-0 w-32 h-32 bg-gold-100 opacity-50 rounded-full -mr-12 -mt-12"></div>
 
             <div class="relative z-10">
@@ -278,17 +341,17 @@
                         <h3 class="font-serif font-bold text-2xl text-cream-900 mb-0.5" id="det-client">Cliente</h3>
                         <p class="text-xs text-cream-500" id="det-phone">Telefone</p>
                     </div>
-                    <button onclick="closeModal('modal-details')" class="w-8 h-8 flex items-center justify-center bg-cream-50 rounded-full text-cream-400 hover:text-gold-600"><i class="fa-solid fa-times"></i></button>
+                    <button onclick="closeModal('modal-details')" class="w-8 h-8 flex items-center justify-center bg-cream-50 rounded-full text-cream-400 hover:text-gold-600 dark:bg-dark-700"><i class="fa-solid fa-times"></i></button>
                 </div>
 
-                <div class="bg-cream-50 rounded-2xl p-4 mb-4 border border-cream-100">
-                    <div class="flex justify-between items-center mb-3 pb-3 border-b border-cream-200">
+                <div class="bg-cream-50 rounded-2xl p-4 mb-4 border border-cream-100 dark:bg-dark-900 dark:border-dark-700">
+                    <div class="flex justify-between items-center mb-3 pb-3 border-b border-cream-200 dark:border-dark-700">
                         <span class="text-xs font-bold text-cream-400 uppercase tracking-wide">Horário</span>
                         <span class="font-serif font-bold text-lg text-cream-900" id="det-time">00:00</span>
                     </div>
                     <div class="space-y-2">
                          <div class="flex justify-between">
-                            <span class="text-sm text-cream-700" id="det-service">Serviço</span>
+                            <span class="text-sm text-cream-700 dark:text-cream-300" id="det-service">Serviço</span>
                         </div>
                         <div id="det-extras-list" class="flex flex-col gap-1 text-xs text-cream-500 italic pl-2 border-l-2 border-gold-200"></div>
                     </div>
@@ -296,10 +359,10 @@
 
                 <div class="mb-6 hidden" id="det-notes-box">
                     <h4 class="text-[10px] font-bold text-cream-400 uppercase tracking-wide mb-1">Observações</h4>
-                    <p class="text-sm text-cream-700 bg-white border border-cream-100 p-3 rounded-xl" id="det-notes"></p>
+                    <p class="text-sm text-cream-700 bg-white border border-cream-100 p-3 rounded-xl dark:bg-dark-900 dark:border-dark-700 dark:text-cream-300" id="det-notes"></p>
                 </div>
 
-                <div class="bg-cream-900 text-white rounded-xl shadow-lg p-4 space-y-2">
+                <div class="bg-cream-900 text-white rounded-xl shadow-lg p-4 space-y-2 dark:bg-black">
                     <div class="flex justify-between text-xs opacity-70"><span>Total Serviço</span><span id="det-full-price">R$ 0,00</span></div>
                     <div class="flex justify-between text-xs text-gold-300 font-bold"><span>- Sinal Pago</span><span id="det-deposit">R$ 0,00</span></div>
                     <div class="border-t border-white/10 pt-2 mt-2 flex justify-between items-center">
@@ -317,10 +380,10 @@
     </div>
 
     <div id="modal-client" class="fixed inset-0 bg-black/40 z-50 hidden flex-col animate-slide-up backdrop-blur-sm">
-         <div class="mt-auto bg-white rounded-t-[32px] h-[85vh] flex flex-col shadow-2xl overflow-hidden">
-            <div class="p-6 border-b border-cream-100 flex justify-between items-center">
+         <div class="mt-auto bg-white rounded-t-[32px] h-[85vh] flex flex-col shadow-2xl overflow-hidden dark:bg-dark-800">
+            <div class="p-6 border-b border-cream-100 flex justify-between items-center dark:border-dark-700">
                 <h3 class="font-serif font-bold text-xl text-cream-900" id="modal-client-title">Nova Cliente</h3>
-                 <button onclick="closeModal('modal-client')" class="w-10 h-10 flex items-center justify-center bg-cream-50 rounded-full text-cream-400 hover:text-gold-600"><i class="fa-solid fa-times"></i></button>
+                 <button onclick="closeModal('modal-client')" class="w-10 h-10 flex items-center justify-center bg-cream-50 rounded-full text-cream-400 hover:text-gold-600 dark:bg-dark-700"><i class="fa-solid fa-times"></i></button>
             </div>
             
             <div class="flex-1 overflow-y-auto p-6">
@@ -328,7 +391,7 @@
                     <input type="hidden" id="client-id">
                     <div><label class="block text-[10px] font-bold text-cream-400 uppercase mb-1 ml-1">Nome Completo</label><input type="text" id="client-name" required class="w-full h-12 input-elegant rounded-xl px-4 text-cream-900"></div>
                     <div><label class="block text-[10px] font-bold text-cream-400 uppercase mb-1 ml-1">WhatsApp</label><input type="tel" id="client-phone" class="w-full h-12 input-elegant rounded-xl px-4 text-cream-900"></div>
-                    <div><label class="block text-[10px] font-bold text-cream-400 uppercase mb-1 ml-1">Aniversário</label><input type="date" id="client-birth" class="w-full h-12 input-elegant rounded-xl px-4 text-cream-900 bg-transparent"></div>
+                    <div><label class="block text-[10px] font-bold text-cream-400 uppercase mb-1 ml-1">Aniversário</label><input type="date" id="client-birth" class="w-full h-12 input-elegant rounded-xl px-4 text-cream-900 bg-transparent cursor-pointer"></div>
                     
                     <div class="pt-2">
                          <label class="block text-[10px] font-bold text-cream-400 uppercase mb-2 ml-1">Etiquetas</label>
@@ -336,20 +399,20 @@
                     </div>
                 </form>
             </div>
-             <div class="p-6 border-t border-cream-100 bg-white pb-safe-bottom">
+             <div class="p-6 border-t border-cream-100 bg-white pb-safe-bottom dark:bg-dark-800 dark:border-dark-700">
                   <button onclick="document.getElementById('form-client').dispatchEvent(new Event('submit'))" class="w-full h-14 bg-gold-600 text-white rounded-2xl font-bold text-sm uppercase tracking-widest shadow-md">Salvar Cliente</button>
              </div>
         </div>
     </div>
 
     <div id="modal-tags" class="fixed inset-0 bg-black/40 z-50 hidden flex items-center justify-center backdrop-blur-sm px-4">
-        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl animate-fade-in-up">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl animate-fade-in-up dark:bg-dark-800">
             <div class="flex justify-between items-center mb-6">
                 <h3 class="font-serif font-bold text-2xl text-cream-900">Etiquetas</h3>
-                <button onclick="closeModal('modal-tags')" class="w-8 h-8 flex items-center justify-center bg-cream-50 rounded-full text-cream-400 hover:text-gold-600"><i class="fa-solid fa-times"></i></button>
+                <button onclick="closeModal('modal-tags')" class="w-8 h-8 flex items-center justify-center bg-cream-50 rounded-full text-cream-400 hover:text-gold-600 dark:bg-dark-700"><i class="fa-solid fa-times"></i></button>
             </div>
             
-            <div class="bg-cream-50 p-4 rounded-xl border border-cream-100 mb-6">
+            <div class="bg-cream-50 p-4 rounded-xl border border-cream-100 mb-6 dark:bg-dark-900 dark:border-dark-700">
                 <h4 class="text-xs font-bold text-cream-400 uppercase mb-3">Criar Nova</h4>
                 
                 <div class="space-y-4">
@@ -370,14 +433,20 @@
     </div>
 
     <div id="modal-service" class="fixed inset-0 bg-black/40 z-50 hidden flex items-center justify-center backdrop-blur-sm px-4">
-        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl animate-fade-in-up">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl animate-fade-in-up dark:bg-dark-800">
             <h3 class="font-serif font-bold text-2xl text-cream-900 mb-6">Novo Item</h3>
             <form id="form-service" class="space-y-4">
-                <select id="serv-type" class="custom-select w-full h-12 input-elegant rounded-xl px-4 bg-transparent text-cream-900"><option value="service">Procedimento</option><option value="extra">Adicional</option></select>
+                <select id="serv-type" onchange="toggleDurationField()" class="custom-select w-full h-12 input-elegant rounded-xl px-4 bg-transparent text-cream-900 dark:bg-dark-900"><option value="service">Procedimento</option><option value="extra">Adicional</option></select>
                 <input type="text" id="serv-name" required class="w-full h-12 input-elegant rounded-xl px-4" placeholder="Nome">
-                <input type="number" id="serv-price" step="0.01" required class="w-full h-12 input-elegant rounded-xl px-4" placeholder="Preço">
+                <input type="number" id="serv-price" step="0.01" required class="w-full h-12 input-elegant rounded-xl px-4" placeholder="Preço (R$)">
+                
+                <div id="serv-duration-wrapper">
+                    <label class="block text-[10px] font-bold text-cream-400 uppercase mb-1 ml-1">Duração (minutos)</label>
+                    <input type="number" id="serv-duration" class="w-full h-12 input-elegant rounded-xl px-4" placeholder="Ex: 60" value="90">
+                </div>
+
                 <div class="grid grid-cols-2 gap-3 pt-4">
-                    <button type="button" onclick="closeModal('modal-service')" class="h-12 text-cream-400 font-bold text-xs uppercase tracking-wide hover:bg-cream-50 rounded-xl">Cancelar</button>
+                    <button type="button" onclick="closeModal('modal-service')" class="h-12 text-cream-400 font-bold text-xs uppercase tracking-wide hover:bg-cream-50 rounded-xl dark:hover:bg-dark-700">Cancelar</button>
                     <button type="submit" class="h-12 bg-gold-600 text-white rounded-xl font-bold text-xs uppercase tracking-wide shadow-md">Salvar</button>
                 </div>
             </form>
@@ -385,9 +454,10 @@
     </div>
 
     <script>
-        // DB INICIALIZADO COM TAGS
+        // DB INICIALIZADO COM ESTRUTURA ATUALIZADA
         let db = { 
-            services: [{id:1,name:'Manicure',price:35},{id:2,name:'Gel',price:70},{id:3,name:'Blindagem',price:90}], 
+            // Adicionado campo 'duration' aos serviços padrão
+            services: [{id:1,name:'Manicure',price:35,duration:60},{id:2,name:'Gel',price:70,duration:120},{id:3,name:'Blindagem',price:90,duration:90}], 
             extras: [{id:101,name:'Francesa',price:15}], 
             appointments: [], 
             clients: [],
@@ -400,138 +470,21 @@
         let selectedDate = new Date().toISOString().split('T')[0];
         let hasUnsaved = false;
 
-        // PALETA DE CORES PRÉ-DEFINIDA
-        const tagColors = [
-            '#D4AF37', // Gold
-            '#EF4444', // Red
-            '#F97316', // Orange
-            '#F59E0B', // Amber
-            '#84CC16', // Lime
-            '#10B981', // Emerald
-            '#06B6D4', // Cyan
-            '#3B82F6', // Blue
-            '#8B5CF6', // Violet
-            '#EC4899', // Pink
-            '#64748B', // Slate
-            '#000000'  // Black
-        ];
+        // PALETA DE CORES PARA TAGS
+        const tagColors = ['#D4AF37','#EF4444','#F97316','#F59E0B','#84CC16','#10B981','#06B6D4','#3B82F6','#8B5CF6','#EC4899','#64748B','#000000'];
 
-        // FUNÇÕES UTILITÁRIAS GLOBAIS
-        function openModal(id) {
-            const el = document.getElementById(id);
-            if(el) {
-                el.classList.remove('hidden');
-                el.classList.add('flex');
-            }
+        // DARK MODE
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            localStorage.setItem('emelyTheme', isDark ? 'dark' : 'light');
+        }
+        function initTheme() {
+            const saved = localStorage.getItem('emelyTheme');
+            if(saved === 'dark') document.documentElement.classList.add('dark');
         }
 
-        function closeModal(id) {
-            const el = document.getElementById(id);
-            if(el) {
-                el.classList.add('hidden');
-                el.classList.remove('flex');
-            }
-        }
-
-        function saveLocalData() {
-            localStorage.setItem('emelyData', JSON.stringify(db));
-        }
-
-        function checkUnsavedStatus() {
-            const btn = document.getElementById('cloud-btn');
-            if (btn) {
-                if (hasUnsaved) btn.classList.add('unsaved-badge');
-                else btn.classList.remove('unsaved-badge');
-            }
-        }
-
-        function saveCloudUrl() { 
-            localStorage.setItem('emelyCloudUrl', document.getElementById('cloud-url').value); 
-            alert('Salvo!'); 
-        }
-
-        async function syncUpload() { 
-            const u=localStorage.getItem('emelyCloudUrl'); 
-            if(!u) return alert('Sem URL'); 
-            const b=document.getElementById('btn-upload'); 
-            const originalText = b.innerHTML;
-            b.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Enviando...'; 
-            try { 
-                await fetch(u, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(db) }); 
-                alert('Dados enviados para a nuvem!'); 
-                hasUnsaved = false; 
-                checkUnsavedStatus(); 
-            } catch(e) {
-                alert('Erro ao enviar. Verifique a URL.');
-                console.error(e);
-            } finally {
-                b.innerHTML = originalText;
-            } 
-        }
-
-        async function syncDownload() { 
-            const u=localStorage.getItem('emelyCloudUrl'); 
-            if(!u) return alert('Sem URL'); 
-            if(!confirm('Substituir dados locais?')) return; 
-            const b=document.getElementById('btn-download'); 
-            const originalText = b.innerHTML;
-            b.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Baixando...'; 
-            try { 
-                const r=await fetch(u); 
-                const d=await r.json(); 
-                if(d && !d.error) { 
-                    db = d; 
-                    if(!db.services) db.services=[]; 
-                    if(!db.extras) db.extras=[]; 
-                    if(!db.appointments) db.appointments=[]; 
-                    if(!db.clients) db.clients=[]; 
-                    if(!db.tags) db.tags=[]; 
-                    
-                    hasUnsaved = false; 
-                    saveLocalData(); 
-                    location.reload(); 
-                } else {
-                    alert('Erro no formato dos dados: ' + (d.message || 'Desconhecido'));
-                }
-            } catch(e) {
-                alert('Erro ao baixar.'); 
-                console.error(e);
-            } finally {
-                b.innerHTML = originalText;
-            } 
-        }
-
-        window.onload = () => {
-            loadLocalData();
-            document.getElementById('fin-month').value = new Date().toISOString().slice(0, 7);
-            const url = localStorage.getItem('emelyCloudUrl'); 
-            if(url && document.getElementById('cloud-url')) document.getElementById('cloud-url').value = url;
-            
-            renderCalendar(); 
-            renderServices(); 
-            renderAppointments(); 
-            renderClients(); 
-            updateFinancials(); 
-            checkUnsavedStatus();
-        };
-
-        function loadLocalData() { 
-            const d = localStorage.getItem('emelyData'); 
-            if(d) {
-                try {
-                    db = JSON.parse(d);
-                } catch(e) {
-                    console.error("Erro ao ler local data", e);
-                    db = {}; 
-                }
-            }
-            if(!db.services) db.services=[]; 
-            if(!db.extras) db.extras=[]; 
-            if(!db.appointments) db.appointments=[]; 
-            if(!db.clients) db.clients=[]; 
-            if(!db.tags) db.tags=[];
-        }
-
+        // NAVIGATION
         function router(view) {
             document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
             document.getElementById('view-' + view).classList.remove('hidden');
@@ -542,225 +495,264 @@
                 navBtn.classList.add('text-gold-600');
                 navBtn.classList.remove('text-cream-400');
             }
+            
+            // CONTROLAR BOTÃO FLUTUANTE (FAB)
+            const fab = document.getElementById('fab-add-appointment');
+            if (view === 'agenda') {
+                fab.classList.remove('hidden');
+            } else {
+                fab.classList.add('hidden');
+            }
+
             if(view==='financeiro') updateFinancials(); 
             if(view==='clients') renderClients();
+            if(view==='home') renderHome();
+            if(view==='servicos') renderServices();
         }
 
-        // ================= TAGS LOGIC =================
-        function openTagsModal() {
-            renderTagsList();
-            renderColorPalette(); // Inicializa o novo seletor
-            openModal('modal-tags');
-        }
+        // ================= FEATURE 7: HOME DASHBOARD =================
+        function renderHome() {
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0];
+            
+            // 1. Data e Saudação
+            document.getElementById('home-date').innerText = today.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
+            
+            // 2. Resumos
+            const todaysApps = (db.appointments||[]).filter(a => a.date === todayStr && a.status !== 'cancelled');
+            const completedTotal = todaysApps.filter(a => a.status === 'completed').reduce((sum, a) => sum + a.price, 0);
+            const remainingCount = todaysApps.filter(a => a.status === 'scheduled').length;
 
-        function renderColorPalette() {
-            const container = document.getElementById('color-palette');
-            container.innerHTML = '';
-            const currentSelected = document.getElementById('new-tag-color').value;
+            document.getElementById('home-today-total').innerText = 'R$ ' + completedTotal.toFixed(2);
+            document.getElementById('home-remaining-count').innerText = remainingCount;
 
-            tagColors.forEach(color => {
-                const div = document.createElement('div');
-                div.className = `color-option w-8 h-8 rounded-full cursor-pointer transition flex-shrink-0 ${currentSelected === color ? 'selected' : ''}`;
-                div.style.backgroundColor = color;
-                div.onclick = () => {
-                    document.getElementById('new-tag-color').value = color;
-                    // Atualiza visual
-                    document.querySelectorAll('.color-option').forEach(el => el.classList.remove('selected'));
-                    div.classList.add('selected');
-                };
-                container.appendChild(div);
-            });
-        }
-
-        function renderTagsList() {
-            const list = document.getElementById('tags-management-list');
-            list.innerHTML = '';
-            (db.tags || []).forEach(tag => {
-                list.innerHTML += `
-                    <div class="flex justify-between items-center bg-cream-50 p-3 rounded-lg border border-cream-100">
-                        <div class="flex items-center gap-3">
-                            <div class="w-4 h-4 rounded-full border border-black/10 shadow-sm" style="background-color: ${tag.color}"></div>
-                            <span class="text-sm font-bold text-cream-900">${tag.name}</span>
-                        </div>
-                        <button onclick="deleteTag(${tag.id})" class="text-cream-400 hover:text-red-500"><i class="fa-solid fa-trash"></i></button>
+            // 3. Próxima Cliente
+            const nowTime = today.getHours() * 60 + today.getMinutes();
+            const upcoming = todaysApps
+                .filter(a => a.status === 'scheduled')
+                .map(a => ({...a, mins: timeToMinutes(a.time)}))
+                .filter(a => a.mins >= nowTime)
+                .sort((a,b) => a.mins - b.mins);
+            
+            const nextContainer = document.getElementById('home-next-client');
+            if(upcoming.length > 0) {
+                const next = upcoming[0];
+                const clientObj = db.clients.find(c => c.name === next.client);
+                const tagsHtml = clientObj && clientObj.tags ? getClientTagsHtml(clientObj.tags, 'small') : '';
+                
+                nextContainer.innerHTML = `
+                    <div class="flex-1">
+                        <span class="text-3xl font-serif font-bold text-gold-600 block mb-1">${next.time}</span>
+                        <h4 class="font-bold text-cream-900 text-lg">${next.client}</h4>
+                        <div class="mt-1">${tagsHtml}</div>
+                        <p class="text-xs text-cream-500 mt-1">${next.serviceName}</p>
                     </div>
+                    <button onclick="toggleStatus(${next.id}, 'completed'); renderHome()" class="w-12 h-12 rounded-full bg-cream-50 text-gold-600 flex items-center justify-center border border-cream-200 active:scale-95 transition dark:bg-dark-700 dark:border-dark-600">
+                        <i class="fa-solid fa-check"></i>
+                    </button>
                 `;
-            });
+            } else if (remainingCount > 0) {
+                 nextContainer.innerHTML = '<p class="text-sm text-cream-400 italic">Sem horários futuros. Há pendências anteriores.</p>';
+            } else {
+                nextContainer.innerHTML = '<div class="flex items-center gap-3"><i class="fa-solid fa-mug-hot text-gold-400 text-xl"></i><p class="text-sm text-cream-400 italic">Tudo pronto por hoje!</p></div>';
+            }
         }
 
-        function addNewTag() {
-            const name = document.getElementById('new-tag-name').value;
-            const color = document.getElementById('new-tag-color').value;
-            if(!name) return alert('Nome da etiqueta é obrigatório');
-            
-            const newTag = { id: Date.now(), name, color };
-            if(!db.tags) db.tags = [];
-            db.tags.push(newTag);
-            
-            document.getElementById('new-tag-name').value = '';
-            // Reseta cor para padrão
-            document.getElementById('new-tag-color').value = '#D4AF37';
-            renderColorPalette();
-            
-            hasUnsaved = true;
-            saveLocalData();
-            renderTagsList();
-            renderClients(); 
-            checkUnsavedStatus();
-        }
-
-        function deleteTag(id) {
-            if(!confirm('Excluir etiqueta? Ela será removida de todas as clientes.')) return;
-            db.tags = db.tags.filter(t => t.id !== id);
-            // Remover tag dos clientes
-            db.clients.forEach(c => {
-                if(c.tags) c.tags = c.tags.filter(tid => tid !== id);
-            });
-            hasUnsaved = true;
-            saveLocalData();
-            renderTagsList();
-            checkUnsavedStatus();
-        }
-
-        function getClientTagsHtml(clientTagsIds, size='normal') {
-            if(!clientTagsIds || !clientTagsIds.length) return '';
-            let html = '';
-            const sizeClass = size === 'small' ? 'px-1.5 py-0.5 text-[8px]' : 'px-2 py-0.5 text-[10px]';
-            
-            clientTagsIds.forEach(tid => {
-                const tag = (db.tags || []).find(t => t.id === tid);
-                if(tag) {
-                    html += `<span class="${sizeClass} rounded-full font-bold uppercase tracking-wide border border-black/5 shadow-sm inline-block mr-1 mb-1" style="background-color: ${tag.color}; color: #2E2B22;">${tag.name}</span>`;
-                }
-            });
-            return html;
-        }
-
-        // ================= TIME HELPERS =================
+        // ================= CONFLICT & DURATION LOGIC (FEATURE 1) =================
         function timeToMinutes(time) {
             if (!time) return 0;
             const [h, m] = time.split(':').map(Number);
             return h * 60 + m;
         }
-
-        function handleTimeInput(input) {
-            let v = input.value.replace(/\D/g, ''); 
-            if (v.length > 4) v = v.slice(0, 4); 
-            if (v.length >= 2) { let hh = parseInt(v.slice(0, 2)); if (hh > 23) v = '23' + v.slice(2); }
-            if (v.length >= 3) { let m1 = parseInt(v.slice(2, 3)); if (m1 > 5) v = v.slice(0, 2) + '5' + v.slice(3); }
-            if (v.length > 2) { input.value = v.slice(0, 2) + ':' + v.slice(2); } else { input.value = v; }
+        function minutesToTime(mins) {
+             const h = Math.floor(mins / 60);
+             const m = mins % 60;
+             return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
         }
 
         function checkConflict() {
             const date = document.getElementById('app-date').value;
             const time = document.getElementById('app-time').value;
             const currentId = document.getElementById('app-id').value;
+            const serviceId = document.getElementById('app-service').value;
             const alertBox = document.getElementById('conflict-alert');
             
-            if(!date || time.length < 5) { alertBox.classList.add('hidden'); return; }
+            if(!date || time.length < 5 || !serviceId) { alertBox.classList.add('hidden'); return; }
             
+            // Determina a duração do NOVO agendamento
+            const selectedService = db.services.find(s => s.id == serviceId);
+            const newDuration = selectedService ? (selectedService.duration || 90) : 90;
+
             const currentIdNum = currentId ? parseInt(currentId) : null;
-            const fixedDuration = 91;
             const newStart = timeToMinutes(time);
-            const newEnd = newStart + fixedDuration;
+            const newEnd = newStart + newDuration;
 
             const conflict = db.appointments.find(a => {
                 if (a.date !== date || a.status === 'cancelled' || a.id === currentIdNum) return false;
+                
+                // Determina duração do agendamento EXISTENTE
+                // Tenta pegar duração salva no agendamento, senão busca no serviço atual, senão padrão 90
+                let existingDuration = a.duration;
+                if(!existingDuration) {
+                     const s = db.services.find(ser => ser.name === a.serviceName); // Fallback pelo nome se ID mudou
+                     existingDuration = s ? (s.duration || 90) : 90;
+                }
+
                 const existingStart = timeToMinutes(a.time);
-                const existingEnd = existingStart + fixedDuration; 
+                const existingEnd = existingStart + existingDuration; 
+                
+                // Lógica de overlap
                 return (newStart < existingEnd && newEnd > existingStart);
             });
             
             if (conflict) { 
-                document.getElementById('conflict-msg').innerText = `Você já agendou um horário às ${conflict.time}.`; 
+                // Calcula horario termino para exibir melhor
+                let conflictDur = conflict.duration || 90;
+                let conflictEnd = minutesToTime(timeToMinutes(conflict.time) + conflictDur);
+                document.getElementById('conflict-msg').innerText = `Choque! ${conflict.time} - ${conflictEnd} (${conflict.client})`; 
                 alertBox.classList.remove('hidden');
             } else { 
                 alertBox.classList.add('hidden'); 
             }
         }
 
-        function jumpToDate(val) {
-            if (!val) return;
-            selectedDate = val;
-            renderCalendar();
-            renderAppointments();
+        function toggleDurationField() {
+            const type = document.getElementById('serv-type').value;
+            const div = document.getElementById('serv-duration-wrapper');
+            if(type === 'extra') div.classList.add('hidden');
+            else div.classList.remove('hidden');
         }
 
+        // ================= STANDARD FUNCTIONS =================
+        function openModal(id) {
+            const el = document.getElementById(id);
+            if(el) { el.classList.remove('hidden'); el.classList.add('flex'); }
+        }
+        function closeModal(id) {
+            const el = document.getElementById(id);
+            if(el) { el.classList.add('hidden'); el.classList.remove('flex'); }
+        }
+        function saveLocalData() { localStorage.setItem('emelyData', JSON.stringify(db)); }
+        function checkUnsavedStatus() {
+            const btn = document.getElementById('cloud-btn');
+            if (btn) { hasUnsaved ? btn.classList.add('unsaved-badge') : btn.classList.remove('unsaved-badge'); }
+        }
+        function saveCloudUrl() { localStorage.setItem('emelyCloudUrl', document.getElementById('cloud-url').value); alert('Salvo!'); }
+
+        async function syncUpload() { 
+            const u=localStorage.getItem('emelyCloudUrl'); if(!u) return alert('Sem URL'); 
+            const b=document.getElementById('btn-upload'); const originalText = b.innerHTML; b.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Enviando...'; 
+            try { await fetch(u, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(db) }); alert('Dados enviados!'); hasUnsaved = false; checkUnsavedStatus(); } catch(e) { alert('Erro.'); console.error(e); } finally { b.innerHTML = originalText; } 
+        }
+
+        async function syncDownload() { 
+            const u=localStorage.getItem('emelyCloudUrl'); if(!u) return alert('Sem URL'); if(!confirm('Substituir dados locais?')) return; 
+            const b=document.getElementById('btn-download'); const originalText = b.innerHTML; b.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Baixando...'; 
+            try { 
+                const r=await fetch(u); const d=await r.json(); 
+                if(d && !d.error) { 
+                    db = d; 
+                    if(!db.services) db.services=[]; if(!db.extras) db.extras=[]; if(!db.appointments) db.appointments=[]; if(!db.clients) db.clients=[]; if(!db.tags) db.tags=[]; 
+                    hasUnsaved = false; saveLocalData(); location.reload(); 
+                } else { alert('Erro dados.'); }
+            } catch(e) { alert('Erro rede.'); console.error(e); } finally { b.innerHTML = originalText; } 
+        }
+
+        // INITIALIZATION
+        window.onload = () => {
+            initTheme(); // Start theme
+            loadLocalData();
+            document.getElementById('fin-month').value = new Date().toISOString().slice(0, 7);
+            const url = localStorage.getItem('emelyCloudUrl'); 
+            if(url && document.getElementById('cloud-url')) document.getElementById('cloud-url').value = url;
+            
+            // Start on Home
+            router('home'); 
+            renderCalendar(); 
+            renderServices(); 
+            renderAppointments(); 
+            renderClients(); 
+            updateFinancials(); 
+            checkUnsavedStatus();
+        };
+
+        function loadLocalData() { 
+            const d = localStorage.getItem('emelyData'); 
+            if(d) { try { db = JSON.parse(d); } catch(e) { console.error(e); db = {}; } }
+            if(!db.services) db.services=[]; if(!db.extras) db.extras=[]; if(!db.appointments) db.appointments=[]; if(!db.clients) db.clients=[]; if(!db.tags) db.tags=[];
+        }
+
+        // TAGS UI
+        function openTagsModal() { renderTagsList(); renderColorPalette(); openModal('modal-tags'); }
+        function renderColorPalette() {
+            const container = document.getElementById('color-palette'); container.innerHTML = '';
+            const currentSelected = document.getElementById('new-tag-color').value;
+            tagColors.forEach(color => {
+                const div = document.createElement('div');
+                div.className = `color-option w-8 h-8 rounded-full cursor-pointer transition flex-shrink-0 ${currentSelected === color ? 'selected' : ''}`;
+                div.style.backgroundColor = color;
+                div.onclick = () => { document.getElementById('new-tag-color').value = color; document.querySelectorAll('.color-option').forEach(el => el.classList.remove('selected')); div.classList.add('selected'); };
+                container.appendChild(div);
+            });
+        }
+        function renderTagsList() {
+            const list = document.getElementById('tags-management-list'); list.innerHTML = '';
+            (db.tags || []).forEach(tag => {
+                list.innerHTML += `<div class="flex justify-between items-center bg-cream-50 p-3 rounded-lg border border-cream-100 dark:bg-dark-900 dark:border-dark-700"><div class="flex items-center gap-3"><div class="w-4 h-4 rounded-full border border-black/10 shadow-sm" style="background-color: ${tag.color}"></div><span class="text-sm font-bold text-cream-900">${tag.name}</span></div><button onclick="deleteTag(${tag.id})" class="text-cream-400 hover:text-red-500"><i class="fa-solid fa-trash"></i></button></div>`;
+            });
+        }
+        function addNewTag() {
+            const name = document.getElementById('new-tag-name').value; const color = document.getElementById('new-tag-color').value;
+            if(!name) return alert('Nome obrigatório');
+            if(!db.tags) db.tags = []; db.tags.push({ id: Date.now(), name, color });
+            document.getElementById('new-tag-name').value = ''; document.getElementById('new-tag-color').value = '#D4AF37'; renderColorPalette();
+            hasUnsaved = true; saveLocalData(); renderTagsList(); renderClients(); checkUnsavedStatus();
+        }
+        function deleteTag(id) { if(!confirm('Excluir?')) return; db.tags = db.tags.filter(t => t.id !== id); db.clients.forEach(c => { if(c.tags) c.tags = c.tags.filter(tid => tid !== id); }); hasUnsaved = true; saveLocalData(); renderTagsList(); checkUnsavedStatus(); }
+        function getClientTagsHtml(ids, size='normal') {
+            if(!ids || !ids.length) return '';
+            let html = ''; const sizeClass = size === 'small' ? 'px-1.5 py-0.5 text-[8px]' : 'px-2 py-0.5 text-[10px]';
+            ids.forEach(tid => { const tag = (db.tags||[]).find(t => t.id === tid); if(tag) html += `<span class="${sizeClass} rounded-full font-bold uppercase tracking-wide border border-black/5 shadow-sm inline-block mr-1 mb-1" style="background-color: ${tag.color}; color: #2E2B22;">${tag.name}</span>`; });
+            return html;
+        }
+
+        // APPOINTMENTS UI
+        function handleTimeInput(input) { let v = input.value.replace(/\D/g, ''); if (v.length > 4) v = v.slice(0, 4); if (v.length >= 2) { let hh = parseInt(v.slice(0, 2)); if (hh > 23) v = '23' + v.slice(2); } if (v.length >= 3) { let m1 = parseInt(v.slice(2, 3)); if (m1 > 5) v = v.slice(0, 2) + '5' + v.slice(3); } if (v.length > 2) { input.value = v.slice(0, 2) + ':' + v.slice(2); } else { input.value = v; } }
+        function jumpToDate(val) { if (!val) return; selectedDate = val; renderCalendar(); renderAppointments(); }
         function renderCalendar() {
             const c = document.getElementById('horizontal-calendar'); c.innerHTML = '';
-            const [y, m, d_val] = selectedDate.split('-').map(Number);
-            const pivot = new Date(y, m - 1, d_val);
-            const startDate = new Date(pivot);
-            startDate.setDate(startDate.getDate() - 7); 
-            
+            const [y, m, d_val] = selectedDate.split('-').map(Number); const pivot = new Date(y, m - 1, d_val); const startDate = new Date(pivot); startDate.setDate(startDate.getDate() - 7);
             for (let i = 0; i < 68; i++) {
-                const d = new Date(startDate);
-                d.setDate(d.getDate() + i);
-                const dateStr = d.toLocaleDateString('pt-BR').split('/').reverse().join('-');
+                const d = new Date(startDate); d.setDate(d.getDate() + i); const dateStr = d.toLocaleDateString('pt-BR').split('/').reverse().join('-');
                 const countScheduled = (db.appointments||[]).filter(a => a.date === dateStr && a.status === 'scheduled').length;
                 const countCompleted = (db.appointments||[]).filter(a => a.date === dateStr && a.status === 'completed').length;
                 const active = dateStr === selectedDate ? 'active' : '';
-                
-                let badgesHtml = '<div class="badge-container">';
-                if (countScheduled > 0) badgesHtml += `<div class="badge badge-pending">${countScheduled}</div>`;
-                if (countCompleted > 0) badgesHtml += `<div class="badge badge-completed">${countCompleted}</div>`;
-                badgesHtml += '</div>';
-
-                const el = document.createElement('div'); el.className = `calendar-day ${active}`;
-                el.onclick = () => { selectedDate = dateStr; renderCalendar(); renderAppointments(); };
+                let badgesHtml = '<div class="badge-container">'; if (countScheduled > 0) badgesHtml += `<div class="badge badge-pending">${countScheduled}</div>`; if (countCompleted > 0) badgesHtml += `<div class="badge badge-completed">${countCompleted}</div>`; badgesHtml += '</div>';
+                const el = document.createElement('div'); el.className = `calendar-day ${active}`; el.onclick = () => { selectedDate = dateStr; renderCalendar(); renderAppointments(); };
                 el.innerHTML = `<span class="text-[10px] uppercase font-bold mt-1 opacity-60 tracking-wide">${d.toLocaleDateString('pt-BR',{weekday:'short'}).replace('.','')}</span><span class="text-xl font-serif font-bold leading-none my-1">${d.getDate()}</span>${badgesHtml}`;
                 c.appendChild(el);
             }
             document.getElementById('month-display').innerText = pivot.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
             setTimeout(() => { const a = document.querySelector('.calendar-day.active'); if(a) a.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'}); }, 100);
         }
-
-        function goToToday() { 
-            const today = new Date();
-            selectedDate = today.toLocaleDateString('pt-BR').split('/').reverse().join('-');
-            renderCalendar(); 
-            renderAppointments(); 
-        }
-
+        function goToToday() { const today = new Date(); selectedDate = today.toLocaleDateString('pt-BR').split('/').reverse().join('-'); renderCalendar(); renderAppointments(); }
         function renderAppointments() {
             const list = document.getElementById('appointments-list'); list.innerHTML = '';
             const filter = document.getElementById('filter-status').value;
             const filtered = (db.appointments||[]).filter(a => a.date === selectedDate && (filter === 'all' || a.status === filter)).sort((a,b) => a.time.localeCompare(b.time));
-            
             if(!filtered.length) { document.getElementById('empty-agenda').classList.remove('hidden'); document.getElementById('daily-total').innerText = 'R$ 0,00'; return; }
             document.getElementById('empty-agenda').classList.add('hidden');
-            
             let total = 0;
             filtered.forEach(a => {
                 if(a.status !== 'cancelled') total += a.price;
-                let extrasHtml = '';
-                if(a.extras && a.extras.length > 0) { extrasHtml = '<div class="flex flex-wrap gap-1 mt-1">'; a.extras.forEach(ex => extrasHtml += `<span class="text-[10px] bg-gold-50 text-gold-700 px-1.5 py-0.5 rounded border border-gold-100">${ex}</span>`); extrasHtml += '</div>'; }
-                
-                // TAGS NA AGENDA
-                let tagsHtml = '';
-                const clientObj = db.clients.find(c => c.name === a.client);
-                if (clientObj && clientObj.tags) {
-                     tagsHtml = `<div class="mb-1">${getClientTagsHtml(clientObj.tags, 'small')}</div>`;
-                }
-
-                let birthdayHtml = '';
-                if (clientObj && clientObj.birth) { const bp = clientObj.birth.split('-'); const ap = a.date.split('-'); if (bp[1] === ap[1] && bp[2] === ap[2]) birthdayHtml = `<div class="mt-2 inline-flex items-center gap-1.5 bg-gold-100 text-gold-800 text-[10px] font-bold uppercase px-2 py-1 rounded-lg border border-gold-200"><span>🎂</span> Aniversariante</div>`; }
-                
-                let actions = a.status === 'scheduled' ? 
-                    `<button onclick="event.stopPropagation(); editAppointment(${a.id})" class="w-9 h-9 rounded-full bg-cream-100 text-cream-500 flex items-center justify-center hover:bg-cream-200 transition"><i class="fa-solid fa-pen text-sm"></i></button>
-                     <button onclick="event.stopPropagation(); toggleStatus(${a.id},'completed')" class="w-9 h-9 rounded-full bg-gold-100 text-gold-700 flex items-center justify-center hover:bg-gold-200 transition"><i class="fa-solid fa-check text-sm"></i></button>
-                     <button onclick="event.stopPropagation(); toggleStatus(${a.id},'cancelled')" class="w-9 h-9 rounded-full bg-red-50 text-red-400 flex items-center justify-center hover:bg-red-100 transition"><i class="fa-solid fa-times text-sm"></i></button>` : 
-                    `<button onclick="event.stopPropagation(); toggleStatus(${a.id},'scheduled')" class="text-[10px] font-bold text-gold-600 uppercase bg-gold-50 px-3 py-1 rounded-full">Restaurar</button>`;
-                
-                const safePhone = String(a.phone || '');
-                const wa = safePhone ? `<a href="https://wa.me/55${safePhone.replace(/\D/g,'')}" target="_blank" onclick="event.stopPropagation()" class="text-green-600 ml-1"><i class="fa-brands fa-whatsapp"></i></a>` : '';
-                
-                let statusClasses = a.status === 'completed' ? 'bg-green-50 border-l-4 border-l-green-400 border-y border-r border-green-100' : (a.status === 'cancelled' ? 'bg-red-50 border-l-4 border-l-red-300 border-y border-r border-red-100 opacity-75' : 'bg-white border-l-4 border-l-gold-400 border-y border-r border-cream-100');
-                
-                const remaining = a.price - (a.deposit || 0);
-                const remainingHtml = remaining > 0 ? `<div class="mt-1 text-xs font-bold text-gold-600 bg-gold-50 px-2 py-1 rounded w-fit">Falta: R$ ${remaining.toFixed(2)}</div>` : '';
-
-                list.innerHTML += `<div onclick="openDetails(${a.id})" class="cursor-pointer ${statusClasses} p-4 rounded-2xl shadow-soft flex gap-4 transition-all active:scale-[0.99]"><div class="flex flex-col items-center justify-center w-14 border-r border-cream-100 pr-4 flex-shrink-0"><span class="font-serif font-bold text-cream-900 text-2xl">${a.time}</span></div><div class="flex-1 flex flex-col justify-between gap-3"><div class="min-w-0"><h4 class="font-bold text-cream-900 text-base leading-tight mb-1 truncate">${a.client} ${wa}</h4>${tagsHtml}<div class="flex flex-wrap gap-1 items-center mb-1"><span class="bg-cream-100 text-gray-800 text-sm px-2 py-0.5 rounded-md font-medium leading-tight inline-block max-w-full break-words">${a.serviceName}</span></div>${extrasHtml} ${birthdayHtml} ${remainingHtml}</div><div class="flex justify-end gap-2 border-t border-cream-50 pt-2 mt-auto">${actions}</div></div></div>`;
+                let extrasHtml = ''; if(a.extras && a.extras.length > 0) { extrasHtml = '<div class="flex flex-wrap gap-1 mt-1">'; a.extras.forEach(ex => extrasHtml += `<span class="text-[10px] bg-gold-50 text-gold-700 px-1.5 py-0.5 rounded border border-gold-100 dark:bg-gold-900 dark:border-gold-800 dark:text-gold-400">${ex}</span>`); extrasHtml += '</div>'; }
+                let tagsHtml = ''; const clientObj = db.clients.find(c => c.name === a.client); if (clientObj && clientObj.tags) { tagsHtml = `<div class="mb-1">${getClientTagsHtml(clientObj.tags, 'small')}</div>`; }
+                let birthdayHtml = ''; if (clientObj && clientObj.birth) { const bp = clientObj.birth.split('-'); const ap = a.date.split('-'); if (bp[1] === ap[1] && bp[2] === ap[2]) birthdayHtml = `<div class="mt-2 inline-flex items-center gap-1.5 bg-gold-100 text-gold-800 text-[10px] font-bold uppercase px-2 py-1 rounded-lg border border-gold-200 dark:bg-gold-900 dark:border-gold-700 dark:text-gold-300"><span>🎂</span> Aniversariante</div>`; }
+                let actions = a.status === 'scheduled' ? `<button onclick="event.stopPropagation(); editAppointment(${a.id})" class="w-9 h-9 rounded-full bg-cream-100 text-cream-500 flex items-center justify-center hover:bg-cream-200 transition dark:bg-dark-700 dark:text-cream-400"><i class="fa-solid fa-pen text-sm"></i></button><button onclick="event.stopPropagation(); toggleStatus(${a.id},'completed')" class="w-9 h-9 rounded-full bg-gold-100 text-gold-700 flex items-center justify-center hover:bg-gold-200 transition dark:bg-gold-900 dark:text-gold-400"><i class="fa-solid fa-check text-sm"></i></button><button onclick="event.stopPropagation(); toggleStatus(${a.id},'cancelled')" class="w-9 h-9 rounded-full bg-red-50 text-red-400 flex items-center justify-center hover:bg-red-100 transition dark:bg-red-900/30 dark:text-red-400"><i class="fa-solid fa-times text-sm"></i></button>` : `<button onclick="event.stopPropagation(); toggleStatus(${a.id},'scheduled')" class="text-[10px] font-bold text-gold-600 uppercase bg-gold-50 px-3 py-1 rounded-full dark:bg-gold-900 dark:text-gold-400">Restaurar</button>`;
+                const safePhone = String(a.phone || ''); const wa = safePhone ? `<a href="https://wa.me/55${safePhone.replace(/\D/g,'')}" target="_blank" onclick="event.stopPropagation()" class="text-green-600 ml-1 dark:text-green-400"><i class="fa-brands fa-whatsapp"></i></a>` : '';
+                let statusClasses = a.status === 'completed' ? 'bg-green-50 border-l-4 border-l-green-400 border-y border-r border-green-100 dark:bg-green-900/10 dark:border-green-800' : (a.status === 'cancelled' ? 'bg-red-50 border-l-4 border-l-red-300 border-y border-r border-red-100 opacity-75 dark:bg-red-900/10 dark:border-red-800' : 'bg-white border-l-4 border-l-gold-400 border-y border-r border-cream-100 dark:bg-dark-800 dark:border-dark-700 dark:border-l-gold-500');
+                const remaining = a.price - (a.deposit || 0); const remainingHtml = remaining > 0 ? `<div class="mt-1 text-xs font-bold text-gold-600 bg-gold-50 px-2 py-1 rounded w-fit dark:bg-gold-900 dark:text-gold-400">Falta: R$ ${remaining.toFixed(2)}</div>` : '';
+                list.innerHTML += `<div onclick="openDetails(${a.id})" class="cursor-pointer ${statusClasses} p-4 rounded-2xl shadow-soft flex gap-4 transition-all active:scale-[0.99]"><div class="flex flex-col items-center justify-center w-14 border-r border-cream-100 pr-4 flex-shrink-0 dark:border-white/5"><span class="font-serif font-bold text-cream-900 text-2xl">${a.time}</span></div><div class="flex-1 flex flex-col justify-between gap-3"><div class="min-w-0"><h4 class="font-bold text-cream-900 text-base leading-tight mb-1 truncate">${a.client} ${wa}</h4>${tagsHtml}<div class="flex flex-wrap gap-1 items-center mb-1"><span class="bg-cream-100 text-gray-800 text-sm px-2 py-0.5 rounded-md font-medium leading-tight inline-block max-w-full break-words dark:bg-dark-700 dark:text-cream-300">${a.serviceName}</span></div>${extrasHtml} ${birthdayHtml} ${remainingHtml}</div><div class="flex justify-end gap-2 border-t border-cream-50 pt-2 mt-auto dark:border-white/5">${actions}</div></div></div>`;
             });
             document.getElementById('daily-total').innerText = 'R$ ' + total.toFixed(2);
         }
@@ -784,378 +776,79 @@
         function editFromDetails() { const id = parseInt(document.getElementById('det-id').value); closeModal('modal-details'); editAppointment(id); }
 
         function renderServices() {
-            const g1 = document.getElementById('services-grid'), g2 = document.getElementById('extras-grid'); 
-            if(!g1 || !g2) return; 
-            g1.innerHTML=''; g2.innerHTML='';
-            (db.services||[]).forEach(s => g1.innerHTML+=`<div class="bg-white p-4 rounded-2xl shadow-sm border border-cream-100 flex justify-between items-center"><div><h4 class="font-bold text-cream-900 text-sm">${s.name}</h4><span class="text-gold-600 font-bold text-xs">R$ ${s.price.toFixed(2)}</span></div><button onclick="delService(${s.id},'s')" class="text-cream-300 hover:text-red-400"><i class="fa-solid fa-trash"></i></button></div>`);
-            (db.extras||[]).forEach(e => g2.innerHTML+=`<div class="bg-white p-4 rounded-2xl shadow-sm border border-cream-100 flex justify-between items-center"><div><h4 class="font-bold text-cream-700 text-sm">${e.name}</h4><span class="text-cream-500 font-bold text-xs">R$ ${e.price.toFixed(2)}</span></div><button onclick="delService(${e.id},'e')" class="text-cream-300 hover:text-red-400"><i class="fa-solid fa-trash"></i></button></div>`);
+            const g1 = document.getElementById('services-grid'), g2 = document.getElementById('extras-grid'); if(!g1 || !g2) return; g1.innerHTML=''; g2.innerHTML='';
+            (db.services||[]).forEach(s => g1.innerHTML+=`<div class="bg-white p-4 rounded-2xl shadow-sm border border-cream-100 flex justify-between items-center dark:bg-dark-800 dark:border-dark-700"><div><h4 class="font-bold text-cream-900 text-sm">${s.name}</h4><span class="text-gold-600 font-bold text-xs">R$ ${s.price.toFixed(2)} • ${s.duration||90}min</span></div><button onclick="delService(${s.id},'s')" class="text-cream-300 hover:text-red-400"><i class="fa-solid fa-trash"></i></button></div>`);
+            (db.extras||[]).forEach(e => g2.innerHTML+=`<div class="bg-white p-4 rounded-2xl shadow-sm border border-cream-100 flex justify-between items-center dark:bg-dark-800 dark:border-dark-700"><div><h4 class="font-bold text-cream-700 text-sm dark:text-cream-300">${e.name}</h4><span class="text-cream-500 font-bold text-xs dark:text-cream-500">R$ ${e.price.toFixed(2)}</span></div><button onclick="delService(${e.id},'e')" class="text-cream-300 hover:text-red-400"><i class="fa-solid fa-trash"></i></button></div>`);
         }
 
         function renderServiceOptions() {
-            const sel = document.getElementById('app-service'), list = document.getElementById('app-extras-list');
-            if(!sel || !list) return;
+            const sel = document.getElementById('app-service'), list = document.getElementById('app-extras-list'); if(!sel || !list) return;
             sel.innerHTML='<option value="" disabled selected>Selecione...</option>'; list.innerHTML='';
-            (db.services||[]).forEach(s => sel.innerHTML+=`<option value="${s.id}" data-price="${s.price}">${s.name} - R$${s.price.toFixed(2)}</option>`);
-            (db.extras||[]).forEach(e => list.innerHTML+=`<label class="flex items-center gap-3 p-3 bg-white rounded-xl border border-cream-100 transition cursor-pointer"><input type="checkbox" id="extra-${e.id}" value="${e.id}" data-price="${e.price}" class="extra-checkbox w-5 h-5 text-gold-600 rounded border-cream-300 focus:ring-gold-400" onchange="calculateTotal()"><div class="flex-1 flex justify-between"><span class="text-sm text-cream-700">${e.name}</span><span class="font-bold text-gold-600 text-xs">+ R$ ${e.price.toFixed(2)}</span></div></label>`);
+            (db.services||[]).forEach(s => sel.innerHTML+=`<option value="${s.id}" data-price="${s.price}">${s.name} - R$${s.price.toFixed(2)} (${s.duration||90}m)</option>`);
+            (db.extras||[]).forEach(e => list.innerHTML+=`<label class="flex items-center gap-3 p-3 bg-white rounded-xl border border-cream-100 transition cursor-pointer dark:bg-dark-800 dark:border-dark-700"><input type="checkbox" id="extra-${e.id}" value="${e.id}" data-price="${e.price}" class="extra-checkbox w-5 h-5 text-gold-600 rounded border-cream-300 focus:ring-gold-400" onchange="calculateTotal()"><div class="flex-1 flex justify-between"><span class="text-sm text-cream-700 dark:text-cream-300">${e.name}</span><span class="font-bold text-gold-600 text-xs">+ R$ ${e.price.toFixed(2)}</span></div></label>`);
         }
 
         function openNewAppointment() {
-            document.getElementById('modal-title').innerText = 'Novo Agendamento';
-            document.getElementById('form-appointment').reset();
-            document.getElementById('app-id').value = '';
-            document.getElementById('app-date').value = selectedDate;
-            document.getElementById('app-total-display').innerText = 'R$ 0,00';
-            document.getElementById('app-remaining-display').innerText = 'R$ 0,00';
-            document.getElementById('conflict-alert').classList.add('hidden');
-            renderServiceOptions(); openModal('modal-appointment');
+            document.getElementById('modal-title').innerText = 'Novo Agendamento'; document.getElementById('form-appointment').reset(); document.getElementById('app-id').value = ''; document.getElementById('app-date').value = selectedDate; document.getElementById('app-total-display').innerText = 'R$ 0,00'; document.getElementById('app-remaining-display').innerText = 'R$ 0,00'; document.getElementById('conflict-alert').classList.add('hidden'); renderServiceOptions(); openModal('modal-appointment');
         }
-        function rescheduleClient(name) {
-            document.querySelectorAll('.fixed.inset-0').forEach(m => m.classList.add('hidden'));
-            router('agenda');
-            openNewAppointment();
-            document.getElementById('app-client').value = name;
-            const c = db.clients.find(cli => cli.name === name);
-            if(c && c.phone) document.getElementById('app-phone').value = c.phone;
-        }
+        function rescheduleClient(name) { document.querySelectorAll('.fixed.inset-0').forEach(m => m.classList.add('hidden')); router('agenda'); openNewAppointment(); document.getElementById('app-client').value = name; const c = db.clients.find(cli => cli.name === name); if(c && c.phone) document.getElementById('app-phone').value = c.phone; }
 
         function editAppointment(id) {
             const app = db.appointments.find(a => a.id === id); if(!app) return;
-            document.getElementById('modal-title').innerText = 'Editar';
-            document.getElementById('app-id').value = app.id;
-            document.getElementById('app-client').value = app.client;
-            document.getElementById('app-phone').value = app.phone || '';
-            document.getElementById('app-date').value = app.date;
-            document.getElementById('app-time').value = app.time;
-            document.getElementById('app-notes').value = app.notes || '';
-            document.getElementById('app-deposit').value = app.deposit || ''; 
-            renderServiceOptions(); document.getElementById('app-service').value = app.serviceId;
-            if(app.extras) app.extras.forEach(ex => { const obj = db.extras.find(e => e.name === ex); if(obj) document.getElementById(`extra-${obj.id}`).checked = true; });
+            document.getElementById('modal-title').innerText = 'Editar'; document.getElementById('app-id').value = app.id; document.getElementById('app-client').value = app.client; document.getElementById('app-phone').value = app.phone || ''; document.getElementById('app-date').value = app.date; document.getElementById('app-time').value = app.time; document.getElementById('app-notes').value = app.notes || ''; document.getElementById('app-deposit').value = app.deposit || '';
+            renderServiceOptions(); document.getElementById('app-service').value = app.serviceId; if(app.extras) app.extras.forEach(ex => { const obj = db.extras.find(e => e.name === ex); if(obj) document.getElementById(`extra-${obj.id}`).checked = true; });
             calculateTotal(); openModal('modal-appointment');
         }
         function saveAppointment() {
-            const id = document.getElementById('app-id').value;
-            const client = document.getElementById('app-client').value;
-            const sel = document.getElementById('app-service');
-            
-            if(!sel.value || sel.value === "") return alert('Por favor, selecione um procedimento!');
-            if(!client) return alert('Nome obrigatório');
-
-            const serv = db.services.find(s => s.id == sel.value);
-            if (!serv) return alert('Erro: Serviço não encontrado. Atualize a página.');
-
-            const extrasCheckboxes = document.querySelectorAll('.extra-checkbox:checked');
-            const extras = Array.from(extrasCheckboxes).map(cb => {
-                const foundExtra = db.extras.find(e => e.id == cb.value);
-                return foundExtra ? foundExtra.name : null;
-            }).filter(item => item !== null);
-
-            const totalService = calculateTotal();
-            const deposit = parseFloat(document.getElementById('app-deposit').value) || 0;
-
-            const data = {
-                client, phone: document.getElementById('app-phone').value,
-                date: document.getElementById('app-date').value, time: document.getElementById('app-time').value,
-                serviceId: serv.id, serviceName: serv.name, extras: extras,
-                price: totalService, 
-                deposit: deposit,     
-                notes: document.getElementById('app-notes').value, status: 'scheduled'
-            };
-            if(id) { const idx = db.appointments.findIndex(a => a.id == id); if(idx!==-1) { data.id=parseInt(id); data.status=db.appointments[idx].status; db.appointments[idx]=data; } }
-            else { data.id = Date.now(); db.appointments.push(data); }
-            
-            hasUnsaved = true;
-            saveLocalData(); closeModal('modal-appointment'); renderCalendar(); renderAppointments(); checkUnsavedStatus();
+            const id = document.getElementById('app-id').value; const client = document.getElementById('app-client').value; const sel = document.getElementById('app-service');
+            if(!sel.value || sel.value === "") return alert('Selecione procedimento'); if(!client) return alert('Nome obrigatório');
+            const serv = db.services.find(s => s.id == sel.value); if (!serv) return alert('Erro serviço');
+            const extras = Array.from(document.querySelectorAll('.extra-checkbox:checked')).map(cb => { const f = db.extras.find(e => e.id == cb.value); return f ? f.name : null; }).filter(i=>i);
+            const total = calculateTotal(); const dep = parseFloat(document.getElementById('app-deposit').value) || 0;
+            const data = { client, phone: document.getElementById('app-phone').value, date: document.getElementById('app-date').value, time: document.getElementById('app-time').value, serviceId: serv.id, serviceName: serv.name, duration: serv.duration || 90, extras: extras, price: total, deposit: dep, notes: document.getElementById('app-notes').value, status: 'scheduled' };
+            if(id) { const idx = db.appointments.findIndex(a => a.id == id); if(idx!==-1) { data.id=parseInt(id); data.status=db.appointments[idx].status; db.appointments[idx]=data; } } else { data.id = Date.now(); db.appointments.push(data); }
+            hasUnsaved = true; saveLocalData(); closeModal('modal-appointment'); renderCalendar(); renderAppointments(); checkUnsavedStatus();
         }
         function toggleStatus(id, s) { const app = db.appointments.find(a => a.id === id); if(app) { if(s==='cancelled' && !confirm('Cancelar?')) return; app.status = s; hasUnsaved = true; saveLocalData(); renderCalendar(); renderAppointments(); checkUnsavedStatus(); } }
 
-        function openClientModal() { 
-            document.getElementById('modal-client-title').innerText = "Nova Cliente"; 
-            document.getElementById('form-client').reset(); 
-            document.getElementById('client-id').value = ""; 
-            renderClientTagsSelector([]);
-            openModal('modal-client'); 
-        }
-        
-        function openEditClient(id) { 
-            const c = db.clients.find(cli => cli.id === id); 
-            if(!c) return; 
-            document.getElementById('modal-client-title').innerText = "Editar Cliente"; 
-            document.getElementById('client-id').value = c.id; 
-            document.getElementById('client-name').value = c.name; 
-            document.getElementById('client-phone').value = c.phone || ""; 
-            document.getElementById('client-birth').value = c.birth || ""; 
-            renderClientTagsSelector(c.tags || []);
-            openModal('modal-client'); 
-        }
-
+        function openClientModal() { document.getElementById('modal-client-title').innerText = "Nova Cliente"; document.getElementById('form-client').reset(); document.getElementById('client-id').value = ""; renderClientTagsSelector([]); openModal('modal-client'); }
+        function openEditClient(id) { const c = db.clients.find(cli => cli.id === id); if(!c) return; document.getElementById('modal-client-title').innerText = "Editar Cliente"; document.getElementById('client-id').value = c.id; document.getElementById('client-name').value = c.name; document.getElementById('client-phone').value = c.phone || ""; document.getElementById('client-birth').value = c.birth || ""; renderClientTagsSelector(c.tags || []); openModal('modal-client'); }
         function renderClientTagsSelector(selectedTagsIds) {
-            const container = document.getElementById('client-tags-selector');
-            container.innerHTML = '';
-            if(!db.tags || db.tags.length === 0) {
-                container.innerHTML = '<span class="text-xs text-gray-400 italic">Nenhuma etiqueta criada.</span>';
-                return;
-            }
-            
-            db.tags.forEach(tag => {
-                const isSelected = selectedTagsIds.includes(tag.id);
-                const opacity = isSelected ? '1' : '0.5';
-                const border = isSelected ? 'border-black/20' : 'border-transparent';
-                
-                const pill = document.createElement('div');
-                pill.className = `cursor-pointer px-3 py-1.5 rounded-full text-xs font-bold border transition select-none flex items-center gap-1`;
-                pill.style.backgroundColor = tag.color;
-                pill.style.opacity = opacity;
-                pill.style.borderColor = isSelected ? '#2E2B22' : 'transparent';
-                pill.innerHTML = `${tag.name} ${isSelected ? '<i class="fa-solid fa-check ml-1 text-[10px]"></i>' : ''}`;
-                
-                pill.onclick = () => {
-                    // Toggle selection visually and in logic
-                    if (selectedTagsIds.includes(tag.id)) {
-                        const idx = selectedTagsIds.indexOf(tag.id);
-                        selectedTagsIds.splice(idx, 1);
-                    } else {
-                        selectedTagsIds.push(tag.id);
-                    }
-                    renderClientTagsSelector(selectedTagsIds); // Re-render to update UI
-                };
-                
-                container.appendChild(pill);
-            });
-            // Attach current selection to container for save function
-            container.dataset.selected = JSON.stringify(selectedTagsIds);
+            const container = document.getElementById('client-tags-selector'); container.innerHTML = ''; if(!db.tags || !db.tags.length) { container.innerHTML = '<span class="text-xs text-gray-400 italic">Nenhuma etiqueta.</span>'; return; }
+            db.tags.forEach(tag => { const isSelected = selectedTagsIds.includes(tag.id); const opacity = isSelected ? '1' : '0.5'; const border = isSelected ? 'border-black/20' : 'border-transparent'; const pill = document.createElement('div'); pill.className = `cursor-pointer px-3 py-1.5 rounded-full text-xs font-bold border transition select-none flex items-center gap-1`; pill.style.backgroundColor = tag.color; pill.style.opacity = opacity; pill.style.borderColor = isSelected ? '#2E2B22' : 'transparent'; pill.innerHTML = `${tag.name} ${isSelected ? '<i class="fa-solid fa-check ml-1 text-[10px]"></i>' : ''}`; pill.onclick = () => { if (selectedTagsIds.includes(tag.id)) { selectedTagsIds.splice(selectedTagsIds.indexOf(tag.id), 1); } else { selectedTagsIds.push(tag.id); } renderClientTagsSelector(selectedTagsIds); }; container.appendChild(pill); }); container.dataset.selected = JSON.stringify(selectedTagsIds);
         }
-        
         document.getElementById('form-client').addEventListener('submit', e => { 
-            e.preventDefault(); 
-            const id = document.getElementById('client-id').value; 
-            const name = document.getElementById('client-name').value; 
-            const phone = document.getElementById('client-phone').value; 
-            const birth = document.getElementById('client-birth').value; 
-            
-            // Get selected tags
-            const tagsContainer = document.getElementById('client-tags-selector');
-            const selectedTags = tagsContainer.dataset.selected ? JSON.parse(tagsContainer.dataset.selected) : [];
-
-            if (id) { 
-                const idx = db.clients.findIndex(c => c.id == id); 
-                if(idx !== -1) { 
-                    const oldName = db.clients[idx].name; 
-                    db.clients[idx] = { id: parseInt(id), name, phone, birth, tags: selectedTags }; 
-                    if (oldName !== name) { 
-                        db.appointments.forEach(app => { if(app.client === oldName) app.client = name; }); 
-                    } 
-                } 
-            } else { 
-                const exists = db.clients.find(c => c.name.toLowerCase() === name.toLowerCase() && c.birth === birth); 
-                if(exists) { alert('Cliente já existe!'); return; } 
-                db.clients.push({ id: Date.now(), name, phone, birth, tags: selectedTags }); 
-            } 
-            
-            hasUnsaved = true; 
-            saveLocalData(); 
-            closeModal('modal-client'); 
-            renderClients(); 
-            renderAppointments(); 
-            e.target.reset(); 
-            checkUnsavedStatus(); 
+            e.preventDefault(); const id = document.getElementById('client-id').value; const name = document.getElementById('client-name').value; const phone = document.getElementById('client-phone').value; const birth = document.getElementById('client-birth').value; const tags = document.getElementById('client-tags-selector').dataset.selected ? JSON.parse(document.getElementById('client-tags-selector').dataset.selected) : [];
+            if (id) { const idx = db.clients.findIndex(c => c.id == id); if(idx !== -1) { const oldName = db.clients[idx].name; db.clients[idx] = { id: parseInt(id), name, phone, birth, tags }; if (oldName !== name) { db.appointments.forEach(app => { if(app.client === oldName) app.client = name; }); } } } else { const exists = db.clients.find(c => c.name.toLowerCase() === name.toLowerCase() && c.birth === birth); if(exists) { alert('Cliente já existe!'); return; } db.clients.push({ id: Date.now(), name, phone, birth, tags }); } 
+            hasUnsaved = true; saveLocalData(); closeModal('modal-client'); renderClients(); renderAppointments(); e.target.reset(); checkUnsavedStatus(); 
         });
-        
         document.getElementById('form-service').addEventListener('submit', e => {
-            e.preventDefault(); 
-            const type = document.getElementById('serv-type').value; 
-            const item = { 
-                id: Date.now(), 
-                name: document.getElementById('serv-name').value, 
-                price: parseFloat(document.getElementById('serv-price').value) 
-            };
-            
-            if(type === 'service') { 
-                if(!db.services) db.services=[]; 
-                db.services.push(item); 
-            } else { 
-                if(!db.extras) db.extras=[]; 
-                db.extras.push(item); 
-            }
-            
-            hasUnsaved = true; 
-            saveLocalData(); 
-            closeModal('modal-service'); 
-            renderServices(); 
-            e.target.reset(); 
-            checkUnsavedStatus();
+            e.preventDefault(); const type = document.getElementById('serv-type').value; const dur = parseInt(document.getElementById('serv-duration').value) || 60;
+            const item = { id: Date.now(), name: document.getElementById('serv-name').value, price: parseFloat(document.getElementById('serv-price').value), duration: type === 'service' ? dur : 0 };
+            if(type === 'service') { if(!db.services) db.services=[]; db.services.push(item); } else { if(!db.extras) db.extras=[]; db.extras.push(item); }
+            hasUnsaved = true; saveLocalData(); closeModal('modal-service'); renderServices(); e.target.reset(); checkUnsavedStatus();
         });
-
-        function calculateTotal() {
-            const sel = document.getElementById('app-service'); 
-            let t = 0;
-            if (sel.selectedIndex >= 0 && sel.options[sel.selectedIndex] && !sel.options[sel.selectedIndex].disabled) {
-                t = parseFloat(sel.options[sel.selectedIndex].dataset.price || 0);
-            }
-            document.querySelectorAll('.extra-checkbox:checked').forEach(cb => t += parseFloat(cb.dataset.price));
-            const deposit = parseFloat(document.getElementById('app-deposit').value) || 0;
-            const remaining = t - deposit;
-            document.getElementById('app-total-display').innerText = 'R$ ' + t.toFixed(2);
-            document.getElementById('app-remaining-display').innerText = 'R$ ' + (remaining > 0 ? remaining : 0).toFixed(2);
-            return t; 
-        }
-
+        function calculateTotal() { const sel = document.getElementById('app-service'); let t = 0; if (sel.selectedIndex >= 0 && sel.options[sel.selectedIndex] && !sel.options[sel.selectedIndex].disabled) { t = parseFloat(sel.options[sel.selectedIndex].dataset.price || 0); } document.querySelectorAll('.extra-checkbox:checked').forEach(cb => t += parseFloat(cb.dataset.price)); const dep = parseFloat(document.getElementById('app-deposit').value) || 0; document.getElementById('app-total-display').innerText = 'R$ ' + t.toFixed(2); document.getElementById('app-remaining-display').innerText = 'R$ ' + (t - dep > 0 ? t - dep : 0).toFixed(2); return t; }
         function delService(id, t) { if(confirm('Excluir?')) { if(t==='s') db.services=db.services.filter(s=>s.id!==id); else db.extras=db.extras.filter(e=>e.id!==id); hasUnsaved = true; saveLocalData(); renderServices(); checkUnsavedStatus(); } }
-        
-        function searchClients(q) { 
-            const box = document.getElementById('client-suggestions'); 
-            box.innerHTML = ''; 
-            if(q.length < 2) { box.classList.add('hidden'); return; } 
-            const m = (db.clients||[]).filter(c => c.name.toLowerCase().includes(q.toLowerCase())); 
-            if(m.length) { 
-                box.classList.remove('hidden'); 
-                m.forEach(c => { 
-                    const div = document.createElement('div'); 
-                    div.className = "p-3 hover:bg-cream-50 border-b border-cream-50 cursor-pointer"; 
-                    div.innerHTML = `<div class="font-bold text-sm text-cream-900">${c.name}</div>`; 
-                    div.onclick = () => { 
-                        document.getElementById('app-client').value=c.name; 
-                        document.getElementById('app-phone').value=c.phone; 
-                        box.classList.add('hidden'); 
-                    }; 
-                    box.appendChild(div); 
-                }); 
-            } else {
-                box.classList.add('hidden');
-            }
-        }
-        
-        function updateFinancials() { const m = document.getElementById('fin-month').value; if(!m) return; const apps = (db.appointments||[]).filter(a => a.date.startsWith(m) && a.status === 'completed').sort((a,b) => a.date.localeCompare(b.date)); document.getElementById('fin-total').innerText = 'R$ ' + apps.reduce((s, a) => s + a.price, 0).toFixed(2); const tb = document.getElementById('financial-table-body'); tb.innerHTML=''; apps.forEach(a => tb.innerHTML+=`<tr class="border-b border-cream-50 hover:bg-cream-50/50"><td class="p-4 text-cream-500 text-xs font-medium">${a.date.split('-')[2]}/${a.date.split('-')[1]}</td><td class="p-4 font-bold text-cream-800 text-xs">${a.client}</td><td class="p-4 font-mono font-bold text-gold-600 text-xs text-right">R$ ${a.price.toFixed(2)}</td></tr>`); }
-        function generateWhatsappMessages() { const c = document.getElementById('ai-output'); c.classList.remove('hidden'); const t = new Date(); t.setDate(t.getDate()+1); const dateStr = t.toLocaleDateString('pt-BR').split('/').reverse().join('-'); const apps = (db.appointments||[]).filter(a => a.date === dateStr && a.status === 'scheduled'); if(!apps.length) { document.getElementById('ai-content').innerHTML = '<p class="italic text-center text-cream-400">Agenda livre para amanhã.</p>'; return; } let html = `<p class="font-bold text-gold-700 text-xs uppercase tracking-wider mb-3">Agenda de Amanhã (${dateStr.split('-').reverse().join('/')})</p><div class="space-y-3">`; apps.forEach(a => { const msg = `Olá ${a.client.split(' ')[0]}! ✨ Passando para confirmar nosso horário de amanhã às ${a.time} para ${a.serviceName}. Posso confirmar?`; let link = `https://wa.me/?text=${encodeURIComponent(msg)}`; if(a.phone) link = `https://wa.me/55${String(a.phone).replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`; html += `<a href="${link}" target="_blank" class="block bg-cream-50 p-4 rounded-2xl border border-cream-100 flex justify-between items-center hover:bg-green-50 transition group"><div><h5 class="font-bold text-cream-900 text-sm">${a.client}</h5><span class="text-xs text-cream-500">${a.time} • ${a.serviceName}</span></div><div class="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center shadow-sm group-hover:scale-110 transition"><i class="fa-brands fa-whatsapp"></i></div></a>`; }); document.getElementById('ai-content').innerHTML = html + '</div>'; }
+        function searchClients(q) { const box = document.getElementById('client-suggestions'); box.innerHTML = ''; if(q.length < 2) { box.classList.add('hidden'); return; } const m = (db.clients||[]).filter(c => c.name.toLowerCase().includes(q.toLowerCase())); if(m.length) { box.classList.remove('hidden'); m.forEach(c => { const div = document.createElement('div'); div.className = "p-3 hover:bg-cream-50 border-b border-cream-50 cursor-pointer dark:border-dark-700 dark:hover:bg-dark-700"; div.innerHTML = `<div class="font-bold text-sm text-cream-900">${c.name}</div>`; div.onclick = () => { document.getElementById('app-client').value=c.name; document.getElementById('app-phone').value=c.phone; box.classList.add('hidden'); }; box.appendChild(div); }); } else { box.classList.add('hidden'); } }
+        function updateFinancials() { const m = document.getElementById('fin-month').value; if(!m) return; const apps = (db.appointments||[]).filter(a => a.date.startsWith(m) && a.status === 'completed').sort((a,b) => a.date.localeCompare(b.date)); document.getElementById('fin-total').innerText = 'R$ ' + apps.reduce((s, a) => s + a.price, 0).toFixed(2); const tb = document.getElementById('financial-table-body'); tb.innerHTML=''; apps.forEach(a => tb.innerHTML+=`<tr class="border-b border-cream-50 hover:bg-cream-50/50 dark:border-dark-700 dark:hover:bg-dark-700"><td class="p-4 text-cream-500 text-xs font-medium dark:text-cream-400">${a.date.split('-')[2]}/${a.date.split('-')[1]}</td><td class="p-4 font-bold text-cream-800 text-xs dark:text-cream-200">${a.client}</td><td class="p-4 font-mono font-bold text-gold-600 text-xs text-right">R$ ${a.price.toFixed(2)}</td></tr>`); }
+        function generateWhatsappMessages() { const c = document.getElementById('ai-output'); c.classList.remove('hidden'); const t = new Date(); t.setDate(t.getDate()+1); const dateStr = t.toLocaleDateString('pt-BR').split('/').reverse().join('-'); const apps = (db.appointments||[]).filter(a => a.date === dateStr && a.status === 'scheduled'); if(!apps.length) { document.getElementById('ai-content').innerHTML = '<p class="italic text-center text-cream-400">Agenda livre.</p>'; return; } let html = `<p class="font-bold text-gold-700 text-xs uppercase tracking-wider mb-3">Amanhã (${dateStr.split('-').reverse().join('/')})</p><div class="space-y-3">`; apps.forEach(a => { const msg = `Olá ${a.client.split(' ')[0]}! ✨ Confirmando nosso horário amanhã às ${a.time} (${a.serviceName}). Posso confirmar?`; let link = `https://wa.me/?text=${encodeURIComponent(msg)}`; if(a.phone) link = `https://wa.me/55${String(a.phone).replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`; html += `<a href="${link}" target="_blank" class="block bg-cream-50 p-4 rounded-2xl border border-cream-100 flex justify-between items-center hover:bg-green-50 transition group dark:bg-dark-900 dark:border-dark-700 dark:hover:bg-green-900/30"><div><h5 class="font-bold text-cream-900 text-sm">${a.client}</h5><span class="text-xs text-cream-500">${a.time} • ${a.serviceName}</span></div><div class="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center shadow-sm group-hover:scale-110 transition"><i class="fa-brands fa-whatsapp"></i></div></a>`; }); document.getElementById('ai-content').innerHTML = html + '</div>'; }
+        function generateMaintenanceMessages() { const c = document.getElementById('ai-output'); c.classList.remove('hidden'); const today = new Date(); const uniqueClients = [...new Set(db.clients.map(c => c.name))]; let candidates = []; uniqueClients.forEach(name => { const apps = db.appointments.filter(a => a.client === name && a.status === 'completed').sort((a,b) => new Date(b.date) - new Date(a.date)); if(apps.length) { const last = apps[0]; const diff = Math.ceil(Math.abs(today - new Date(last.date)) / (86400000)); if (diff > 20) { if (!db.appointments.some(a => a.client === name && a.status === 'scheduled' && new Date(a.date) >= today)) { const cli = db.clients.find(cl => cl.name === name); candidates.push({ name, days: diff, service: last.serviceName, phone: cli?cli.phone:null }); } } } }); if(!candidates.length) { document.getElementById('ai-content').innerHTML = '<p class="italic text-center text-cream-400">Ninguém para retorno.</p>'; return; } let html = `<p class="font-bold text-purple-700 text-xs uppercase tracking-wider mb-3">Retorno</p><div class="space-y-3">`; candidates.forEach(c => { const msg = `Oi ${c.name.split(' ')[0]}! 💖 Fazem ${c.days} dias das unhas (${c.service}). Vamos agendar a manutenção?`; let link = `https://wa.me/?text=${encodeURIComponent(msg)}`; if(c.phone) link = `https://wa.me/55${String(c.phone).replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`; html += `<a href="${link}" target="_blank" class="block bg-cream-50 p-4 rounded-2xl border border-cream-100 flex justify-between items-center hover:bg-purple-50 transition group dark:bg-dark-900 dark:border-dark-700 dark:hover:bg-purple-900/30"><div><h5 class="font-bold text-cream-900 text-sm">${c.name}</h5><span class="text-xs text-red-400 font-bold">Ausente ${c.days}d</span></div><div class="w-8 h-8 bg-purple-500 text-white rounded-full flex items-center justify-center shadow-sm group-hover:scale-110 transition"><i class="fa-brands fa-whatsapp"></i></div></a>`; }); document.getElementById('ai-content').innerHTML = html + '</div>'; }
 
-        function generateMaintenanceMessages() { 
-            const c = document.getElementById('ai-output'); 
-            c.classList.remove('hidden'); 
-            
-            let candidates = [];
-            const today = new Date();
-            const uniqueClients = [...new Set(db.clients.map(c => c.name))];
-            
-            uniqueClients.forEach(clientName => {
-                const clientApps = db.appointments
-                    .filter(a => a.client === clientName && a.status === 'completed')
-                    .sort((a,b) => new Date(b.date) - new Date(a.date));
-                
-                if(clientApps.length > 0) {
-                    const lastApp = clientApps[0];
-                    const lastDate = new Date(lastApp.date);
-                    const diffTime = Math.abs(today - lastDate);
-                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-                    
-                    if (diffDays > 20) {
-                        const hasFuture = db.appointments.some(a => a.client === clientName && a.status === 'scheduled' && new Date(a.date) >= today);
-                        if (!hasFuture) {
-                            const clientData = db.clients.find(c => c.name === clientName);
-                            candidates.push({ 
-                                name: clientName, 
-                                days: diffDays, 
-                                service: lastApp.serviceName, 
-                                phone: clientData ? clientData.phone : null
-                            });
-                        }
-                    }
-                }
-            });
-
-            if(!candidates.length) { 
-                document.getElementById('ai-content').innerHTML = '<p class="italic text-center text-cream-400">Nenhuma cliente precisando de manutenção hoje.</p>'; 
-                return; 
-            } 
-            
-            let html = `<p class="font-bold text-purple-700 text-xs uppercase tracking-wider mb-3">Lista de Retorno</p><div class="space-y-3">`; 
-            candidates.forEach(c => { 
-                const msg = `Oi ${c.name.split(' ')[0]}! 💖 Já fazem ${c.days} dias das suas unhas (${c.service}). Vamos agendar a manutenção para manter elas lindas?`; 
-                let link = `https://wa.me/?text=${encodeURIComponent(msg)}`; 
-                if(c.phone) link = `https://wa.me/55${String(c.phone).replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`; 
-                html += `<a href="${link}" target="_blank" class="block bg-cream-50 p-4 rounded-2xl border border-cream-100 flex justify-between items-center hover:bg-purple-50 transition group"><div><h5 class="font-bold text-cream-900 text-sm">${c.name}</h5><span class="text-xs text-red-400 font-bold">Ausente há ${c.days} dias</span></div><div class="w-8 h-8 bg-purple-500 text-white rounded-full flex items-center justify-center shadow-sm group-hover:scale-110 transition"><i class="fa-brands fa-whatsapp"></i></div></a>`; 
-            }); 
-            document.getElementById('ai-content').innerHTML = html + '</div>'; 
-        }
-
-        // ================= CLIENT LIST REDESIGN WITH TAGS =================
         function renderClients() {
-            const list = document.getElementById('clients-list');
-            const q = document.getElementById('search-client-list').value.toLowerCase();
-            list.innerHTML = '';
-            
+            const list = document.getElementById('clients-list'); const q = document.getElementById('search-client-list').value.toLowerCase(); list.innerHTML = '';
             (db.clients||[]).filter(c => c.name.toLowerCase().includes(q)).sort((a,b) => a.name.localeCompare(b.name)).forEach(c => {
                 const visits = db.appointments.filter(a => a.client === c.name && a.status === 'completed').length;
-                
-                // Status de ausência
-                let statusHtml = '';
-                const lastApp = db.appointments
-                    .filter(a => a.client === c.name && a.status === 'completed')
-                    .sort((a,b) => a.date < b.date ? 1 : -1)[0];
-                
-                if(lastApp) {
-                    const lastDate = new Date(lastApp.date);
-                    const today = new Date();
-                    const diffTime = Math.abs(today - lastDate);
-                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-                    
-                    if(diffDays > 25) {
-                        statusHtml = `<span class="text-[9px] bg-red-50 text-red-500 px-1.5 py-0.5 rounded-md border border-red-100 font-bold ml-1 inline-block">Ausente ${diffDays}d</span>`;
-                    }
-                }
-
-                const birthIcon = c.birth ? `<i class="fa-solid fa-cake-candles text-gold-400 ml-2 text-xs" title="${c.birth}"></i>` : '';
-                const whatsappBtn = c.phone ? `<a href="https://wa.me/55${String(c.phone).replace(/\D/g,'')}" target="_blank" class="text-green-500 hover:text-green-700 tooltip-action" title="WhatsApp"><i class="fa-brands fa-whatsapp text-xl"></i></a>` : '<span class="text-gray-300"><i class="fa-brands fa-whatsapp text-xl"></i></span>';
-                
-                // TAGS DO CLIENTE
+                let statusHtml = ''; const lastApp = db.appointments.filter(a => a.client === c.name && a.status === 'completed').sort((a,b) => a.date < b.date ? 1 : -1)[0];
+                if(lastApp) { const diff = Math.ceil(Math.abs(new Date() - new Date(lastApp.date)) / 86400000); if(diff > 25) statusHtml = `<span class="text-[9px] bg-red-50 text-red-500 px-1.5 py-0.5 rounded-md border border-red-100 font-bold ml-1 inline-block dark:bg-red-900/30 dark:border-red-800 dark:text-red-300">Ausente ${diff}d</span>`; }
+                const whatsappBtn = c.phone ? `<a href="https://wa.me/55${String(c.phone).replace(/\D/g,'')}" target="_blank" class="text-green-500 hover:text-green-700 tooltip-action dark:text-green-400" title="WhatsApp"><i class="fa-brands fa-whatsapp text-xl"></i></a>` : '<span class="text-gray-300 dark:text-gray-600"><i class="fa-brands fa-whatsapp text-xl"></i></span>';
                 const tagsHtml = getClientTagsHtml(c.tags);
-
-                list.innerHTML += `
-                    <div class="bg-white rounded-2xl shadow-soft border border-cream-100 overflow-hidden group hover:border-gold-200 transition-all">
-                        <div class="p-4 flex justify-between items-start">
-                            <div>
-                                <div class="flex items-center gap-2 flex-wrap">
-                                    <h4 class="font-serif font-bold text-cream-900 text-lg">${c.name}</h4>
-                                    ${birthIcon}
-                                    ${statusHtml}
-                                </div>
-                                <div class="mt-1 mb-1">${tagsHtml}</div>
-                                <p class="text-xs text-gray-400 flex items-center gap-1"><i class="fa-solid fa-phone text-[10px]"></i> ${c.phone || 'Sem telefone'}</p>
-                            </div>
-                            <div class="bg-gold-50 px-3 py-1.5 rounded-lg text-center min-w-[3.5rem] ml-2">
-                                <span class="block text-lg font-bold text-gold-700 leading-none">${visits}</span>
-                                <span class="text-[9px] text-gold-400 uppercase font-bold tracking-wider">Visitas</span>
-                            </div>
-                        </div>
-
-                        <div class="bg-cream-50/50 px-4 py-3 border-t border-cream-100 flex items-center justify-between">
-                            <div class="flex items-center gap-5">
-                                <button onclick="rescheduleClient('${c.name}')" class="text-gold-600 hover:text-gold-800 tooltip-action" title="Reagendar">
-                                    <i class="fa-solid fa-calendar-plus text-xl"></i>
-                                </button>
-                                ${whatsappBtn}
-                            </div>
-                            
-                            <div class="flex items-center gap-3 border-l border-cream-200 pl-4">
-                                <button onclick="openEditClient(${c.id})" class="text-gray-400 hover:text-blue-500"><i class="fa-solid fa-pen"></i></button>
-                                <button onclick="delClient(${c.id})" class="text-gray-400 hover:text-red-500"><i class="fa-solid fa-trash"></i></button>
-                            </div>
-                        </div>
-                    </div>`;
+                list.innerHTML += `<div class="bg-white rounded-2xl shadow-soft border border-cream-100 overflow-hidden group hover:border-gold-200 transition-all dark:bg-dark-800 dark:border-dark-700"><div class="p-4 flex justify-between items-start"><div><div class="flex items-center gap-2 flex-wrap"><h4 class="font-serif font-bold text-cream-900 text-lg">${c.name}</h4>${c.birth ? '<i class="fa-solid fa-cake-candles text-gold-400 ml-2 text-xs"></i>' : ''}${statusHtml}</div><div class="mt-1 mb-1">${tagsHtml}</div><p class="text-xs text-gray-400 flex items-center gap-1"><i class="fa-solid fa-phone text-[10px]"></i> ${c.phone || 'Sem telefone'}</p></div><div class="bg-gold-50 px-3 py-1.5 rounded-lg text-center min-w-[3.5rem] ml-2 dark:bg-gold-900"><span class="block text-lg font-bold text-gold-700 leading-none dark:text-gold-400">${visits}</span><span class="text-[9px] text-gold-400 uppercase font-bold tracking-wider">Visitas</span></div></div><div class="bg-cream-50/50 px-4 py-3 border-t border-cream-100 flex items-center justify-between dark:bg-dark-900/50 dark:border-dark-700"><div class="flex items-center gap-5"><button onclick="rescheduleClient('${c.name}')" class="text-gold-600 hover:text-gold-800 tooltip-action dark:text-gold-400" title="Reagendar"><i class="fa-solid fa-calendar-plus text-xl"></i></button>${whatsappBtn}</div><div class="flex items-center gap-3 border-l border-cream-200 pl-4 dark:border-dark-600"><button onclick="openEditClient(${c.id})" class="text-gray-400 hover:text-blue-500"><i class="fa-solid fa-pen"></i></button><button onclick="delClient(${c.id})" class="text-gray-400 hover:text-red-500"><i class="fa-solid fa-trash"></i></button></div></div></div>`;
             });
         }
+        function delClient(id) { if(confirm('Remover?')) { db.clients = db.clients.filter(c => c.id !== id); hasUnsaved = true; saveLocalData(); renderClients(); checkUnsavedStatus(); } }
 
-        function delClient(id) { 
-            if(confirm('Remover?')) { 
-                db.clients = db.clients.filter(c => c.id !== id); 
-                hasUnsaved = true; 
-                saveLocalData(); 
-                renderClients(); 
-                checkUnsavedStatus(); 
-            } 
-        }
-
-        const style = document.createElement('style');
-        style.innerHTML = `@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } } .animate-slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; } @keyframes fadeInUp { from { opacity:0; transform: scale(0.95); } to { opacity:1; transform: scale(1); } } .animate-fade-in-up { animation: fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }`;
-        document.head.appendChild(style);
+        const style = document.createElement('style'); style.innerHTML = `@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } } .animate-slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; } @keyframes fadeInUp { from { opacity:0; transform: scale(0.95); } to { opacity:1; transform: scale(1); } } .animate-fade-in-up { animation: fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }`; document.head.appendChild(style);
     </script>
 </body>
 </html>
