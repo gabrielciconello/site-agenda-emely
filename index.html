@@ -59,6 +59,11 @@
         
         @keyframes pulse-red { 0% { background-color: #fee2e2; } 50% { background-color: #fecaca; } 100% { background-color: #fee2e2; } }
         .animate-pulse-red { animation: pulse-red 2s infinite; }
+
+        /* Estilo para o input de arquivo invisível */
+        .file-input { display: none; }
+        .upload-btn { display: flex; align-items: center; justify-content: center; width: 100%; height: 48px; border: 2px dashed #DDAF50; border-radius: 12px; color: #AA8C2C; font-weight: bold; font-size: 12px; cursor: pointer; background: #FCF9EE; transition: all 0.2s; }
+        .upload-btn:active { background: #EFDEAA; }
     </style>
 </head>
 <body class="bg-cream-50">
@@ -128,7 +133,7 @@
                 <button onclick="openClientModal()" class="bg-gold-600 text-white w-10 h-10 rounded-full shadow-sm flex items-center justify-center active:scale-95 transition"><i class="fa-solid fa-plus"></i></button>
             </div>
             <input type="text" id="search-client-list" placeholder="Buscar cliente..." class="w-full h-12 input-elegant rounded-xl px-4 mb-4 outline-none" oninput="renderClients()">
-            <div id="clients-list" class="space-y-3 pb-20"></div>
+            <div id="clients-list" class="space-y-4 pb-20"></div>
         </div>
 
         <!-- VIEW: SERVIÇOS -->
@@ -344,6 +349,54 @@
             </form>
         </div>
     </div>
+    
+    <!-- NOVO: MODAL GALERIA -->
+    <div id="modal-gallery" class="fixed inset-0 bg-black/40 z-50 hidden flex-col animate-slide-up backdrop-blur-sm">
+        <div class="mt-auto bg-white rounded-t-[32px] h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+            <!-- Header Galeria -->
+            <div class="p-6 border-b border-cream-100 flex justify-between items-center bg-white z-10">
+                <div>
+                    <p class="text-[10px] text-gold-600 uppercase tracking-[0.2em] font-bold">Diário da Cliente</p>
+                    <h3 class="font-serif font-bold text-xl text-cream-900" id="gallery-client-name">Nome Cliente</h3>
+                </div>
+                <button onclick="closeModal('modal-gallery')" class="w-10 h-10 flex items-center justify-center bg-cream-50 rounded-full text-cream-400 hover:text-gold-600"><i class="fa-solid fa-times"></i></button>
+            </div>
+
+            <!-- Conteúdo Scroll -->
+            <div class="flex-1 overflow-y-auto p-6 bg-cream-50">
+                
+                <!-- Formulário de Upload -->
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-cream-100 mb-6">
+                    <h4 class="text-xs font-bold text-cream-900 mb-3 uppercase tracking-wide">Adicionar Novo Registro</h4>
+                    <input type="hidden" id="gallery-client-id">
+                    
+                    <!-- Input de Arquivo Invisível + Botão Customizado -->
+                    <input type="file" id="gallery-file" accept="image/*" class="file-input" onchange="handleImagePreview(this)">
+                    <label for="gallery-file" class="upload-btn mb-3" id="upload-label">
+                        <i class="fa-solid fa-camera mr-2"></i> Tirar Foto ou Escolher
+                    </label>
+                    
+                    <!-- Preview da Imagem -->
+                    <div id="image-preview-container" class="hidden mb-3 relative">
+                        <img id="image-preview" class="w-full h-48 object-cover rounded-xl border border-cream-200">
+                        <button onclick="clearImage()" class="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center shadow-md"><i class="fa-solid fa-times"></i></button>
+                    </div>
+
+                    <textarea id="gallery-note" class="w-full input-elegant rounded-xl p-3 text-sm mb-3" rows="2" placeholder="O que foi feito hoje? (Ex: Fibra de vidro, cor vermelha...)"></textarea>
+                    
+                    <button onclick="saveGalleryEntry()" class="w-full h-12 bg-gold-600 text-white rounded-xl font-bold text-xs uppercase tracking-wide shadow-md flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-save"></i> Salvar Registro
+                    </button>
+                </div>
+
+                <!-- Linha do Tempo (Lista de Fotos) -->
+                <div id="gallery-timeline" class="space-y-6">
+                    <!-- Os itens serão inseridos aqui via JS -->
+                </div>
+
+            </div>
+        </div>
+    </div>
 
     <!-- MODAL SERVIÇO -->
     <div id="modal-service" class="fixed inset-0 bg-black/40 z-50 hidden items-center justify-center backdrop-blur-sm px-4">
@@ -365,6 +418,7 @@
         let db = { services: [{id:1,name:'Manicure',price:35},{id:2,name:'Gel',price:70},{id:3,name:'Blindagem',price:90}], extras: [{id:101,name:'Francesa',price:15}], appointments: [], clients: [] };
         let selectedDate = new Date().toISOString().split('T')[0];
         let hasUnsaved = false;
+        let currentImageBase64 = null; // Armazena a imagem atual temporariamente
 
         window.onload = () => {
             loadLocalData();
@@ -429,13 +483,11 @@
                 d.setDate(d.getDate() + i);
                 const dateStr = d.toLocaleDateString('pt-BR').split('/').reverse().join('-');
                 
-                // CONTABILIZAÇÃO DAS BOLINHAS
                 const countScheduled = (db.appointments||[]).filter(a => a.date === dateStr && a.status === 'scheduled').length;
                 const countCompleted = (db.appointments||[]).filter(a => a.date === dateStr && a.status === 'completed').length;
                 
                 const active = dateStr === selectedDate ? 'active' : '';
                 
-                // Bolinhas Visuais Lado a Lado
                 let badgesHtml = '<div class="badge-container">';
                 if (countScheduled > 0) badgesHtml += `<div class="badge badge-pending">${countScheduled}</div>`;
                 if (countCompleted > 0) badgesHtml += `<div class="badge badge-completed">${countCompleted}</div>`;
@@ -570,7 +622,13 @@
             const serv = db.services.find(s => s.id == sel.value);
             if (!serv) return alert('Erro: Serviço não encontrado. Atualize a página.');
 
-            const extras = Array.from(document.querySelectorAll('.extra-checkbox:checked')).map(cb => db.extras.find(e => e.id == cb.value).name);
+            // Lógica segura para capturar os extras selecionados
+            const extrasCheckboxes = document.querySelectorAll('.extra-checkbox:checked');
+            const extras = Array.from(extrasCheckboxes).map(cb => {
+                const foundExtra = db.extras.find(e => e.id == cb.value);
+                return foundExtra ? foundExtra.name : null;
+            }).filter(item => item !== null);
+
             const totalService = calculateTotal();
             const deposit = parseFloat(document.getElementById('app-deposit').value) || 0;
 
@@ -623,6 +681,32 @@
             e.target.reset(); 
             checkUnsavedStatus(); 
         });
+        
+        // *** Correção aqui: Event Listener para o form de Serviço/Extra ***
+        document.getElementById('form-service').addEventListener('submit', e => {
+            e.preventDefault(); 
+            const type = document.getElementById('serv-type').value; 
+            const item = { 
+                id: Date.now(), 
+                name: document.getElementById('serv-name').value, 
+                price: parseFloat(document.getElementById('serv-price').value) 
+            };
+            
+            if(type === 'service') { 
+                if(!db.services) db.services=[]; 
+                db.services.push(item); 
+            } else { 
+                if(!db.extras) db.extras=[]; 
+                db.extras.push(item); 
+            }
+            
+            hasUnsaved = true; 
+            saveLocalData(); 
+            closeModal('modal-service'); 
+            renderServices(); 
+            e.target.reset(); 
+            checkUnsavedStatus();
+        });
 
         function calculateTotal() {
             const sel = document.getElementById('app-service'); 
@@ -674,11 +758,9 @@
             let candidates = [];
             const today = new Date();
             
-            // Pega clientes únicos
             const uniqueClients = [...new Set(db.clients.map(c => c.name))];
             
             uniqueClients.forEach(clientName => {
-                // Pega último agendamento CONCLUÍDO
                 const clientApps = db.appointments
                     .filter(a => a.client === clientName && a.status === 'completed')
                     .sort((a,b) => new Date(b.date) - new Date(a.date));
@@ -687,16 +769,13 @@
                     const lastApp = clientApps[0];
                     const lastDate = new Date(lastApp.date);
                     
-                    // Diferença em dias
                     const diffTime = Math.abs(today - lastDate);
                     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                     
-                    // Regra: > 20 dias E não tem agendamento futuro
                     if (diffDays > 20) {
                         const hasFuture = db.appointments.some(a => a.client === clientName && a.status === 'scheduled' && new Date(a.date) >= today);
                         
                         if (!hasFuture) {
-                            // Busca dados do cliente para pegar o telefone
                             const clientData = db.clients.find(c => c.name === clientName);
                             candidates.push({ 
                                 name: clientName, 
@@ -727,6 +806,141 @@
             document.getElementById('ai-content').innerHTML = html + '</div>'; 
         }
 
+        // === LÓGICA DE GALERIA ===
+        
+        function openGallery(clientId) {
+            const client = db.clients.find(c => c.id === clientId);
+            if(!client) return;
+
+            document.getElementById('gallery-client-id').value = clientId;
+            document.getElementById('gallery-client-name').innerText = client.name;
+            
+            // Limpa form
+            document.getElementById('image-preview-container').classList.add('hidden');
+            document.getElementById('gallery-note').value = '';
+            currentImageBase64 = null;
+
+            renderGallery(client);
+            openModal('modal-gallery');
+        }
+
+        function renderGallery(client) {
+            const container = document.getElementById('gallery-timeline');
+            container.innerHTML = '';
+
+            if(!client.gallery || client.gallery.length === 0) {
+                container.innerHTML = '<p class="text-center text-cream-400 italic py-10">Nenhuma foto registrada.</p>';
+                return;
+            }
+
+            // Ordena da mais recente para a mais antiga
+            const sortedGallery = [...client.gallery].sort((a,b) => b.date.localeCompare(a.date));
+
+            sortedGallery.forEach(item => {
+                const dateFormatted = item.date.split('-').reverse().join('/');
+                
+                container.innerHTML += `
+                    <div class="relative border-l-2 border-cream-200 pl-4 ml-2">
+                        <div class="absolute -left-[9px] top-0 w-4 h-4 bg-gold-400 rounded-full border-2 border-white"></div>
+                        <span class="text-xs font-bold text-gold-600 mb-1 block">${dateFormatted}</span>
+                        
+                        <div class="bg-white p-3 rounded-xl border border-cream-100 shadow-sm">
+                            <img src="${item.image}" class="w-full h-48 object-cover rounded-lg mb-2 cursor-pointer hover:opacity-90 transition" onclick="window.open(this.src)">
+                            ${item.note ? `<p class="text-sm text-cream-800 italic">"${item.note}"</p>` : ''}
+                            <button onclick="deleteGalleryItem(${client.id}, ${item.id})" class="text-[10px] text-red-400 mt-2 hover:underline">Excluir</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function handleImagePreview(input) {
+            const file = input.files[0];
+            if(!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.src = e.target.result;
+                
+                img.onload = function() {
+                    // COMPRESSÃO DE IMAGEM (Crucial para LocalStorage)
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Redimensiona para max 800px de largura
+                    const maxWidth = 800;
+                    const scaleSize = maxWidth / img.width;
+                    canvas.width = maxWidth;
+                    canvas.height = img.height * scaleSize;
+
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    
+                    // Converte para JPEG com qualidade 0.7
+                    const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+                    
+                    currentImageBase64 = compressedBase64;
+                    
+                    // Mostra preview
+                    document.getElementById('image-preview').src = compressedBase64;
+                    document.getElementById('image-preview-container').classList.remove('hidden');
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearImage() {
+            document.getElementById('gallery-file').value = '';
+            document.getElementById('image-preview-container').classList.add('hidden');
+            currentImageBase64 = null;
+        }
+
+        function saveGalleryEntry() {
+            if(!currentImageBase64) return alert('Selecione uma foto!');
+            
+            const clientId = parseInt(document.getElementById('gallery-client-id').value);
+            const clientIndex = db.clients.findIndex(c => c.id === clientId);
+            
+            if(clientIndex === -1) return;
+
+            if(!db.clients[clientIndex].gallery) db.clients[clientIndex].gallery = [];
+
+            const newEntry = {
+                id: Date.now(),
+                date: new Date().toISOString().split('T')[0],
+                image: currentImageBase64,
+                note: document.getElementById('gallery-note').value
+            };
+
+            db.clients[clientIndex].gallery.push(newEntry);
+            
+            hasUnsaved = true;
+            saveLocalData();
+            
+            // Atualiza a visualização
+            renderGallery(db.clients[clientIndex]);
+            
+            // Limpa o form
+            clearImage();
+            document.getElementById('gallery-note').value = '';
+            
+            checkUnsavedStatus();
+        }
+
+        function deleteGalleryItem(clientId, itemId) {
+            if(!confirm('Apagar foto?')) return;
+            
+            const clientIndex = db.clients.findIndex(c => c.id === clientId);
+            if(clientIndex === -1) return;
+
+            db.clients[clientIndex].gallery = db.clients[clientIndex].gallery.filter(item => item.id !== itemId);
+            
+            hasUnsaved = true;
+            saveLocalData();
+            renderGallery(db.clients[clientIndex]);
+            checkUnsavedStatus();
+        }
+
         function openModal(id) { document.getElementById(id).classList.remove('hidden'); document.getElementById(id).classList.add('flex'); }
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); document.getElementById(id).classList.remove('flex'); }
         function saveLocalData() { localStorage.setItem('emelyData', JSON.stringify(db)); }
@@ -736,7 +950,7 @@
         async function syncDownload() { const u=localStorage.getItem('emelyCloudUrl'); if(!u) return alert('Sem URL'); if(!confirm('Substituir dados locais?')) return; const b=document.getElementById('btn-download'); b.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i>'; try { const r=await fetch(u); const d=await r.json(); if(d) { db=d; hasUnsaved = false; saveLocalData(); location.reload(); } } catch(e){alert('Erro');} finally {b.innerHTML='<i class="fa-solid fa-cloud-arrow-down"></i> Baixar';} }
 
         // ============================================================
-        // FUNÇÕES QUE ESTAVAM FALTANDO OU COM ERRO
+        // FUNÇÕES REFEITAS PARA O NOVO DESIGN DO CARTÃO
         // ============================================================
 
         function renderClients() {
@@ -760,33 +974,53 @@
                     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
                     
                     if(diffDays > 25) {
-                        // REVISADO: Layout alinhado à direita, abaixo dos ícones, estilo discreto
-                        statusHtml = `<div class="text-[10px] text-red-400 font-medium mt-1"><i class="fa-solid fa-clock-rotate-left mr-1"></i>Ausente há ${diffDays} dias</div>`;
+                        // STATUS NOVO: Abaixo do nome
+                        statusHtml = `<span class="text-[10px] bg-red-50 text-red-500 px-2 py-0.5 rounded-md border border-red-100 font-bold ml-0 mt-1 inline-block">Ausente há ${diffDays} dias</span>`;
                     }
                 }
 
                 const birthIcon = c.birth ? `<i class="fa-solid fa-cake-candles text-gold-400 ml-2 text-xs" title="${c.birth}"></i>` : '';
-                const zapBtn = c.phone ? `<a href="https://wa.me/55${c.phone.replace(/\D/g,'')}" target="_blank" class="w-8 h-8 rounded-full bg-green-50 text-green-600 flex items-center justify-center"><i class="fa-brands fa-whatsapp text-sm"></i></a>` : '';
+                const whatsappBtn = c.phone 
+                    ? `<a href="https://wa.me/55${c.phone.replace(/\D/g,'')}" target="_blank" class="text-green-500 hover:text-green-700 tooltip-action" title="WhatsApp"><i class="fa-brands fa-whatsapp text-xl"></i></a>` 
+                    : '<span class="text-gray-300"><i class="fa-brands fa-whatsapp text-xl"></i></span>';
                 
-                // REVISADO: Estrutura em Colunas (Esquerda: Info / Direita: Ações + Status)
+                // CARTÃO REDESENHADO (v19)
                 list.innerHTML += `
-                    <div class="bg-white p-4 rounded-2xl shadow-soft border border-cream-100 flex justify-between items-start">
-                        <div class="self-center">
-                            <h4 class="font-serif font-bold text-cream-900 text-lg flex items-center">${c.name} ${birthIcon}</h4>
-                            <p class="text-xs text-gray-400 mt-0.5">${c.phone||'-'}</p>
-                        </div>
-                        
-                        <div class="flex flex-col items-end">
-                            <div class="flex items-center gap-3">
-                                ${zapBtn}
-                                <button onclick="rescheduleClient('${c.name}')" class="w-8 h-8 rounded-full bg-gold-100 text-gold-700 flex items-center justify-center hover:bg-gold-200 transition" title="Agendar Novamente">
-                                    <i class="fa-solid fa-calendar-plus text-sm"></i>
-                                </button>
-                                <div class="flex flex-col items-center px-2 border-l border-cream-100"><span class="text-lg font-bold text-gold-600 leading-none">${visits}</span><span class="text-[8px] text-gray-300 uppercase">Visitas</span></div>
-                                <button onclick="openEditClient(${c.id})" class="text-cream-300 hover:text-gold-500 p-1"><i class="fa-solid fa-pen text-sm"></i></button>
-                                <button onclick="delClient(${c.id})" class="text-cream-300 hover:text-red-400 p-1"><i class="fa-solid fa-trash text-sm"></i></button>
+                    <div class="bg-white rounded-2xl shadow-soft border border-cream-100 overflow-hidden group hover:border-gold-200 transition-all">
+                        <!-- Parte Superior: Informações -->
+                        <div class="p-4 flex justify-between items-start">
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <h4 class="font-serif font-bold text-cream-900 text-lg">${c.name}</h4>
+                                    ${birthIcon}
+                                </div>
+                                <p class="text-xs text-gray-400 mt-0.5 flex items-center gap-1"><i class="fa-solid fa-phone text-[10px]"></i> ${c.phone || 'Sem telefone'}</p>
+                                ${statusHtml}
                             </div>
-                            ${statusHtml}
+                            <div class="bg-gold-50 px-3 py-1.5 rounded-lg text-center min-w-[3.5rem]">
+                                <span class="block text-lg font-bold text-gold-700 leading-none">${visits}</span>
+                                <span class="text-[9px] text-gold-400 uppercase font-bold tracking-wider">Visitas</span>
+                            </div>
+                        </div>
+
+                        <!-- Parte Inferior: Barra de Ações -->
+                        <div class="bg-cream-50/50 px-4 py-3 border-t border-cream-100 flex items-center justify-between">
+                            <div class="flex items-center gap-5">
+                                <!-- Ações de Dia a Dia -->
+                                <button onclick="rescheduleClient('${c.name}')" class="text-gold-600 hover:text-gold-800 tooltip-action" title="Reagendar">
+                                    <i class="fa-solid fa-calendar-plus text-xl"></i>
+                                </button>
+                                ${whatsappBtn}
+                                <button onclick="openGallery(${c.id})" class="text-purple-500 hover:text-purple-700 tooltip-action" title="Galeria">
+                                    <i class="fa-solid fa-camera text-xl"></i>
+                                </button>
+                            </div>
+                            
+                            <div class="flex items-center gap-3 border-l border-cream-200 pl-4">
+                                <!-- Ações de Gestão -->
+                                <button onclick="openEditClient(${c.id})" class="text-gray-400 hover:text-blue-500"><i class="fa-solid fa-pen"></i></button>
+                                <button onclick="delClient(${c.id})" class="text-gray-400 hover:text-red-500"><i class="fa-solid fa-trash"></i></button>
+                            </div>
                         </div>
                     </div>`;
             });
