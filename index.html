@@ -8,7 +8,6 @@
     <meta name="apple-mobile-web-app-title" content="Emely Nails">
     <title>Emely - Nail Designer</title>
     
-    <!-- Ícone -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23D4AF37;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23AA8C2C;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' fill='%23FAF7F0' rx='25'/%3E%3Cpath d='M50 20 L80 45 L50 85 L20 45 Z' fill='url(%23grad)'/%3E%3C/svg%3E">
     
     <script src="https://cdn.tailwindcss.com"></script>
@@ -59,11 +58,13 @@
         
         @keyframes pulse-red { 0% { background-color: #fee2e2; } 50% { background-color: #fecaca; } 100% { background-color: #fee2e2; } }
         .animate-pulse-red { animation: pulse-red 2s infinite; }
+
+        /* Estilo das Tags */
+        .tag-pill { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 99px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.02em; color: #2E2B22; border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
     </style>
 </head>
 <body class="bg-cream-50">
 
-    <!-- Header -->
     <header class="bg-white px-4 py-5 z-30 flex justify-between items-center flex-shrink-0 border-b border-cream-200">
         <div>
             <h1 class="font-serif font-bold text-2xl text-cream-900 tracking-tight">Emely</h1>
@@ -74,12 +75,9 @@
         </button>
     </header>
 
-    <!-- Main Content -->
     <main class="flex-1 overflow-y-auto overflow-x-hidden pb-32 no-scrollbar" id="main-scroll">
         
-        <!-- VIEW: AGENDA -->
         <div id="view-agenda" class="view-section fade-in">
-            <!-- Calendário -->
             <div class="pt-4 pb-4 mb-2 sticky top-0 z-20 bg-cream-50/95 backdrop-blur-sm border-b border-cream-200">
                 <div class="flex justify-between items-center px-4 mb-4">
                     <div class="flex items-center gap-3">
@@ -121,17 +119,18 @@
             </div>
         </div>
 
-        <!-- VIEW: CLIENTES -->
         <div id="view-clients" class="view-section hidden fade-in px-4 pt-6">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-serif font-bold text-cream-900">Clientes</h2>
-                <button onclick="openClientModal()" class="bg-gold-600 text-white w-10 h-10 rounded-full shadow-sm flex items-center justify-center active:scale-95 transition"><i class="fa-solid fa-plus"></i></button>
+                <div class="flex gap-2">
+                    <button onclick="openTagsModal()" class="bg-white border border-cream-300 text-cream-600 w-10 h-10 rounded-full shadow-sm flex items-center justify-center active:scale-95 transition hover:bg-cream-50" title="Gerenciar Etiquetas"><i class="fa-solid fa-tags"></i></button>
+                    <button onclick="openClientModal()" class="bg-gold-600 text-white w-10 h-10 rounded-full shadow-sm flex items-center justify-center active:scale-95 transition"><i class="fa-solid fa-plus"></i></button>
+                </div>
             </div>
             <input type="text" id="search-client-list" placeholder="Buscar cliente..." class="w-full h-12 input-elegant rounded-xl px-4 mb-4 outline-none" oninput="renderClients()">
             <div id="clients-list" class="space-y-4 pb-20"></div>
         </div>
 
-        <!-- VIEW: SERVIÇOS -->
         <div id="view-servicos" class="view-section hidden fade-in px-4 pt-6">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-serif font-bold text-cream-900">Catálogo</h2>
@@ -143,7 +142,6 @@
             </div>
         </div>
 
-        <!-- VIEW: FINANCEIRO -->
         <div id="view-financeiro" class="view-section hidden fade-in px-4 pt-6">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-serif font-bold text-cream-900">Caixa</h2>
@@ -163,16 +161,13 @@
             </div>
         </div>
 
-        <!-- VIEW: IA -->
         <div id="view-ia" class="view-section hidden fade-in px-4 pt-6">
             <div class="text-center mb-8">
                 <h2 class="text-2xl font-serif font-bold text-cream-900">Assistente</h2>
                 <p class="text-sm text-cream-500">Automação e inteligência.</p>
             </div>
             
-            <!-- Botões da IA -->
             <div class="grid grid-cols-1 gap-4 mb-6">
-                <!-- Botão 1: Confirmar Agenda -->
                 <div class="bg-white p-6 rounded-2xl shadow-soft border border-cream-200 active:scale-98 transition cursor-pointer group" onclick="generateWhatsappMessages()">
                     <div class="flex items-center gap-4">
                         <div class="bg-green-50 p-3 rounded-full text-green-700 group-hover:bg-green-100 transition"><i class="fa-brands fa-whatsapp text-2xl"></i></div>
@@ -180,7 +175,6 @@
                     </div>
                 </div>
 
-                <!-- Botão 2: Lembrete de Manutenção -->
                 <div class="bg-white p-6 rounded-2xl shadow-soft border border-cream-200 active:scale-98 transition cursor-pointer group" onclick="generateMaintenanceMessages()">
                     <div class="flex items-center gap-4">
                         <div class="bg-purple-50 p-3 rounded-full text-purple-700 group-hover:bg-purple-100 transition"><i class="fa-solid fa-wand-magic-sparkles text-2xl"></i></div>
@@ -198,7 +192,6 @@
             </div>
         </div>
 
-        <!-- VIEW: CLOUD -->
         <div id="view-cloud" class="view-section hidden fade-in px-4 pt-6">
             <div class="bg-white p-8 rounded-2xl shadow-soft border border-cream-200 text-center">
                 <h2 class="text-xl font-serif font-bold text-cream-900 mb-2">Nuvem</h2>
@@ -213,7 +206,6 @@
         </div>
     </main>
 
-    <!-- Nav Bar -->
     <nav class="fixed bottom-0 left-0 w-full glass-nav flex justify-around items-center pb-safe-bottom z-40 h-[72px]">
         <button onclick="router('agenda')" id="nav-agenda" class="nav-item flex-1 h-full flex flex-col items-center justify-center gap-1.5 text-gold-600 transition"><i class="fa-regular fa-calendar text-lg"></i><span class="text-[10px] font-bold uppercase tracking-wide">Agenda</span></button>
         <button onclick="router('clients')" id="nav-clients" class="nav-item flex-1 h-full flex flex-col items-center justify-center gap-1.5 text-cream-400 transition"><i class="fa-solid fa-users text-lg"></i><span class="text-[10px] font-bold uppercase tracking-wide">Clientes</span></button>
@@ -222,7 +214,6 @@
         <button onclick="router('ia')" id="nav-ia" class="nav-item flex-1 h-full flex flex-col items-center justify-center gap-1.5 text-cream-400 transition"><i class="fa-solid fa-wand-magic-sparkles text-lg"></i><span class="text-[10px] font-bold uppercase tracking-wide">IA</span></button>
     </nav>
 
-    <!-- MODAL AGENDAMENTO (EDITAR/NOVO) -->
     <div id="modal-appointment" class="fixed inset-0 bg-black/40 z-50 hidden flex-col animate-slide-up backdrop-blur-sm">
         <div class="mt-auto bg-white rounded-t-[32px] h-[90vh] flex flex-col shadow-2xl overflow-hidden">
             <div class="p-6 border-b border-cream-100 flex justify-between items-center">
@@ -323,19 +314,49 @@
         </div>
     </div>
 
-    <div id="modal-client" class="fixed inset-0 bg-black/40 z-50 hidden flex items-center justify-center backdrop-blur-sm px-4">
+    <div id="modal-client" class="fixed inset-0 bg-black/40 z-50 hidden flex-col animate-slide-up backdrop-blur-sm">
+         <div class="mt-auto bg-white rounded-t-[32px] h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+            <div class="p-6 border-b border-cream-100 flex justify-between items-center">
+                <h3 class="font-serif font-bold text-xl text-cream-900" id="modal-client-title">Nova Cliente</h3>
+                 <button onclick="closeModal('modal-client')" class="w-10 h-10 flex items-center justify-center bg-cream-50 rounded-full text-cream-400 hover:text-gold-600"><i class="fa-solid fa-times"></i></button>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto p-6">
+                 <form id="form-client" class="space-y-5">
+                    <input type="hidden" id="client-id">
+                    <div><label class="block text-[10px] font-bold text-cream-400 uppercase mb-1 ml-1">Nome Completo</label><input type="text" id="client-name" required class="w-full h-12 input-elegant rounded-xl px-4 text-cream-900"></div>
+                    <div><label class="block text-[10px] font-bold text-cream-400 uppercase mb-1 ml-1">WhatsApp</label><input type="tel" id="client-phone" class="w-full h-12 input-elegant rounded-xl px-4 text-cream-900"></div>
+                    <div><label class="block text-[10px] font-bold text-cream-400 uppercase mb-1 ml-1">Aniversário</label><input type="date" id="client-birth" class="w-full h-12 input-elegant rounded-xl px-4 text-cream-900 bg-transparent"></div>
+                    
+                    <div class="pt-2">
+                         <label class="block text-[10px] font-bold text-cream-400 uppercase mb-2 ml-1">Etiquetas</label>
+                         <div id="client-tags-selector" class="flex flex-wrap gap-2"></div>
+                    </div>
+                </form>
+            </div>
+             <div class="p-6 border-t border-cream-100 bg-white pb-safe-bottom">
+                  <button onclick="document.getElementById('form-client').dispatchEvent(new Event('submit'))" class="w-full h-14 bg-gold-600 text-white rounded-2xl font-bold text-sm uppercase tracking-widest shadow-md">Salvar Cliente</button>
+             </div>
+        </div>
+    </div>
+
+    <div id="modal-tags" class="fixed inset-0 bg-black/40 z-50 hidden flex items-center justify-center backdrop-blur-sm px-4">
         <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl animate-fade-in-up">
-            <h3 class="font-serif font-bold text-2xl text-cream-900 mb-6" id="modal-client-title">Nova Cliente</h3>
-            <form id="form-client" class="space-y-4">
-                <input type="hidden" id="client-id">
-                <div><label class="block text-[10px] font-bold text-cream-400 uppercase mb-1 ml-1">Nome Completo</label><input type="text" id="client-name" required class="w-full h-12 input-elegant rounded-xl px-4 text-cream-900"></div>
-                <div><label class="block text-[10px] font-bold text-cream-400 uppercase mb-1 ml-1">WhatsApp</label><input type="tel" id="client-phone" class="w-full h-12 input-elegant rounded-xl px-4 text-cream-900"></div>
-                <div><label class="block text-[10px] font-bold text-cream-400 uppercase mb-1 ml-1">Aniversário</label><input type="date" id="client-birth" class="w-full h-12 input-elegant rounded-xl px-4 text-cream-900 bg-transparent"></div>
-                <div class="grid grid-cols-2 gap-3 pt-4">
-                    <button type="button" onclick="closeModal('modal-client')" class="h-12 text-cream-400 font-bold text-xs uppercase tracking-wide hover:bg-cream-50 rounded-xl">Cancelar</button>
-                    <button type="submit" class="h-12 bg-gold-600 text-white rounded-xl font-bold text-xs uppercase tracking-wide shadow-md">Salvar</button>
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="font-serif font-bold text-2xl text-cream-900">Etiquetas</h3>
+                <button onclick="closeModal('modal-tags')" class="w-8 h-8 flex items-center justify-center bg-cream-50 rounded-full text-cream-400 hover:text-gold-600"><i class="fa-solid fa-times"></i></button>
+            </div>
+            
+            <div class="bg-cream-50 p-4 rounded-xl border border-cream-100 mb-6">
+                <h4 class="text-xs font-bold text-cream-400 uppercase mb-2">Criar Nova</h4>
+                <div class="flex gap-2">
+                    <input type="color" id="new-tag-color" class="w-10 h-10 rounded-lg cursor-pointer border-0 bg-transparent p-0" value="#D4AF37">
+                    <input type="text" id="new-tag-name" placeholder="Nome (ex: VIP)" class="flex-1 h-10 input-elegant rounded-lg px-3 text-sm">
+                    <button onclick="addNewTag()" class="bg-gold-600 text-white w-10 h-10 rounded-lg flex items-center justify-center shadow-sm"><i class="fa-solid fa-plus"></i></button>
                 </div>
-            </form>
+            </div>
+
+            <div class="space-y-2 max-h-60 overflow-y-auto" id="tags-management-list"></div>
         </div>
     </div>
 
@@ -355,11 +376,22 @@
     </div>
 
     <script>
-        let db = { services: [{id:1,name:'Manicure',price:35},{id:2,name:'Gel',price:70},{id:3,name:'Blindagem',price:90}], extras: [{id:101,name:'Francesa',price:15}], appointments: [], clients: [] };
+        // DB INICIALIZADO COM TAGS
+        let db = { 
+            services: [{id:1,name:'Manicure',price:35},{id:2,name:'Gel',price:70},{id:3,name:'Blindagem',price:90}], 
+            extras: [{id:101,name:'Francesa',price:15}], 
+            appointments: [], 
+            clients: [],
+            tags: [
+                { id: 1, name: 'VIP', color: '#FFD700' },
+                { id: 2, name: 'Alergia', color: '#FF6B6B' },
+                { id: 3, name: 'Nova', color: '#4ECDC4' }
+            ] 
+        };
         let selectedDate = new Date().toISOString().split('T')[0];
         let hasUnsaved = false;
 
-        // FUNÇÕES UTILITÁRIAS GLOBAIS (HOISTED)
+        // FUNÇÕES UTILITÁRIAS GLOBAIS
         function openModal(id) {
             const el = document.getElementById(id);
             if(el) {
@@ -396,21 +428,11 @@
         async function syncUpload() { 
             const u=localStorage.getItem('emelyCloudUrl'); 
             if(!u) return alert('Sem URL'); 
-            
             const b=document.getElementById('btn-upload'); 
             const originalText = b.innerHTML;
             b.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Enviando...'; 
-            
             try { 
-                // Usando no-cors para evitar bloqueio do Google, mas não lemos resposta
-                await fetch(u, {
-                    method: 'POST',
-                    mode: 'no-cors', 
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(db)
-                }); 
-                
-                // Assumimos sucesso se não der erro de rede
+                await fetch(u, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(db) }); 
                 alert('Dados enviados para a nuvem!'); 
                 hasUnsaved = false; 
                 checkUnsavedStatus(); 
@@ -426,22 +448,19 @@
             const u=localStorage.getItem('emelyCloudUrl'); 
             if(!u) return alert('Sem URL'); 
             if(!confirm('Substituir dados locais?')) return; 
-            
             const b=document.getElementById('btn-download'); 
             const originalText = b.innerHTML;
             b.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Baixando...'; 
-            
             try { 
                 const r=await fetch(u); 
                 const d=await r.json(); 
-                
                 if(d && !d.error) { 
                     db = d; 
-                    // Garante que arrays existam
                     if(!db.services) db.services=[]; 
                     if(!db.extras) db.extras=[]; 
                     if(!db.appointments) db.appointments=[]; 
                     if(!db.clients) db.clients=[]; 
+                    if(!db.tags) db.tags=[]; 
                     
                     hasUnsaved = false; 
                     saveLocalData(); 
@@ -478,13 +497,14 @@
                     db = JSON.parse(d);
                 } catch(e) {
                     console.error("Erro ao ler local data", e);
-                    db = {}; // Fallback
+                    db = {}; 
                 }
             }
             if(!db.services) db.services=[]; 
             if(!db.extras) db.extras=[]; 
             if(!db.appointments) db.appointments=[]; 
             if(!db.clients) db.clients=[]; 
+            if(!db.tags) db.tags=[];
         }
 
         function router(view) {
@@ -501,20 +521,78 @@
             if(view==='clients') renderClients();
         }
 
-        // NOVA FUNÇÃO DE MANUTENÇÃO (TIME HELPERS)
+        // ================= TAGS LOGIC =================
+        function openTagsModal() {
+            renderTagsList();
+            openModal('modal-tags');
+        }
+
+        function renderTagsList() {
+            const list = document.getElementById('tags-management-list');
+            list.innerHTML = '';
+            (db.tags || []).forEach(tag => {
+                list.innerHTML += `
+                    <div class="flex justify-between items-center bg-cream-50 p-3 rounded-lg border border-cream-100">
+                        <div class="flex items-center gap-3">
+                            <div class="w-4 h-4 rounded-full border border-black/10 shadow-sm" style="background-color: ${tag.color}"></div>
+                            <span class="text-sm font-bold text-cream-900">${tag.name}</span>
+                        </div>
+                        <button onclick="deleteTag(${tag.id})" class="text-cream-400 hover:text-red-500"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                `;
+            });
+        }
+
+        function addNewTag() {
+            const name = document.getElementById('new-tag-name').value;
+            const color = document.getElementById('new-tag-color').value;
+            if(!name) return alert('Nome da etiqueta é obrigatório');
+            
+            const newTag = { id: Date.now(), name, color };
+            if(!db.tags) db.tags = [];
+            db.tags.push(newTag);
+            
+            document.getElementById('new-tag-name').value = '';
+            hasUnsaved = true;
+            saveLocalData();
+            renderTagsList();
+            renderClients(); // Atualizar visualização se necessário
+            checkUnsavedStatus();
+        }
+
+        function deleteTag(id) {
+            if(!confirm('Excluir etiqueta? Ela será removida de todas as clientes.')) return;
+            db.tags = db.tags.filter(t => t.id !== id);
+            // Remover tag dos clientes
+            db.clients.forEach(c => {
+                if(c.tags) c.tags = c.tags.filter(tid => tid !== id);
+            });
+            hasUnsaved = true;
+            saveLocalData();
+            renderTagsList();
+            checkUnsavedStatus();
+        }
+
+        function getClientTagsHtml(clientTagsIds, size='normal') {
+            if(!clientTagsIds || !clientTagsIds.length) return '';
+            let html = '';
+            const sizeClass = size === 'small' ? 'px-1.5 py-0.5 text-[8px]' : 'px-2 py-0.5 text-[10px]';
+            
+            clientTagsIds.forEach(tid => {
+                const tag = (db.tags || []).find(t => t.id === tid);
+                if(tag) {
+                    // Contraste simples: se for muito claro, borda escura, senão borda clara
+                    html += `<span class="${sizeClass} rounded-full font-bold uppercase tracking-wide border border-black/5 shadow-sm inline-block mr-1 mb-1" style="background-color: ${tag.color}; color: #2E2B22;">${tag.name}</span>`;
+                }
+            });
+            return html;
+        }
+
+        // ================= TIME HELPERS =================
         function timeToMinutes(time) {
             if (!time) return 0;
             const [h, m] = time.split(':').map(Number);
             return h * 60 + m;
-        }
-
-        function addMinutes(time, mins) {
-            if (!time) return '00:00';
-            const [h, m] = time.split(':').map(Number);
-            const totalMins = h * 60 + m + mins;
-            const newH = Math.floor(totalMins / 60) % 24;
-            const newM = totalMins % 60;
-            return `${String(newH).padStart(2, '0')}:${String(newM).padStart(2, '0')}`;
         }
 
         function handleTimeInput(input) {
@@ -534,19 +612,14 @@
             if(!date || time.length < 5) { alertBox.classList.add('hidden'); return; }
             
             const currentIdNum = currentId ? parseInt(currentId) : null;
-
-            // LÓGICA DE INTERVALOS (DURAÇÃO FIXA DE 90 MINUTOS)
             const fixedDuration = 91;
-
             const newStart = timeToMinutes(time);
             const newEnd = newStart + fixedDuration;
 
             const conflict = db.appointments.find(a => {
                 if (a.date !== date || a.status === 'cancelled' || a.id === currentIdNum) return false;
-                
                 const existingStart = timeToMinutes(a.time);
                 const existingEnd = existingStart + fixedDuration; 
-
                 return (newStart < existingEnd && newEnd > existingStart);
             });
             
@@ -567,40 +640,29 @@
 
         function renderCalendar() {
             const c = document.getElementById('horizontal-calendar'); c.innerHTML = '';
-            
             const [y, m, d_val] = selectedDate.split('-').map(Number);
             const pivot = new Date(y, m - 1, d_val);
-            
             const startDate = new Date(pivot);
             startDate.setDate(startDate.getDate() - 7); 
             
             for (let i = 0; i < 68; i++) {
                 const d = new Date(startDate);
                 d.setDate(d.getDate() + i);
-                
                 const dateStr = d.toLocaleDateString('pt-BR').split('/').reverse().join('-');
-                
                 const countScheduled = (db.appointments||[]).filter(a => a.date === dateStr && a.status === 'scheduled').length;
                 const countCompleted = (db.appointments||[]).filter(a => a.date === dateStr && a.status === 'completed').length;
-                
                 const active = dateStr === selectedDate ? 'active' : '';
                 
                 let badgesHtml = '<div class="badge-container">';
-                if (countScheduled > 0) {
-                    badgesHtml += `<div class="badge badge-pending">${countScheduled}</div>`;
-                }
-                if (countCompleted > 0) {
-                    badgesHtml += `<div class="badge badge-completed">${countCompleted}</div>`;
-                }
+                if (countScheduled > 0) badgesHtml += `<div class="badge badge-pending">${countScheduled}</div>`;
+                if (countCompleted > 0) badgesHtml += `<div class="badge badge-completed">${countCompleted}</div>`;
                 badgesHtml += '</div>';
 
                 const el = document.createElement('div'); el.className = `calendar-day ${active}`;
                 el.onclick = () => { selectedDate = dateStr; renderCalendar(); renderAppointments(); };
-                
                 el.innerHTML = `<span class="text-[10px] uppercase font-bold mt-1 opacity-60 tracking-wide">${d.toLocaleDateString('pt-BR',{weekday:'short'}).replace('.','')}</span><span class="text-xl font-serif font-bold leading-none my-1">${d.getDate()}</span>${badgesHtml}`;
                 c.appendChild(el);
             }
-            
             document.getElementById('month-display').innerText = pivot.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
             setTimeout(() => { const a = document.querySelector('.calendar-day.active'); if(a) a.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'}); }, 100);
         }
@@ -625,8 +687,15 @@
                 if(a.status !== 'cancelled') total += a.price;
                 let extrasHtml = '';
                 if(a.extras && a.extras.length > 0) { extrasHtml = '<div class="flex flex-wrap gap-1 mt-1">'; a.extras.forEach(ex => extrasHtml += `<span class="text-[10px] bg-gold-50 text-gold-700 px-1.5 py-0.5 rounded border border-gold-100">${ex}</span>`); extrasHtml += '</div>'; }
-                let birthdayHtml = '';
+                
+                // TAGS NA AGENDA
+                let tagsHtml = '';
                 const clientObj = db.clients.find(c => c.name === a.client);
+                if (clientObj && clientObj.tags) {
+                     tagsHtml = `<div class="mb-1">${getClientTagsHtml(clientObj.tags, 'small')}</div>`;
+                }
+
+                let birthdayHtml = '';
                 if (clientObj && clientObj.birth) { const bp = clientObj.birth.split('-'); const ap = a.date.split('-'); if (bp[1] === ap[1] && bp[2] === ap[2]) birthdayHtml = `<div class="mt-2 inline-flex items-center gap-1.5 bg-gold-100 text-gold-800 text-[10px] font-bold uppercase px-2 py-1 rounded-lg border border-gold-200"><span>🎂</span> Aniversariante</div>`; }
                 
                 let actions = a.status === 'scheduled' ? 
@@ -635,7 +704,6 @@
                      <button onclick="event.stopPropagation(); toggleStatus(${a.id},'cancelled')" class="w-9 h-9 rounded-full bg-red-50 text-red-400 flex items-center justify-center hover:bg-red-100 transition"><i class="fa-solid fa-times text-sm"></i></button>` : 
                     `<button onclick="event.stopPropagation(); toggleStatus(${a.id},'scheduled')" class="text-[10px] font-bold text-gold-600 uppercase bg-gold-50 px-3 py-1 rounded-full">Restaurar</button>`;
                 
-                // Proteção contra número
                 const safePhone = String(a.phone || '');
                 const wa = safePhone ? `<a href="https://wa.me/55${safePhone.replace(/\D/g,'')}" target="_blank" onclick="event.stopPropagation()" class="text-green-600 ml-1"><i class="fa-brands fa-whatsapp"></i></a>` : '';
                 
@@ -644,7 +712,7 @@
                 const remaining = a.price - (a.deposit || 0);
                 const remainingHtml = remaining > 0 ? `<div class="mt-1 text-xs font-bold text-gold-600 bg-gold-50 px-2 py-1 rounded w-fit">Falta: R$ ${remaining.toFixed(2)}</div>` : '';
 
-                list.innerHTML += `<div onclick="openDetails(${a.id})" class="cursor-pointer ${statusClasses} p-4 rounded-2xl shadow-soft flex gap-4 transition-all active:scale-[0.99]"><div class="flex flex-col items-center justify-center w-14 border-r border-cream-100 pr-4 flex-shrink-0"><span class="font-serif font-bold text-cream-900 text-2xl">${a.time}</span></div><div class="flex-1 flex flex-col justify-between gap-3"><div class="min-w-0"><h4 class="font-bold text-cream-900 text-base leading-tight mb-1 truncate">${a.client} ${wa}</h4><div class="flex flex-wrap gap-1 items-center mb-1"><span class="bg-cream-100 text-gray-800 text-sm px-2 py-0.5 rounded-md font-medium leading-tight inline-block max-w-full break-words">${a.serviceName}</span></div>${extrasHtml} ${birthdayHtml} ${remainingHtml}</div><div class="flex justify-end gap-2 border-t border-cream-50 pt-2 mt-auto">${actions}</div></div></div>`;
+                list.innerHTML += `<div onclick="openDetails(${a.id})" class="cursor-pointer ${statusClasses} p-4 rounded-2xl shadow-soft flex gap-4 transition-all active:scale-[0.99]"><div class="flex flex-col items-center justify-center w-14 border-r border-cream-100 pr-4 flex-shrink-0"><span class="font-serif font-bold text-cream-900 text-2xl">${a.time}</span></div><div class="flex-1 flex flex-col justify-between gap-3"><div class="min-w-0"><h4 class="font-bold text-cream-900 text-base leading-tight mb-1 truncate">${a.client} ${wa}</h4>${tagsHtml}<div class="flex flex-wrap gap-1 items-center mb-1"><span class="bg-cream-100 text-gray-800 text-sm px-2 py-0.5 rounded-md font-medium leading-tight inline-block max-w-full break-words">${a.serviceName}</span></div>${extrasHtml} ${birthdayHtml} ${remainingHtml}</div><div class="flex justify-end gap-2 border-t border-cream-50 pt-2 mt-auto">${actions}</div></div></div>`;
             });
             document.getElementById('daily-total').innerText = 'R$ ' + total.toFixed(2);
         }
@@ -727,7 +795,6 @@
             const serv = db.services.find(s => s.id == sel.value);
             if (!serv) return alert('Erro: Serviço não encontrado. Atualize a página.');
 
-            // Lógica segura para capturar os extras selecionados
             const extrasCheckboxes = document.querySelectorAll('.extra-checkbox:checked');
             const extras = Array.from(extrasCheckboxes).map(cb => {
                 const foundExtra = db.extras.find(e => e.id == cb.value);
@@ -742,7 +809,7 @@
                 date: document.getElementById('app-date').value, time: document.getElementById('app-time').value,
                 serviceId: serv.id, serviceName: serv.name, extras: extras,
                 price: totalService, 
-                deposit: deposit,    
+                deposit: deposit,     
                 notes: document.getElementById('app-notes').value, status: 'scheduled'
             };
             if(id) { const idx = db.appointments.findIndex(a => a.id == id); if(idx!==-1) { data.id=parseInt(id); data.status=db.appointments[idx].status; db.appointments[idx]=data; } }
@@ -753,8 +820,62 @@
         }
         function toggleStatus(id, s) { const app = db.appointments.find(a => a.id === id); if(app) { if(s==='cancelled' && !confirm('Cancelar?')) return; app.status = s; hasUnsaved = true; saveLocalData(); renderCalendar(); renderAppointments(); checkUnsavedStatus(); } }
 
-        function openClientModal() { document.getElementById('modal-client-title').innerText = "Nova Cliente"; document.getElementById('form-client').reset(); document.getElementById('client-id').value = ""; openModal('modal-client'); }
-        function openEditClient(id) { const c = db.clients.find(cli => cli.id === id); if(!c) return; document.getElementById('modal-client-title').innerText = "Editar Cliente"; document.getElementById('client-id').value = c.id; document.getElementById('client-name').value = c.name; document.getElementById('client-phone').value = c.phone || ""; document.getElementById('client-birth').value = c.birth || ""; openModal('modal-client'); }
+        function openClientModal() { 
+            document.getElementById('modal-client-title').innerText = "Nova Cliente"; 
+            document.getElementById('form-client').reset(); 
+            document.getElementById('client-id').value = ""; 
+            renderClientTagsSelector([]);
+            openModal('modal-client'); 
+        }
+        
+        function openEditClient(id) { 
+            const c = db.clients.find(cli => cli.id === id); 
+            if(!c) return; 
+            document.getElementById('modal-client-title').innerText = "Editar Cliente"; 
+            document.getElementById('client-id').value = c.id; 
+            document.getElementById('client-name').value = c.name; 
+            document.getElementById('client-phone').value = c.phone || ""; 
+            document.getElementById('client-birth').value = c.birth || ""; 
+            renderClientTagsSelector(c.tags || []);
+            openModal('modal-client'); 
+        }
+
+        function renderClientTagsSelector(selectedTagsIds) {
+            const container = document.getElementById('client-tags-selector');
+            container.innerHTML = '';
+            if(!db.tags || db.tags.length === 0) {
+                container.innerHTML = '<span class="text-xs text-gray-400 italic">Nenhuma etiqueta criada.</span>';
+                return;
+            }
+            
+            db.tags.forEach(tag => {
+                const isSelected = selectedTagsIds.includes(tag.id);
+                const opacity = isSelected ? '1' : '0.5';
+                const border = isSelected ? 'border-black/20' : 'border-transparent';
+                
+                const pill = document.createElement('div');
+                pill.className = `cursor-pointer px-3 py-1.5 rounded-full text-xs font-bold border transition select-none flex items-center gap-1`;
+                pill.style.backgroundColor = tag.color;
+                pill.style.opacity = opacity;
+                pill.style.borderColor = isSelected ? '#2E2B22' : 'transparent';
+                pill.innerHTML = `${tag.name} ${isSelected ? '<i class="fa-solid fa-check ml-1 text-[10px]"></i>' : ''}`;
+                
+                pill.onclick = () => {
+                    // Toggle selection visually and in logic
+                    if (selectedTagsIds.includes(tag.id)) {
+                        const idx = selectedTagsIds.indexOf(tag.id);
+                        selectedTagsIds.splice(idx, 1);
+                    } else {
+                        selectedTagsIds.push(tag.id);
+                    }
+                    renderClientTagsSelector(selectedTagsIds); // Re-render to update UI
+                };
+                
+                container.appendChild(pill);
+            });
+            // Attach current selection to container for save function
+            container.dataset.selected = JSON.stringify(selectedTagsIds);
+        }
         
         document.getElementById('form-client').addEventListener('submit', e => { 
             e.preventDefault(); 
@@ -763,11 +884,15 @@
             const phone = document.getElementById('client-phone').value; 
             const birth = document.getElementById('client-birth').value; 
             
+            // Get selected tags
+            const tagsContainer = document.getElementById('client-tags-selector');
+            const selectedTags = tagsContainer.dataset.selected ? JSON.parse(tagsContainer.dataset.selected) : [];
+
             if (id) { 
                 const idx = db.clients.findIndex(c => c.id == id); 
                 if(idx !== -1) { 
                     const oldName = db.clients[idx].name; 
-                    db.clients[idx] = { id: parseInt(id), name, phone, birth }; 
+                    db.clients[idx] = { id: parseInt(id), name, phone, birth, tags: selectedTags }; 
                     if (oldName !== name) { 
                         db.appointments.forEach(app => { if(app.client === oldName) app.client = name; }); 
                     } 
@@ -775,14 +900,14 @@
             } else { 
                 const exists = db.clients.find(c => c.name.toLowerCase() === name.toLowerCase() && c.birth === birth); 
                 if(exists) { alert('Cliente já existe!'); return; } 
-                db.clients.push({ id: Date.now(), name, phone, birth }); 
+                db.clients.push({ id: Date.now(), name, phone, birth, tags: selectedTags }); 
             } 
             
             hasUnsaved = true; 
             saveLocalData(); 
             closeModal('modal-client'); 
             renderClients(); 
-            renderAppointments(); // Atualiza caso tenha mudado nome em agendamento
+            renderAppointments(); 
             e.target.reset(); 
             checkUnsavedStatus(); 
         });
@@ -854,14 +979,12 @@
         function updateFinancials() { const m = document.getElementById('fin-month').value; if(!m) return; const apps = (db.appointments||[]).filter(a => a.date.startsWith(m) && a.status === 'completed').sort((a,b) => a.date.localeCompare(b.date)); document.getElementById('fin-total').innerText = 'R$ ' + apps.reduce((s, a) => s + a.price, 0).toFixed(2); const tb = document.getElementById('financial-table-body'); tb.innerHTML=''; apps.forEach(a => tb.innerHTML+=`<tr class="border-b border-cream-50 hover:bg-cream-50/50"><td class="p-4 text-cream-500 text-xs font-medium">${a.date.split('-')[2]}/${a.date.split('-')[1]}</td><td class="p-4 font-bold text-cream-800 text-xs">${a.client}</td><td class="p-4 font-mono font-bold text-gold-600 text-xs text-right">R$ ${a.price.toFixed(2)}</td></tr>`); }
         function generateWhatsappMessages() { const c = document.getElementById('ai-output'); c.classList.remove('hidden'); const t = new Date(); t.setDate(t.getDate()+1); const dateStr = t.toLocaleDateString('pt-BR').split('/').reverse().join('-'); const apps = (db.appointments||[]).filter(a => a.date === dateStr && a.status === 'scheduled'); if(!apps.length) { document.getElementById('ai-content').innerHTML = '<p class="italic text-center text-cream-400">Agenda livre para amanhã.</p>'; return; } let html = `<p class="font-bold text-gold-700 text-xs uppercase tracking-wider mb-3">Agenda de Amanhã (${dateStr.split('-').reverse().join('/')})</p><div class="space-y-3">`; apps.forEach(a => { const msg = `Olá ${a.client.split(' ')[0]}! ✨ Passando para confirmar nosso horário de amanhã às ${a.time} para ${a.serviceName}. Posso confirmar?`; let link = `https://wa.me/?text=${encodeURIComponent(msg)}`; if(a.phone) link = `https://wa.me/55${String(a.phone).replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`; html += `<a href="${link}" target="_blank" class="block bg-cream-50 p-4 rounded-2xl border border-cream-100 flex justify-between items-center hover:bg-green-50 transition group"><div><h5 class="font-bold text-cream-900 text-sm">${a.client}</h5><span class="text-xs text-cream-500">${a.time} • ${a.serviceName}</span></div><div class="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center shadow-sm group-hover:scale-110 transition"><i class="fa-brands fa-whatsapp"></i></div></a>`; }); document.getElementById('ai-content').innerHTML = html + '</div>'; }
 
-        // NOVA FUNÇÃO DE MANUTENÇÃO
         function generateMaintenanceMessages() { 
             const c = document.getElementById('ai-output'); 
             c.classList.remove('hidden'); 
             
             let candidates = [];
             const today = new Date();
-            
             const uniqueClients = [...new Set(db.clients.map(c => c.name))];
             
             uniqueClients.forEach(clientName => {
@@ -872,13 +995,11 @@
                 if(clientApps.length > 0) {
                     const lastApp = clientApps[0];
                     const lastDate = new Date(lastApp.date);
-                    
                     const diffTime = Math.abs(today - lastDate);
-                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
                     
                     if (diffDays > 20) {
                         const hasFuture = db.appointments.some(a => a.client === clientName && a.status === 'scheduled' && new Date(a.date) >= today);
-                        
                         if (!hasFuture) {
                             const clientData = db.clients.find(c => c.name === clientName);
                             candidates.push({ 
@@ -898,22 +1019,16 @@
             } 
             
             let html = `<p class="font-bold text-purple-700 text-xs uppercase tracking-wider mb-3">Lista de Retorno</p><div class="space-y-3">`; 
-            
             candidates.forEach(c => { 
                 const msg = `Oi ${c.name.split(' ')[0]}! 💖 Já fazem ${c.days} dias das suas unhas (${c.service}). Vamos agendar a manutenção para manter elas lindas?`; 
                 let link = `https://wa.me/?text=${encodeURIComponent(msg)}`; 
                 if(c.phone) link = `https://wa.me/55${String(c.phone).replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`; 
-                
                 html += `<a href="${link}" target="_blank" class="block bg-cream-50 p-4 rounded-2xl border border-cream-100 flex justify-between items-center hover:bg-purple-50 transition group"><div><h5 class="font-bold text-cream-900 text-sm">${c.name}</h5><span class="text-xs text-red-400 font-bold">Ausente há ${c.days} dias</span></div><div class="w-8 h-8 bg-purple-500 text-white rounded-full flex items-center justify-center shadow-sm group-hover:scale-110 transition"><i class="fa-brands fa-whatsapp"></i></div></a>`; 
             }); 
-            
             document.getElementById('ai-content').innerHTML = html + '</div>'; 
         }
 
-        // ============================================================
-        // FUNÇÕES REFEITAS PARA O NOVO DESIGN DO CARTÃO
-        // ============================================================
-
+        // ================= CLIENT LIST REDESIGN WITH TAGS =================
         function renderClients() {
             const list = document.getElementById('clients-list');
             const q = document.getElementById('search-client-list').value.toLowerCase();
@@ -922,7 +1037,7 @@
             (db.clients||[]).filter(c => c.name.toLowerCase().includes(q)).sort((a,b) => a.name.localeCompare(b.name)).forEach(c => {
                 const visits = db.appointments.filter(a => a.client === c.name && a.status === 'completed').length;
                 
-                // Lógica de Retenção (Ausente há X dias)
+                // Status de ausência
                 let statusHtml = '';
                 const lastApp = db.appointments
                     .filter(a => a.client === c.name && a.status === 'completed')
@@ -935,41 +1050,36 @@
                     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
                     
                     if(diffDays > 25) {
-                        // STATUS NOVO: Abaixo do nome
-                        statusHtml = `<span class="text-[10px] bg-red-50 text-red-500 px-2 py-0.5 rounded-md border border-red-100 font-bold ml-0 mt-1 inline-block">Ausente há ${diffDays} dias</span>`;
+                        statusHtml = `<span class="text-[9px] bg-red-50 text-red-500 px-1.5 py-0.5 rounded-md border border-red-100 font-bold ml-1 inline-block">Ausente ${diffDays}d</span>`;
                     }
                 }
 
                 const birthIcon = c.birth ? `<i class="fa-solid fa-cake-candles text-gold-400 ml-2 text-xs" title="${c.birth}"></i>` : '';
+                const whatsappBtn = c.phone ? `<a href="https://wa.me/55${String(c.phone).replace(/\D/g,'')}" target="_blank" class="text-green-500 hover:text-green-700 tooltip-action" title="WhatsApp"><i class="fa-brands fa-whatsapp text-xl"></i></a>` : '<span class="text-gray-300"><i class="fa-brands fa-whatsapp text-xl"></i></span>';
                 
-                // CORREÇÃO TELEFONE: String() para evitar erro
-                const whatsappBtn = c.phone 
-                    ? `<a href="https://wa.me/55${String(c.phone).replace(/\D/g,'')}" target="_blank" class="text-green-500 hover:text-green-700 tooltip-action" title="WhatsApp"><i class="fa-brands fa-whatsapp text-xl"></i></a>` 
-                    : '<span class="text-gray-300"><i class="fa-brands fa-whatsapp text-xl"></i></span>';
-                
-                // CARTÃO REDESENHADO (v19 - Design em 2 Colunas)
+                // TAGS DO CLIENTE
+                const tagsHtml = getClientTagsHtml(c.tags);
+
                 list.innerHTML += `
                     <div class="bg-white rounded-2xl shadow-soft border border-cream-100 overflow-hidden group hover:border-gold-200 transition-all">
-                        <!-- Parte Superior: Informações -->
                         <div class="p-4 flex justify-between items-start">
                             <div>
-                                <div class="flex items-center gap-2">
+                                <div class="flex items-center gap-2 flex-wrap">
                                     <h4 class="font-serif font-bold text-cream-900 text-lg">${c.name}</h4>
                                     ${birthIcon}
+                                    ${statusHtml}
                                 </div>
-                                <p class="text-xs text-gray-400 mt-0.5 flex items-center gap-1"><i class="fa-solid fa-phone text-[10px]"></i> ${c.phone || 'Sem telefone'}</p>
-                                ${statusHtml}
+                                <div class="mt-1 mb-1">${tagsHtml}</div>
+                                <p class="text-xs text-gray-400 flex items-center gap-1"><i class="fa-solid fa-phone text-[10px]"></i> ${c.phone || 'Sem telefone'}</p>
                             </div>
-                            <div class="bg-gold-50 px-3 py-1.5 rounded-lg text-center min-w-[3.5rem]">
+                            <div class="bg-gold-50 px-3 py-1.5 rounded-lg text-center min-w-[3.5rem] ml-2">
                                 <span class="block text-lg font-bold text-gold-700 leading-none">${visits}</span>
                                 <span class="text-[9px] text-gold-400 uppercase font-bold tracking-wider">Visitas</span>
                             </div>
                         </div>
 
-                        <!-- Parte Inferior: Barra de Ações -->
                         <div class="bg-cream-50/50 px-4 py-3 border-t border-cream-100 flex items-center justify-between">
                             <div class="flex items-center gap-5">
-                                <!-- Ações de Dia a Dia -->
                                 <button onclick="rescheduleClient('${c.name}')" class="text-gold-600 hover:text-gold-800 tooltip-action" title="Reagendar">
                                     <i class="fa-solid fa-calendar-plus text-xl"></i>
                                 </button>
@@ -977,7 +1087,6 @@
                             </div>
                             
                             <div class="flex items-center gap-3 border-l border-cream-200 pl-4">
-                                <!-- Ações de Gestão -->
                                 <button onclick="openEditClient(${c.id})" class="text-gray-400 hover:text-blue-500"><i class="fa-solid fa-pen"></i></button>
                                 <button onclick="delClient(${c.id})" class="text-gray-400 hover:text-red-500"><i class="fa-solid fa-trash"></i></button>
                             </div>
