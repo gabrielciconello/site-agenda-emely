@@ -366,12 +366,7 @@
             loadLocalData();
             document.getElementById('fin-month').value = new Date().toISOString().slice(0, 7);
             const url = localStorage.getItem('emelyCloudUrl'); if(url) document.getElementById('cloud-url').value = url;
-            renderCalendar(); 
-            renderServices(); 
-            renderAppointments(); 
-            renderClients(); 
-            updateFinancials(); 
-            checkUnsavedStatus();
+            renderCalendar(); renderServices(); renderAppointments(); renderClients(); updateFinancials(); checkUnsavedStatus();
         };
 
         function router(view) {
@@ -381,8 +376,7 @@
             document.querySelectorAll('.nav-item').forEach(el => { el.classList.remove('text-gold-600'); el.classList.add('text-cream-400'); });
             document.getElementById('nav-' + view).classList.add('text-gold-600');
             document.getElementById('nav-' + view).classList.remove('text-cream-400');
-            if(view==='financeiro') updateFinancials(); 
-            if(view==='clients') renderClients();
+            if(view==='financeiro') updateFinancials(); if(view==='clients') renderClients();
         }
 
         function handleTimeInput(input) {
@@ -421,14 +415,17 @@
 
         function renderCalendar() {
             const c = document.getElementById('horizontal-calendar'); c.innerHTML = '';
+            
             const [y, m, d_val] = selectedDate.split('-').map(Number);
             const pivot = new Date(y, m - 1, d_val);
+            
             const startDate = new Date(pivot);
             startDate.setDate(startDate.getDate() - 7); 
             
             for (let i = 0; i < 68; i++) {
                 const d = new Date(startDate);
                 d.setDate(d.getDate() + i);
+                
                 const dateStr = d.toLocaleDateString('pt-BR').split('/').reverse().join('-');
                 
                 const countScheduled = (db.appointments||[]).filter(a => a.date === dateStr && a.status === 'scheduled').length;
@@ -437,12 +434,17 @@
                 const active = dateStr === selectedDate ? 'active' : '';
                 
                 let badgesHtml = '<div class="badge-container">';
-                if (countScheduled > 0) badgesHtml += `<div class="badge badge-pending">${countScheduled}</div>`;
-                if (countCompleted > 0) badgesHtml += `<div class="badge badge-completed">${countCompleted}</div>`;
+                if (countScheduled > 0) {
+                    badgesHtml += `<div class="badge badge-pending">${countScheduled}</div>`;
+                }
+                if (countCompleted > 0) {
+                    badgesHtml += `<div class="badge badge-completed">${countCompleted}</div>`;
+                }
                 badgesHtml += '</div>';
 
                 const el = document.createElement('div'); el.className = `calendar-day ${active}`;
                 el.onclick = () => { selectedDate = dateStr; renderCalendar(); renderAppointments(); };
+                
                 el.innerHTML = `<span class="text-[10px] uppercase font-bold mt-1 opacity-60 tracking-wide">${d.toLocaleDateString('pt-BR',{weekday:'short'}).replace('.','')}</span><span class="text-xl font-serif font-bold leading-none my-1">${d.getDate()}</span>${badgesHtml}`;
                 c.appendChild(el);
             }
@@ -664,7 +666,7 @@
         }
         
         function updateFinancials() { const m = document.getElementById('fin-month').value; if(!m) return; const apps = (db.appointments||[]).filter(a => a.date.startsWith(m) && a.status === 'completed').sort((a,b) => a.date.localeCompare(b.date)); document.getElementById('fin-total').innerText = 'R$ ' + apps.reduce((s, a) => s + a.price, 0).toFixed(2); const tb = document.getElementById('financial-table-body'); tb.innerHTML=''; apps.forEach(a => tb.innerHTML+=`<tr class="border-b border-cream-50 hover:bg-cream-50/50"><td class="p-4 text-cream-500 text-xs font-medium">${a.date.split('-')[2]}/${a.date.split('-')[1]}</td><td class="p-4 font-bold text-cream-800 text-xs">${a.client}</td><td class="p-4 font-mono font-bold text-gold-600 text-xs text-right">R$ ${a.price.toFixed(2)}</td></tr>`); }
-        function generateWhatsappMessages() { const c = document.getElementById('ai-output'); c.classList.remove('hidden'); const t = new Date(); t.setDate(t.getDate()+1); const dateStr = t.toISOString().split('T')[0]; const apps = (db.appointments||[]).filter(a => a.date === dateStr && a.status !== 'cancelled'); if(!apps.length) { document.getElementById('ai-content').innerHTML = '<p class="italic text-center text-cream-400">Agenda livre para amanhã.</p>'; return; } let html = `<p class="font-bold text-gold-700 text-xs uppercase tracking-wider mb-3">Agenda de Amanhã (${dateStr.split('-').reverse().join('/')})</p><div class="space-y-3">`; apps.forEach(a => { const msg = `Olá ${a.client.split(' ')[0]}! ✨ Passando para confirmar nosso horário de amanhã às ${a.time} para ${a.serviceName}. Posso confirmar?`; let link = `https://wa.me/?text=${encodeURIComponent(msg)}`; if(a.phone) link = `https://wa.me/55${a.phone.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`; html += `<a href="${link}" target="_blank" class="block bg-cream-50 p-4 rounded-2xl border border-cream-100 flex justify-between items-center hover:bg-green-50 transition group"><div><h5 class="font-bold text-cream-900 text-sm">${a.client}</h5><span class="text-xs text-cream-500">${a.time} • ${a.serviceName}</span></div><div class="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center shadow-sm group-hover:scale-110 transition"><i class="fa-brands fa-whatsapp"></i></div></a>`; }); document.getElementById('ai-content').innerHTML = html + '</div>'; }
+        function generateWhatsappMessages() { const c = document.getElementById('ai-output'); c.classList.remove('hidden'); const t = new Date(); t.setDate(t.getDate()+1); const dateStr = t.toLocaleDateString('pt-BR').split('/').reverse().join('-'); const apps = (db.appointments||[]).filter(a => a.date === dateStr && a.status === 'scheduled'); if(!apps.length) { document.getElementById('ai-content').innerHTML = '<p class="italic text-center text-cream-400">Agenda livre para amanhã.</p>'; return; } let html = `<p class="font-bold text-gold-700 text-xs uppercase tracking-wider mb-3">Agenda de Amanhã (${dateStr.split('-').reverse().join('/')})</p><div class="space-y-3">`; apps.forEach(a => { const msg = `Olá ${a.client.split(' ')[0]}! ✨ Passando para confirmar nosso horário de amanhã às ${a.time} para ${a.serviceName}. Posso confirmar?`; let link = `https://wa.me/?text=${encodeURIComponent(msg)}`; if(a.phone) link = `https://wa.me/55${a.phone.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`; html += `<a href="${link}" target="_blank" class="block bg-cream-50 p-4 rounded-2xl border border-cream-100 flex justify-between items-center hover:bg-green-50 transition group"><div><h5 class="font-bold text-cream-900 text-sm">${a.client}</h5><span class="text-xs text-cream-500">${a.time} • ${a.serviceName}</span></div><div class="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center shadow-sm group-hover:scale-110 transition"><i class="fa-brands fa-whatsapp"></i></div></a>`; }); document.getElementById('ai-content').innerHTML = html + '</div>'; }
         function openModal(id) { document.getElementById(id).classList.remove('hidden'); document.getElementById(id).classList.add('flex'); }
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); document.getElementById(id).classList.remove('flex'); }
         function saveLocalData() { localStorage.setItem('emelyData', JSON.stringify(db)); }
@@ -672,6 +674,10 @@
         function saveCloudUrl() { localStorage.setItem('emelyCloudUrl', document.getElementById('cloud-url').value); alert('Salvo!'); }
         async function syncUpload() { const u=localStorage.getItem('emelyCloudUrl'); if(!u) return alert('Sem URL'); const b=document.getElementById('btn-upload'); b.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i>'; try { await fetch(u,{method:'POST',mode:'no-cors',body:JSON.stringify(db)}); alert('Sucesso!'); hasUnsaved = false; checkUnsavedStatus(); } catch(e){alert('Erro');} finally {b.innerHTML='<i class="fa-solid fa-cloud-arrow-up text-white"></i> Enviar';} }
         async function syncDownload() { const u=localStorage.getItem('emelyCloudUrl'); if(!u) return alert('Sem URL'); if(!confirm('Substituir dados locais?')) return; const b=document.getElementById('btn-download'); b.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i>'; try { const r=await fetch(u); const d=await r.json(); if(d) { db=d; hasUnsaved = false; saveLocalData(); location.reload(); } } catch(e){alert('Erro');} finally {b.innerHTML='<i class="fa-solid fa-cloud-arrow-down"></i> Baixar';} }
+
+        // ============================================================
+        // FUNÇÕES QUE ESTAVAM FALTANDO OU COM ERRO
+        // ============================================================
 
         function renderClients() {
             const list = document.getElementById('clients-list');
