@@ -175,9 +175,7 @@
                 <p class="text-sm text-cream-500">Automação e inteligência.</p>
             </div>
             
-            <!-- Botões da IA -->
             <div class="grid grid-cols-1 gap-4 mb-6">
-                <!-- Botão 1: Confirmar Agenda -->
                 <div class="bg-white p-6 rounded-2xl shadow-soft border border-cream-200 active:scale-98 transition cursor-pointer group" onclick="generateWhatsappMessages()">
                     <div class="flex items-center gap-4">
                         <div class="bg-green-50 p-3 rounded-full text-green-700 group-hover:bg-green-100 transition"><i class="fa-brands fa-whatsapp text-2xl"></i></div>
@@ -185,7 +183,6 @@
                     </div>
                 </div>
 
-                <!-- Botão 2: Lembrete de Manutenção -->
                 <div class="bg-white p-6 rounded-2xl shadow-soft border border-cream-200 active:scale-98 transition cursor-pointer group" onclick="generateMaintenanceMessages()">
                     <div class="flex items-center gap-4">
                         <div class="bg-purple-50 p-3 rounded-full text-purple-700 group-hover:bg-purple-100 transition"><i class="fa-solid fa-wand-magic-sparkles text-2xl"></i></div>
@@ -235,7 +232,6 @@
                 <button onclick="closeModal('modal-appointment')" class="w-10 h-10 flex items-center justify-center bg-cream-50 rounded-full text-cream-400 hover:text-gold-600"><i class="fa-solid fa-times"></i></button>
             </div>
             <div class="flex-1 overflow-y-auto p-6">
-                <!-- ALERTA DE CONFLITO -->
                 <div id="conflict-alert" class="hidden animate-pulse-red mb-4 p-4 rounded-xl border border-red-200 text-red-700 text-sm font-bold flex items-center gap-2">
                     <i class="fa-solid fa-circle-exclamation"></i>
                     <span id="conflict-msg">Choque de horário!</span>
@@ -253,7 +249,6 @@
                         <div><label class="block text-[10px] font-bold text-gold-600 uppercase tracking-wider mb-1.5 ml-1">Horário</label><input type="tel" id="app-time" required class="w-full h-14 input-elegant rounded-2xl px-4 text-cream-900 font-medium text-center" placeholder="00:00" maxlength="5" oninput="handleTimeInput(this); checkConflict()"></div>
                     </div>
                     
-                    <!-- CAMPO DE TELEFONE (RESTAURADO) -->
                     <div>
                         <label class="block text-[10px] font-bold text-gold-600 uppercase tracking-wider mb-1.5 ml-1">WhatsApp</label>
                         <input type="tel" id="app-phone" class="w-full h-14 input-elegant rounded-2xl px-4 text-cream-900 font-medium" placeholder="(00) 00000-0000">
@@ -262,7 +257,6 @@
                     <div><label class="block text-[10px] font-bold text-gold-600 uppercase tracking-wider mb-1.5 ml-1">Procedimento</label><select id="app-service" onchange="calculateTotal()" required class="custom-select w-full h-14 input-elegant rounded-2xl px-4 bg-transparent text-cream-900 font-medium"></select></div>
                     <div class="bg-cream-50 p-5 rounded-2xl border border-cream-100"><label class="block text-[10px] font-bold text-cream-400 uppercase tracking-wider mb-3">Extras</label><div id="app-extras-list" class="space-y-3"></div></div>
                     
-                    <!-- SINAL E TOTAL -->
                     <div class="flex items-center gap-3">
                         <div class="flex-1">
                             <label class="block text-[10px] font-bold text-gold-600 uppercase tracking-wider mb-1.5 ml-1">Sinal Pago (R$)</label>
@@ -286,9 +280,7 @@
     <!-- MODAL DETALHES (LEITURA) -->
     <div id="modal-details" class="fixed inset-0 bg-black/40 z-50 hidden items-center justify-center backdrop-blur-sm px-4">
         <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl animate-fade-in-up relative overflow-hidden">
-             <!-- Decoracao -->
             <div class="absolute top-0 right-0 w-32 h-32 bg-gold-100 opacity-50 rounded-full -mr-12 -mt-12"></div>
-
             <div class="relative z-10">
                 <div class="flex justify-between items-start mb-6">
                     <div>
@@ -353,7 +345,6 @@
     <!-- NOVO: MODAL GALERIA -->
     <div id="modal-gallery" class="fixed inset-0 bg-black/40 z-50 hidden flex-col animate-slide-up backdrop-blur-sm">
         <div class="mt-auto bg-white rounded-t-[32px] h-[90vh] flex flex-col shadow-2xl overflow-hidden">
-            <!-- Header Galeria -->
             <div class="p-6 border-b border-cream-100 flex justify-between items-center bg-white z-10">
                 <div>
                     <p class="text-[10px] text-gold-600 uppercase tracking-[0.2em] font-bold">Diário da Cliente</p>
@@ -361,40 +352,31 @@
                 </div>
                 <button onclick="closeModal('modal-gallery')" class="w-10 h-10 flex items-center justify-center bg-cream-50 rounded-full text-cream-400 hover:text-gold-600"><i class="fa-solid fa-times"></i></button>
             </div>
-
-            <!-- Conteúdo Scroll -->
             <div class="flex-1 overflow-y-auto p-6 bg-cream-50">
-                
-                <!-- Formulário de Upload -->
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-cream-100 mb-6">
                     <h4 class="text-xs font-bold text-cream-900 mb-3 uppercase tracking-wide">Adicionar Novo Registro</h4>
                     <input type="hidden" id="gallery-client-id">
-                    
-                    <!-- Input de Arquivo Invisível + Botão Customizado -->
                     <input type="file" id="gallery-file" accept="image/*" class="file-input" onchange="handleImagePreview(this)">
-                    <label for="gallery-file" class="upload-btn mb-3" id="upload-label">
-                        <i class="fa-solid fa-camera mr-2"></i> Tirar Foto ou Escolher
-                    </label>
-                    
-                    <!-- Preview da Imagem -->
+                    <label for="gallery-file" class="upload-btn mb-3" id="upload-label"><i class="fa-solid fa-camera mr-2"></i> Tirar Foto ou Escolher</label>
                     <div id="image-preview-container" class="hidden mb-3 relative">
                         <img id="image-preview" class="w-full h-48 object-cover rounded-xl border border-cream-200">
                         <button onclick="clearImage()" class="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center shadow-md"><i class="fa-solid fa-times"></i></button>
                     </div>
-
                     <textarea id="gallery-note" class="w-full input-elegant rounded-xl p-3 text-sm mb-3" rows="2" placeholder="O que foi feito hoje? (Ex: Fibra de vidro, cor vermelha...)"></textarea>
-                    
-                    <button onclick="saveGalleryEntry()" class="w-full h-12 bg-gold-600 text-white rounded-xl font-bold text-xs uppercase tracking-wide shadow-md flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-save"></i> Salvar Registro
-                    </button>
+                    <button onclick="saveGalleryEntry()" class="w-full h-12 bg-gold-600 text-white rounded-xl font-bold text-xs uppercase tracking-wide shadow-md flex items-center justify-center gap-2"><i class="fa-solid fa-save"></i> Salvar Registro</button>
                 </div>
-
-                <!-- Linha do Tempo (Lista de Fotos) -->
-                <div id="gallery-timeline" class="space-y-6">
-                    <!-- Os itens serão inseridos aqui via JS -->
-                </div>
-
+                <div id="gallery-timeline" class="space-y-6"></div>
             </div>
+        </div>
+    </div>
+
+    <!-- NOVO: LIGHTBOX -->
+    <div id="modal-lightbox" class="fixed inset-0 bg-black/90 z-[60] hidden flex-col items-center justify-center p-4 backdrop-blur-md" onclick="closeLightbox()">
+        <div class="relative w-full max-w-4xl h-full flex items-center justify-center" onclick="event.stopPropagation()">
+            <button onclick="closeLightbox()" class="absolute top-4 right-4 w-10 h-10 bg-white/20 text-white rounded-full flex items-center justify-center backdrop-blur-sm hover:bg-white/40 transition z-20">
+                <i class="fa-solid fa-times text-lg"></i>
+            </button>
+            <img id="lightbox-img" class="max-w-full max-h-full object-contain rounded-lg shadow-2xl">
         </div>
     </div>
 
@@ -418,7 +400,7 @@
         let db = { services: [{id:1,name:'Manicure',price:35},{id:2,name:'Gel',price:70},{id:3,name:'Blindagem',price:90}], extras: [{id:101,name:'Francesa',price:15}], appointments: [], clients: [] };
         let selectedDate = new Date().toISOString().split('T')[0];
         let hasUnsaved = false;
-        let currentImageBase64 = null; // Armazena a imagem atual temporariamente
+        let currentImageBase64 = null; 
 
         window.onload = () => {
             loadLocalData();
@@ -451,25 +433,12 @@
             const currentId = document.getElementById('app-id').value;
             const alertBox = document.getElementById('conflict-alert');
             if(!date || time.length < 5) { alertBox.classList.add('hidden'); return; }
-            
             const currentIdNum = currentId ? parseInt(currentId) : null;
-
-            const conflict = db.appointments.find(a => 
-                a.date === date && 
-                a.time === time && 
-                a.status !== 'cancelled' && 
-                a.id !== currentIdNum 
-            );
-            
+            const conflict = db.appointments.find(a => a.date === date && a.time === time && a.status !== 'cancelled' && a.id !== currentIdNum);
             if (conflict) { document.getElementById('conflict-msg').innerText = `Choque! Já tem ${conflict.client} às ${time}`; alertBox.classList.remove('hidden'); } else { alertBox.classList.add('hidden'); }
         }
 
-        function jumpToDate(val) {
-            if (!val) return;
-            selectedDate = val;
-            renderCalendar();
-            renderAppointments();
-        }
+        function jumpToDate(val) { if (!val) return; selectedDate = val; renderCalendar(); renderAppointments(); }
 
         function renderCalendar() {
             const c = document.getElementById('horizontal-calendar'); c.innerHTML = '';
@@ -477,47 +446,33 @@
             const pivot = new Date(y, m - 1, d_val);
             const startDate = new Date(pivot);
             startDate.setDate(startDate.getDate() - 7); 
-            
             for (let i = 0; i < 68; i++) {
-                const d = new Date(startDate);
-                d.setDate(d.getDate() + i);
+                const d = new Date(startDate); d.setDate(d.getDate() + i);
                 const dateStr = d.toLocaleDateString('pt-BR').split('/').reverse().join('-');
-                
                 const countScheduled = (db.appointments||[]).filter(a => a.date === dateStr && a.status === 'scheduled').length;
                 const countCompleted = (db.appointments||[]).filter(a => a.date === dateStr && a.status === 'completed').length;
-                
                 const active = dateStr === selectedDate ? 'active' : '';
-                
                 let badgesHtml = '<div class="badge-container">';
                 if (countScheduled > 0) badgesHtml += `<div class="badge badge-pending">${countScheduled}</div>`;
                 if (countCompleted > 0) badgesHtml += `<div class="badge badge-completed">${countCompleted}</div>`;
                 badgesHtml += '</div>';
-
                 const el = document.createElement('div'); el.className = `calendar-day ${active}`;
                 el.onclick = () => { selectedDate = dateStr; renderCalendar(); renderAppointments(); };
                 el.innerHTML = `<span class="text-[10px] uppercase font-bold mt-1 opacity-60 tracking-wide">${d.toLocaleDateString('pt-BR',{weekday:'short'}).replace('.','')}</span><span class="text-xl font-serif font-bold leading-none my-1">${d.getDate()}</span>${badgesHtml}`;
                 c.appendChild(el);
             }
-            
             document.getElementById('month-display').innerText = pivot.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
             setTimeout(() => { const a = document.querySelector('.calendar-day.active'); if(a) a.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'}); }, 100);
         }
 
-        function goToToday() { 
-            const today = new Date();
-            selectedDate = today.toLocaleDateString('pt-BR').split('/').reverse().join('-');
-            renderCalendar(); 
-            renderAppointments(); 
-        }
+        function goToToday() { const today = new Date(); selectedDate = today.toLocaleDateString('pt-BR').split('/').reverse().join('-'); renderCalendar(); renderAppointments(); }
 
         function renderAppointments() {
             const list = document.getElementById('appointments-list'); list.innerHTML = '';
             const filter = document.getElementById('filter-status').value;
             const filtered = (db.appointments||[]).filter(a => a.date === selectedDate && (filter === 'all' || a.status === filter)).sort((a,b) => a.time.localeCompare(b.time));
-            
             if(!filtered.length) { document.getElementById('empty-agenda').classList.remove('hidden'); document.getElementById('daily-total').innerText = 'R$ 0,00'; return; }
             document.getElementById('empty-agenda').classList.add('hidden');
-            
             let total = 0;
             filtered.forEach(a => {
                 if(a.status !== 'cancelled') total += a.price;
@@ -526,19 +481,15 @@
                 let birthdayHtml = '';
                 const clientObj = db.clients.find(c => c.name === a.client);
                 if (clientObj && clientObj.birth) { const bp = clientObj.birth.split('-'); const ap = a.date.split('-'); if (bp[1] === ap[1] && bp[2] === ap[2]) birthdayHtml = `<div class="mt-2 inline-flex items-center gap-1.5 bg-gold-100 text-gold-800 text-[10px] font-bold uppercase px-2 py-1 rounded-lg border border-gold-200"><span>🎂</span> Aniversariante</div>`; }
-                
                 let actions = a.status === 'scheduled' ? 
                     `<button onclick="event.stopPropagation(); editAppointment(${a.id})" class="w-9 h-9 rounded-full bg-cream-100 text-cream-500 flex items-center justify-center hover:bg-cream-200 transition"><i class="fa-solid fa-pen text-sm"></i></button>
                      <button onclick="event.stopPropagation(); toggleStatus(${a.id},'completed')" class="w-9 h-9 rounded-full bg-gold-100 text-gold-700 flex items-center justify-center hover:bg-gold-200 transition"><i class="fa-solid fa-check text-sm"></i></button>
                      <button onclick="event.stopPropagation(); toggleStatus(${a.id},'cancelled')" class="w-9 h-9 rounded-full bg-red-50 text-red-400 flex items-center justify-center hover:bg-red-100 transition"><i class="fa-solid fa-times text-sm"></i></button>` : 
                     `<button onclick="event.stopPropagation(); toggleStatus(${a.id},'scheduled')" class="text-[10px] font-bold text-gold-600 uppercase bg-gold-50 px-3 py-1 rounded-full">Restaurar</button>`;
-                
                 const wa = a.phone ? `<a href="https://wa.me/55${a.phone.replace(/\D/g,'')}" target="_blank" onclick="event.stopPropagation()" class="text-green-600 ml-1"><i class="fa-brands fa-whatsapp"></i></a>` : '';
                 let statusClasses = a.status === 'completed' ? 'bg-green-50 border-l-4 border-l-green-400 border-y border-r border-green-100' : (a.status === 'cancelled' ? 'bg-red-50 border-l-4 border-l-red-300 border-y border-r border-red-100 opacity-75' : 'bg-white border-l-4 border-l-gold-400 border-y border-r border-cream-100');
-                
                 const remaining = a.price - (a.deposit || 0);
                 const remainingHtml = remaining > 0 ? `<div class="mt-1 text-xs font-bold text-gold-600 bg-gold-50 px-2 py-1 rounded w-fit">Falta: R$ ${remaining.toFixed(2)}</div>` : '';
-
                 list.innerHTML += `<div onclick="openDetails(${a.id})" class="cursor-pointer ${statusClasses} p-4 rounded-2xl shadow-soft flex gap-4 transition-all active:scale-[0.99]"><div class="flex flex-col items-center justify-center w-14 border-r border-cream-100 pr-4 flex-shrink-0"><span class="font-serif font-bold text-cream-900 text-2xl">${a.time}</span></div><div class="flex-1 flex flex-col justify-between gap-3"><div class="min-w-0"><h4 class="font-bold text-cream-900 text-base leading-tight mb-1 truncate">${a.client} ${wa}</h4><div class="flex flex-wrap gap-1 items-center mb-1"><span class="bg-cream-100 text-gray-800 text-sm px-2 py-0.5 rounded-md font-medium leading-tight inline-block max-w-full break-words">${a.serviceName}</span></div>${extrasHtml} ${birthdayHtml} ${remainingHtml}</div><div class="flex justify-end gap-2 border-t border-cream-50 pt-2 mt-auto">${actions}</div></div></div>`;
             });
             document.getElementById('daily-total').innerText = 'R$ ' + total.toFixed(2);
@@ -682,7 +633,6 @@
             checkUnsavedStatus(); 
         });
         
-        // *** Correção aqui: Event Listener para o form de Serviço/Extra ***
         document.getElementById('form-service').addEventListener('submit', e => {
             e.preventDefault(); 
             const type = document.getElementById('serv-type').value; 
@@ -845,13 +795,24 @@
                         <span class="text-xs font-bold text-gold-600 mb-1 block">${dateFormatted}</span>
                         
                         <div class="bg-white p-3 rounded-xl border border-cream-100 shadow-sm">
-                            <img src="${item.image}" class="w-full h-48 object-cover rounded-lg mb-2 cursor-pointer hover:opacity-90 transition" onclick="window.open(this.src)">
+                            <img src="${item.image}" class="w-full h-48 object-cover rounded-lg mb-2 cursor-pointer hover:opacity-90 transition" onclick="openLightbox(this.src)">
                             ${item.note ? `<p class="text-sm text-cream-800 italic">"${item.note}"</p>` : ''}
                             <button onclick="deleteGalleryItem(${client.id}, ${item.id})" class="text-[10px] text-red-400 mt-2 hover:underline">Excluir</button>
                         </div>
                     </div>
                 `;
             });
+        }
+
+        function openLightbox(src) {
+            document.getElementById('lightbox-img').src = src;
+            document.getElementById('modal-lightbox').classList.remove('hidden');
+            document.getElementById('modal-lightbox').classList.add('flex');
+        }
+
+        function closeLightbox() {
+            document.getElementById('modal-lightbox').classList.add('hidden');
+            document.getElementById('modal-lightbox').classList.remove('flex');
         }
 
         function handleImagePreview(input) {
