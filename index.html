@@ -230,7 +230,6 @@
                 <button onclick="closeModal('modal-appointment')" class="w-10 h-10 flex items-center justify-center bg-cream-50 rounded-full text-cream-400 hover:text-gold-600"><i class="fa-solid fa-times"></i></button>
             </div>
             <div class="flex-1 overflow-y-auto p-6">
-                <!-- ALERTA DE CONFLITO -->
                 <div id="conflict-alert" class="hidden animate-pulse-red mb-4 p-4 rounded-xl border border-red-200 text-red-700 text-sm font-bold flex items-center gap-2">
                     <i class="fa-solid fa-circle-exclamation"></i>
                     <span id="conflict-msg">Choque de horário!</span>
@@ -248,7 +247,6 @@
                         <div><label class="block text-[10px] font-bold text-gold-600 uppercase tracking-wider mb-1.5 ml-1">Horário</label><input type="tel" id="app-time" required class="w-full h-14 input-elegant rounded-2xl px-4 text-cream-900 font-medium text-center" placeholder="00:00" maxlength="5" oninput="handleTimeInput(this); checkConflict()"></div>
                     </div>
                     
-                    <!-- CAMPO DE TELEFONE (RESTAURADO) -->
                     <div>
                         <label class="block text-[10px] font-bold text-gold-600 uppercase tracking-wider mb-1.5 ml-1">WhatsApp</label>
                         <input type="tel" id="app-phone" class="w-full h-14 input-elegant rounded-2xl px-4 text-cream-900 font-medium" placeholder="(00) 00000-0000">
@@ -257,7 +255,6 @@
                     <div><label class="block text-[10px] font-bold text-gold-600 uppercase tracking-wider mb-1.5 ml-1">Procedimento</label><select id="app-service" onchange="calculateTotal()" required class="custom-select w-full h-14 input-elegant rounded-2xl px-4 bg-transparent text-cream-900 font-medium"></select></div>
                     <div class="bg-cream-50 p-5 rounded-2xl border border-cream-100"><label class="block text-[10px] font-bold text-cream-400 uppercase tracking-wider mb-3">Extras</label><div id="app-extras-list" class="space-y-3"></div></div>
                     
-                    <!-- SINAL E TOTAL -->
                     <div class="flex items-center gap-3">
                         <div class="flex-1">
                             <label class="block text-[10px] font-bold text-gold-600 uppercase tracking-wider mb-1.5 ml-1">Sinal Pago (R$)</label>
@@ -278,11 +275,9 @@
         </div>
     </div>
 
-    <!-- MODAL DETALHES (LEITURA) -->
-    <div id="modal-details" class="fixed inset-0 bg-black/40 z-50 hidden items-center justify-center backdrop-blur-sm px-4">
+    <div id="modal-details" class="fixed inset-0 bg-black/40 z-50 hidden flex items-center justify-center backdrop-blur-sm px-4">
         <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl animate-fade-in-up relative overflow-hidden">
-             <!-- Decoracao -->
-            <div class="absolute top-0 right-0 w-32 h-32 bg-gold-100 opacity-50 rounded-full -mr-12 -mt-12"></div>
+             <div class="absolute top-0 right-0 w-32 h-32 bg-gold-100 opacity-50 rounded-full -mr-12 -mt-12"></div>
 
             <div class="relative z-10">
                 <div class="flex justify-between items-start mb-6">
@@ -328,8 +323,7 @@
         </div>
     </div>
 
-    <!-- MODAL CLIENTE (EDITAR/NOVO) -->
-    <div id="modal-client" class="fixed inset-0 bg-black/40 z-50 hidden items-center justify-center backdrop-blur-sm px-4">
+    <div id="modal-client" class="fixed inset-0 bg-black/40 z-50 hidden flex items-center justify-center backdrop-blur-sm px-4">
         <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl animate-fade-in-up">
             <h3 class="font-serif font-bold text-2xl text-cream-900 mb-6" id="modal-client-title">Nova Cliente</h3>
             <form id="form-client" class="space-y-4">
@@ -345,8 +339,7 @@
         </div>
     </div>
 
-    <!-- MODAL SERVIÇO -->
-    <div id="modal-service" class="fixed inset-0 bg-black/40 z-50 hidden items-center justify-center backdrop-blur-sm px-4">
+    <div id="modal-service" class="fixed inset-0 bg-black/40 z-50 hidden flex items-center justify-center backdrop-blur-sm px-4">
         <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl animate-fade-in-up">
             <h3 class="font-serif font-bold text-2xl text-cream-900 mb-6">Novo Item</h3>
             <form id="form-service" class="space-y-4">
@@ -366,16 +359,128 @@
         let selectedDate = new Date().toISOString().split('T')[0];
         let hasUnsaved = false;
 
+        // FUNÇÕES UTILITÁRIAS GLOBAIS (HOISTED)
+        function openModal(id) {
+            const el = document.getElementById(id);
+            if(el) {
+                el.classList.remove('hidden');
+                el.classList.add('flex');
+            }
+        }
+
+        function closeModal(id) {
+            const el = document.getElementById(id);
+            if(el) {
+                el.classList.add('hidden');
+                el.classList.remove('flex');
+            }
+        }
+
+        function saveLocalData() {
+            localStorage.setItem('emelyData', JSON.stringify(db));
+        }
+
+        function checkUnsavedStatus() {
+            const btn = document.getElementById('cloud-btn');
+            if (btn) {
+                if (hasUnsaved) btn.classList.add('unsaved-badge');
+                else btn.classList.remove('unsaved-badge');
+            }
+        }
+
+        function saveCloudUrl() { 
+            localStorage.setItem('emelyCloudUrl', document.getElementById('cloud-url').value); 
+            alert('Salvo!'); 
+        }
+
+        async function syncUpload() { 
+            const u=localStorage.getItem('emelyCloudUrl'); 
+            if(!u) return alert('Sem URL'); 
+            
+            const b=document.getElementById('btn-upload'); 
+            const originalText = b.innerHTML;
+            b.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Enviando...'; 
+            
+            try { 
+                // Usando no-cors para evitar bloqueio do Google, mas não lemos resposta
+                await fetch(u, {
+                    method: 'POST',
+                    mode: 'no-cors', 
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(db)
+                }); 
+                
+                // Assumimos sucesso se não der erro de rede
+                alert('Dados enviados para a nuvem!'); 
+                hasUnsaved = false; 
+                checkUnsavedStatus(); 
+            } catch(e) {
+                alert('Erro ao enviar. Verifique a URL.');
+                console.error(e);
+            } finally {
+                b.innerHTML = originalText;
+            } 
+        }
+
+        async function syncDownload() { 
+            const u=localStorage.getItem('emelyCloudUrl'); 
+            if(!u) return alert('Sem URL'); 
+            if(!confirm('Substituir dados locais?')) return; 
+            
+            const b=document.getElementById('btn-download'); 
+            const originalText = b.innerHTML;
+            b.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Baixando...'; 
+            
+            try { 
+                const r=await fetch(u); 
+                const d=await r.json(); 
+                
+                if(d && !d.error) { 
+                    db = d; 
+                    // Garante que arrays existam
+                    if(!db.services) db.services=[]; 
+                    if(!db.extras) db.extras=[]; 
+                    if(!db.appointments) db.appointments=[]; 
+                    if(!db.clients) db.clients=[]; 
+                    
+                    hasUnsaved = false; 
+                    saveLocalData(); 
+                    location.reload(); 
+                } else {
+                    alert('Erro no formato dos dados: ' + (d.message || 'Desconhecido'));
+                }
+            } catch(e) {
+                alert('Erro ao baixar.'); 
+                console.error(e);
+            } finally {
+                b.innerHTML = originalText;
+            } 
+        }
+
         window.onload = () => {
             loadLocalData();
             document.getElementById('fin-month').value = new Date().toISOString().slice(0, 7);
-            const url = localStorage.getItem('emelyCloudUrl'); if(url) document.getElementById('cloud-url').value = url;
-            renderCalendar(); renderServices(); renderAppointments(); renderClients(); updateFinancials(); checkUnsavedStatus();
+            const url = localStorage.getItem('emelyCloudUrl'); 
+            if(url && document.getElementById('cloud-url')) document.getElementById('cloud-url').value = url;
+            
+            renderCalendar(); 
+            renderServices(); 
+            renderAppointments(); 
+            renderClients(); 
+            updateFinancials(); 
+            checkUnsavedStatus();
         };
 
         function loadLocalData() { 
             const d = localStorage.getItem('emelyData'); 
-            if(d) db = JSON.parse(d); 
+            if(d) {
+                try {
+                    db = JSON.parse(d);
+                } catch(e) {
+                    console.error("Erro ao ler local data", e);
+                    db = {}; // Fallback
+                }
+            }
             if(!db.services) db.services=[]; 
             if(!db.extras) db.extras=[]; 
             if(!db.appointments) db.appointments=[]; 
@@ -387,9 +492,29 @@
             document.getElementById('view-' + view).classList.remove('hidden');
             document.getElementById('main-scroll').scrollTop = 0;
             document.querySelectorAll('.nav-item').forEach(el => { el.classList.remove('text-gold-600'); el.classList.add('text-cream-400'); });
-            document.getElementById('nav-' + view).classList.add('text-gold-600');
-            document.getElementById('nav-' + view).classList.remove('text-cream-400');
-            if(view==='financeiro') updateFinancials(); if(view==='clients') renderClients();
+            const navBtn = document.getElementById('nav-' + view);
+            if(navBtn) {
+                navBtn.classList.add('text-gold-600');
+                navBtn.classList.remove('text-cream-400');
+            }
+            if(view==='financeiro') updateFinancials(); 
+            if(view==='clients') renderClients();
+        }
+
+        // NOVA FUNÇÃO DE MANUTENÇÃO (TIME HELPERS)
+        function timeToMinutes(time) {
+            if (!time) return 0;
+            const [h, m] = time.split(':').map(Number);
+            return h * 60 + m;
+        }
+
+        function addMinutes(time, mins) {
+            if (!time) return '00:00';
+            const [h, m] = time.split(':').map(Number);
+            const totalMins = h * 60 + m + mins;
+            const newH = Math.floor(totalMins / 60) % 24;
+            const newM = totalMins % 60;
+            return `${String(newH).padStart(2, '0')}:${String(newM).padStart(2, '0')}`;
         }
 
         function handleTimeInput(input) {
@@ -405,18 +530,32 @@
             const time = document.getElementById('app-time').value;
             const currentId = document.getElementById('app-id').value;
             const alertBox = document.getElementById('conflict-alert');
+            
             if(!date || time.length < 5) { alertBox.classList.add('hidden'); return; }
             
             const currentIdNum = currentId ? parseInt(currentId) : null;
 
-            const conflict = db.appointments.find(a => 
-                a.date === date && 
-                a.time === time && 
-                a.status !== 'cancelled' && 
-                a.id !== currentIdNum 
-            );
+            // LÓGICA DE INTERVALOS (DURAÇÃO FIXA DE 90 MINUTOS)
+            const fixedDuration = 91;
+
+            const newStart = timeToMinutes(time);
+            const newEnd = newStart + fixedDuration;
+
+            const conflict = db.appointments.find(a => {
+                if (a.date !== date || a.status === 'cancelled' || a.id === currentIdNum) return false;
+                
+                const existingStart = timeToMinutes(a.time);
+                const existingEnd = existingStart + fixedDuration; 
+
+                return (newStart < existingEnd && newEnd > existingStart);
+            });
             
-            if (conflict) { document.getElementById('conflict-msg').innerText = `Choque! Já tem ${conflict.client} às ${time}`; alertBox.classList.remove('hidden'); } else { alertBox.classList.add('hidden'); }
+            if (conflict) { 
+                document.getElementById('conflict-msg').innerText = `Você já agendou um horário às ${conflict.time}.`; 
+                alertBox.classList.remove('hidden');
+            } else { 
+                alertBox.classList.add('hidden'); 
+            }
         }
 
         function jumpToDate(val) {
@@ -428,14 +567,17 @@
 
         function renderCalendar() {
             const c = document.getElementById('horizontal-calendar'); c.innerHTML = '';
+            
             const [y, m, d_val] = selectedDate.split('-').map(Number);
             const pivot = new Date(y, m - 1, d_val);
+            
             const startDate = new Date(pivot);
             startDate.setDate(startDate.getDate() - 7); 
             
             for (let i = 0; i < 68; i++) {
                 const d = new Date(startDate);
                 d.setDate(d.getDate() + i);
+                
                 const dateStr = d.toLocaleDateString('pt-BR').split('/').reverse().join('-');
                 
                 const countScheduled = (db.appointments||[]).filter(a => a.date === dateStr && a.status === 'scheduled').length;
@@ -444,12 +586,17 @@
                 const active = dateStr === selectedDate ? 'active' : '';
                 
                 let badgesHtml = '<div class="badge-container">';
-                if (countScheduled > 0) badgesHtml += `<div class="badge badge-pending">${countScheduled}</div>`;
-                if (countCompleted > 0) badgesHtml += `<div class="badge badge-completed">${countCompleted}</div>`;
+                if (countScheduled > 0) {
+                    badgesHtml += `<div class="badge badge-pending">${countScheduled}</div>`;
+                }
+                if (countCompleted > 0) {
+                    badgesHtml += `<div class="badge badge-completed">${countCompleted}</div>`;
+                }
                 badgesHtml += '</div>';
 
                 const el = document.createElement('div'); el.className = `calendar-day ${active}`;
                 el.onclick = () => { selectedDate = dateStr; renderCalendar(); renderAppointments(); };
+                
                 el.innerHTML = `<span class="text-[10px] uppercase font-bold mt-1 opacity-60 tracking-wide">${d.toLocaleDateString('pt-BR',{weekday:'short'}).replace('.','')}</span><span class="text-xl font-serif font-bold leading-none my-1">${d.getDate()}</span>${badgesHtml}`;
                 c.appendChild(el);
             }
@@ -488,7 +635,10 @@
                      <button onclick="event.stopPropagation(); toggleStatus(${a.id},'cancelled')" class="w-9 h-9 rounded-full bg-red-50 text-red-400 flex items-center justify-center hover:bg-red-100 transition"><i class="fa-solid fa-times text-sm"></i></button>` : 
                     `<button onclick="event.stopPropagation(); toggleStatus(${a.id},'scheduled')" class="text-[10px] font-bold text-gold-600 uppercase bg-gold-50 px-3 py-1 rounded-full">Restaurar</button>`;
                 
-                const wa = a.phone ? `<a href="https://wa.me/55${a.phone.replace(/\D/g,'')}" target="_blank" onclick="event.stopPropagation()" class="text-green-600 ml-1"><i class="fa-brands fa-whatsapp"></i></a>` : '';
+                // Proteção contra número
+                const safePhone = String(a.phone || '');
+                const wa = safePhone ? `<a href="https://wa.me/55${safePhone.replace(/\D/g,'')}" target="_blank" onclick="event.stopPropagation()" class="text-green-600 ml-1"><i class="fa-brands fa-whatsapp"></i></a>` : '';
+                
                 let statusClasses = a.status === 'completed' ? 'bg-green-50 border-l-4 border-l-green-400 border-y border-r border-green-100' : (a.status === 'cancelled' ? 'bg-red-50 border-l-4 border-l-red-300 border-y border-r border-red-100 opacity-75' : 'bg-white border-l-4 border-l-gold-400 border-y border-r border-cream-100');
                 
                 const remaining = a.price - (a.deposit || 0);
@@ -702,7 +852,7 @@
         }
         
         function updateFinancials() { const m = document.getElementById('fin-month').value; if(!m) return; const apps = (db.appointments||[]).filter(a => a.date.startsWith(m) && a.status === 'completed').sort((a,b) => a.date.localeCompare(b.date)); document.getElementById('fin-total').innerText = 'R$ ' + apps.reduce((s, a) => s + a.price, 0).toFixed(2); const tb = document.getElementById('financial-table-body'); tb.innerHTML=''; apps.forEach(a => tb.innerHTML+=`<tr class="border-b border-cream-50 hover:bg-cream-50/50"><td class="p-4 text-cream-500 text-xs font-medium">${a.date.split('-')[2]}/${a.date.split('-')[1]}</td><td class="p-4 font-bold text-cream-800 text-xs">${a.client}</td><td class="p-4 font-mono font-bold text-gold-600 text-xs text-right">R$ ${a.price.toFixed(2)}</td></tr>`); }
-        function generateWhatsappMessages() { const c = document.getElementById('ai-output'); c.classList.remove('hidden'); const t = new Date(); t.setDate(t.getDate()+1); const dateStr = t.toLocaleDateString('pt-BR').split('/').reverse().join('-'); const apps = (db.appointments||[]).filter(a => a.date === dateStr && a.status === 'scheduled'); if(!apps.length) { document.getElementById('ai-content').innerHTML = '<p class="italic text-center text-cream-400">Agenda livre para amanhã.</p>'; return; } let html = `<p class="font-bold text-gold-700 text-xs uppercase tracking-wider mb-3">Agenda de Amanhã (${dateStr.split('-').reverse().join('/')})</p><div class="space-y-3">`; apps.forEach(a => { const msg = `Olá ${a.client.split(' ')[0]}! ✨ Passando para confirmar nosso horário de amanhã às ${a.time} para ${a.serviceName}. Posso confirmar?`; let link = `https://wa.me/?text=${encodeURIComponent(msg)}`; if(a.phone) link = `https://wa.me/55${a.phone.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`; html += `<a href="${link}" target="_blank" class="block bg-cream-50 p-4 rounded-2xl border border-cream-100 flex justify-between items-center hover:bg-green-50 transition group"><div><h5 class="font-bold text-cream-900 text-sm">${a.client}</h5><span class="text-xs text-cream-500">${a.time} • ${a.serviceName}</span></div><div class="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center shadow-sm group-hover:scale-110 transition"><i class="fa-brands fa-whatsapp"></i></div></a>`; }); document.getElementById('ai-content').innerHTML = html + '</div>'; }
+        function generateWhatsappMessages() { const c = document.getElementById('ai-output'); c.classList.remove('hidden'); const t = new Date(); t.setDate(t.getDate()+1); const dateStr = t.toLocaleDateString('pt-BR').split('/').reverse().join('-'); const apps = (db.appointments||[]).filter(a => a.date === dateStr && a.status === 'scheduled'); if(!apps.length) { document.getElementById('ai-content').innerHTML = '<p class="italic text-center text-cream-400">Agenda livre para amanhã.</p>'; return; } let html = `<p class="font-bold text-gold-700 text-xs uppercase tracking-wider mb-3">Agenda de Amanhã (${dateStr.split('-').reverse().join('/')})</p><div class="space-y-3">`; apps.forEach(a => { const msg = `Olá ${a.client.split(' ')[0]}! ✨ Passando para confirmar nosso horário de amanhã às ${a.time} para ${a.serviceName}. Posso confirmar?`; let link = `https://wa.me/?text=${encodeURIComponent(msg)}`; if(a.phone) link = `https://wa.me/55${String(a.phone).replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`; html += `<a href="${link}" target="_blank" class="block bg-cream-50 p-4 rounded-2xl border border-cream-100 flex justify-between items-center hover:bg-green-50 transition group"><div><h5 class="font-bold text-cream-900 text-sm">${a.client}</h5><span class="text-xs text-cream-500">${a.time} • ${a.serviceName}</span></div><div class="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center shadow-sm group-hover:scale-110 transition"><i class="fa-brands fa-whatsapp"></i></div></a>`; }); document.getElementById('ai-content').innerHTML = html + '</div>'; }
 
         // NOVA FUNÇÃO DE MANUTENÇÃO
         function generateMaintenanceMessages() { 
@@ -752,7 +902,7 @@
             candidates.forEach(c => { 
                 const msg = `Oi ${c.name.split(' ')[0]}! 💖 Já fazem ${c.days} dias das suas unhas (${c.service}). Vamos agendar a manutenção para manter elas lindas?`; 
                 let link = `https://wa.me/?text=${encodeURIComponent(msg)}`; 
-                if(c.phone) link = `https://wa.me/55${c.phone.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`; 
+                if(c.phone) link = `https://wa.me/55${String(c.phone).replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`; 
                 
                 html += `<a href="${link}" target="_blank" class="block bg-cream-50 p-4 rounded-2xl border border-cream-100 flex justify-between items-center hover:bg-purple-50 transition group"><div><h5 class="font-bold text-cream-900 text-sm">${c.name}</h5><span class="text-xs text-red-400 font-bold">Ausente há ${c.days} dias</span></div><div class="w-8 h-8 bg-purple-500 text-white rounded-full flex items-center justify-center shadow-sm group-hover:scale-110 transition"><i class="fa-brands fa-whatsapp"></i></div></a>`; 
             }); 
@@ -791,11 +941,13 @@
                 }
 
                 const birthIcon = c.birth ? `<i class="fa-solid fa-cake-candles text-gold-400 ml-2 text-xs" title="${c.birth}"></i>` : '';
+                
+                // CORREÇÃO TELEFONE: String() para evitar erro
                 const whatsappBtn = c.phone 
-                    ? `<a href="https://wa.me/55${c.phone.replace(/\D/g,'')}" target="_blank" class="text-green-500 hover:text-green-700 tooltip-action" title="WhatsApp"><i class="fa-brands fa-whatsapp text-xl"></i></a>` 
+                    ? `<a href="https://wa.me/55${String(c.phone).replace(/\D/g,'')}" target="_blank" class="text-green-500 hover:text-green-700 tooltip-action" title="WhatsApp"><i class="fa-brands fa-whatsapp text-xl"></i></a>` 
                     : '<span class="text-gray-300"><i class="fa-brands fa-whatsapp text-xl"></i></span>';
                 
-                // CARTÃO REDESENHADO (v19)
+                // CARTÃO REDESENHADO (v19 - Design em 2 Colunas)
                 list.innerHTML += `
                     <div class="bg-white rounded-2xl shadow-soft border border-cream-100 overflow-hidden group hover:border-gold-200 transition-all">
                         <!-- Parte Superior: Informações -->
@@ -843,17 +995,6 @@
                 checkUnsavedStatus(); 
             } 
         }
-
-        function checkUnsavedStatus() { 
-            const btn = document.getElementById('cloud-btn'); 
-            if (hasUnsaved) btn.classList.add('unsaved-badge'); 
-            else btn.classList.remove('unsaved-badge'); 
-        }
-
-        // FUNÇÕES DE NUVEM
-        function saveCloudUrl() { localStorage.setItem('emelyCloudUrl', document.getElementById('cloud-url').value); alert('Salvo!'); }
-        async function syncUpload() { const u=localStorage.getItem('emelyCloudUrl'); if(!u) return alert('Sem URL'); const b=document.getElementById('btn-upload'); b.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i>'; try { await fetch(u,{method:'POST',mode:'no-cors',body:JSON.stringify(db)}); alert('Sucesso!'); hasUnsaved = false; checkUnsavedStatus(); } catch(e){alert('Erro');} finally {b.innerHTML='<i class="fa-solid fa-cloud-arrow-up text-white"></i> Enviar';} }
-        async function syncDownload() { const u=localStorage.getItem('emelyCloudUrl'); if(!u) return alert('Sem URL'); if(!confirm('Substituir dados locais?')) return; const b=document.getElementById('btn-download'); b.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i>'; try { const r=await fetch(u); const d=await r.json(); if(d) { db=d; hasUnsaved = false; saveLocalData(); location.reload(); } } catch(e){alert('Erro');} finally {b.innerHTML='<i class="fa-solid fa-cloud-arrow-down"></i> Baixar';} }
 
         const style = document.createElement('style');
         style.innerHTML = `@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } } .animate-slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; } @keyframes fadeInUp { from { opacity:0; transform: scale(0.95); } to { opacity:1; transform: scale(1); } } .animate-fade-in-up { animation: fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }`;
