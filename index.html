@@ -42,20 +42,8 @@
         .calendar-day { min-width: 68px; height: 84px; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.2s; cursor: pointer; border: 1px solid #E6DCC0; background: #FFFFFF; }
         .calendar-day.active { background: #2E2B22; color: #D4AF37; border-color: #2E2B22; box-shadow: 0 8px 16px rgba(46, 43, 34, 0.15); transform: translateY(-2px); }
         
-        /* Bolinhas do Calendário */
         .calendar-day .badge-container { display: flex; gap: 3px; margin-top: 4px; justify-content: center; }
-        .calendar-day .badge { 
-            width: 18px; 
-            height: 18px; 
-            border-radius: 50%; 
-            font-size: 10px; 
-            font-weight: bold; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            color: white;
-            line-height: 1;
-        }
+        .calendar-day .badge { width: 18px; height: 18px; border-radius: 50%; font-size: 10px; font-weight: bold; display: flex; align-items: center; justify-content: center; color: white; line-height: 1; }
         .badge-pending { background-color: #D4AF37; } 
         .badge-completed { background-color: #22c55e; } 
         
@@ -94,7 +82,6 @@
             <!-- Calendário -->
             <div class="pt-4 pb-4 mb-2 sticky top-0 z-20 bg-cream-50/95 backdrop-blur-sm border-b border-cream-200">
                 <div class="flex justify-between items-center px-4 mb-4">
-                    <!-- Seletor de Data com Ícone -->
                     <div class="flex items-center gap-3">
                         <h2 class="text-lg font-bold text-cream-900 capitalize" id="month-display">Agenda</h2>
                         <div class="relative">
@@ -182,14 +169,31 @@
                 <h2 class="text-2xl font-serif font-bold text-cream-900">Assistente</h2>
                 <p class="text-sm text-cream-500">Automação e inteligência.</p>
             </div>
-            <div class="bg-white p-6 rounded-2xl shadow-soft border border-cream-200 active:scale-98 transition mb-6 cursor-pointer group" onclick="generateWhatsappMessages()">
-                <div class="flex items-center gap-4">
-                    <div class="bg-green-50 p-3 rounded-full text-green-700 group-hover:bg-green-100 transition"><i class="fa-brands fa-whatsapp text-2xl"></i></div>
-                    <div><h3 class="font-bold text-cream-900">Confirmar Agenda</h3><p class="text-xs text-cream-500 mt-1">Gerar mensagens para amanhã.</p></div>
+            
+            <!-- Botões da IA -->
+            <div class="grid grid-cols-1 gap-4 mb-6">
+                <!-- Botão 1: Confirmar Agenda -->
+                <div class="bg-white p-6 rounded-2xl shadow-soft border border-cream-200 active:scale-98 transition cursor-pointer group" onclick="generateWhatsappMessages()">
+                    <div class="flex items-center gap-4">
+                        <div class="bg-green-50 p-3 rounded-full text-green-700 group-hover:bg-green-100 transition"><i class="fa-brands fa-whatsapp text-2xl"></i></div>
+                        <div><h3 class="font-bold text-cream-900">Confirmar Agenda</h3><p class="text-xs text-cream-500 mt-1">Gerar mensagens para amanhã.</p></div>
+                    </div>
+                </div>
+
+                <!-- Botão 2: Lembrete de Manutenção -->
+                <div class="bg-white p-6 rounded-2xl shadow-soft border border-cream-200 active:scale-98 transition cursor-pointer group" onclick="generateMaintenanceMessages()">
+                    <div class="flex items-center gap-4">
+                        <div class="bg-purple-50 p-3 rounded-full text-purple-700 group-hover:bg-purple-100 transition"><i class="fa-solid fa-wand-magic-sparkles text-2xl"></i></div>
+                        <div><h3 class="font-bold text-cream-900">Lembrete de Manutenção</h3><p class="text-xs text-cream-500 mt-1">Clientes sem retorno há 20+ dias.</p></div>
+                    </div>
                 </div>
             </div>
+
             <div id="ai-output" class="mt-6 hidden bg-white p-5 rounded-2xl shadow-soft border border-gold-100 mb-20">
-                <h4 class="font-bold text-gold-700 mb-3 text-xs uppercase tracking-wide border-b border-cream-100 pb-2">Mensagens Geradas</h4>
+                <div class="flex justify-between items-center mb-3 pb-2 border-b border-cream-100">
+                    <h4 class="font-bold text-gold-700 text-xs uppercase tracking-wide" id="ai-title">Mensagens Geradas</h4>
+                    <button onclick="document.getElementById('ai-output').classList.add('hidden')" class="text-cream-400 hover:text-gold-600"><i class="fa-solid fa-times"></i></button>
+                </div>
                 <div id="ai-content" class="space-y-4 text-cream-800 text-sm"></div>
             </div>
         </div>
@@ -415,36 +419,30 @@
 
         function renderCalendar() {
             const c = document.getElementById('horizontal-calendar'); c.innerHTML = '';
-            
             const [y, m, d_val] = selectedDate.split('-').map(Number);
             const pivot = new Date(y, m - 1, d_val);
-            
             const startDate = new Date(pivot);
             startDate.setDate(startDate.getDate() - 7); 
             
             for (let i = 0; i < 68; i++) {
                 const d = new Date(startDate);
                 d.setDate(d.getDate() + i);
-                
                 const dateStr = d.toLocaleDateString('pt-BR').split('/').reverse().join('-');
                 
+                // CONTABILIZAÇÃO DAS BOLINHAS
                 const countScheduled = (db.appointments||[]).filter(a => a.date === dateStr && a.status === 'scheduled').length;
                 const countCompleted = (db.appointments||[]).filter(a => a.date === dateStr && a.status === 'completed').length;
                 
                 const active = dateStr === selectedDate ? 'active' : '';
                 
+                // Bolinhas Visuais Lado a Lado
                 let badgesHtml = '<div class="badge-container">';
-                if (countScheduled > 0) {
-                    badgesHtml += `<div class="badge badge-pending">${countScheduled}</div>`;
-                }
-                if (countCompleted > 0) {
-                    badgesHtml += `<div class="badge badge-completed">${countCompleted}</div>`;
-                }
+                if (countScheduled > 0) badgesHtml += `<div class="badge badge-pending">${countScheduled}</div>`;
+                if (countCompleted > 0) badgesHtml += `<div class="badge badge-completed">${countCompleted}</div>`;
                 badgesHtml += '</div>';
 
                 const el = document.createElement('div'); el.className = `calendar-day ${active}`;
                 el.onclick = () => { selectedDate = dateStr; renderCalendar(); renderAppointments(); };
-                
                 el.innerHTML = `<span class="text-[10px] uppercase font-bold mt-1 opacity-60 tracking-wide">${d.toLocaleDateString('pt-BR',{weekday:'short'}).replace('.','')}</span><span class="text-xl font-serif font-bold leading-none my-1">${d.getDate()}</span>${badgesHtml}`;
                 c.appendChild(el);
             }
@@ -666,7 +664,69 @@
         }
         
         function updateFinancials() { const m = document.getElementById('fin-month').value; if(!m) return; const apps = (db.appointments||[]).filter(a => a.date.startsWith(m) && a.status === 'completed').sort((a,b) => a.date.localeCompare(b.date)); document.getElementById('fin-total').innerText = 'R$ ' + apps.reduce((s, a) => s + a.price, 0).toFixed(2); const tb = document.getElementById('financial-table-body'); tb.innerHTML=''; apps.forEach(a => tb.innerHTML+=`<tr class="border-b border-cream-50 hover:bg-cream-50/50"><td class="p-4 text-cream-500 text-xs font-medium">${a.date.split('-')[2]}/${a.date.split('-')[1]}</td><td class="p-4 font-bold text-cream-800 text-xs">${a.client}</td><td class="p-4 font-mono font-bold text-gold-600 text-xs text-right">R$ ${a.price.toFixed(2)}</td></tr>`); }
-        function generateWhatsappMessages() { const c = document.getElementById('ai-output'); c.classList.remove('hidden'); const t = new Date(); t.setDate(t.getDate()+1); const dateStr = t.toLocaleDateString('pt-BR').split('/').reverse().join('-'); const apps = (db.appointments||[]).filter(a => a.date === dateStr && a.status === 'scheduled'); if(!apps.length) { document.getElementById('ai-content').innerHTML = '<p class="italic text-center text-cream-400">Agenda livre para amanhã.</p>'; return; } let html = `<p class="font-bold text-gold-700 text-xs uppercase tracking-wider mb-3">Agenda de Amanhã (${dateStr.split('-').reverse().join('/')})</p><div class="space-y-3">`; apps.forEach(a => { const msg = `Olá ${a.client.split(' ')[0]}! ✨ Passando para confirmar nosso horário de amanhã às ${a.time} para ${a.serviceName}. Posso confirmar?`; let link = `https://wa.me/?text=${encodeURIComponent(msg)}`; if(a.phone) link = `https://wa.me/55${a.phone.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`; html += `<a href="${link}" target="_blank" class="block bg-cream-50 p-4 rounded-2xl border border-cream-100 flex justify-between items-center hover:bg-green-50 transition group"><div><h5 class="font-bold text-cream-900 text-sm">${a.client}</h5><span class="text-xs text-cream-500">${a.time} • ${a.serviceName}</span></div><div class="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center shadow-sm group-hover:scale-110 transition"><i class="fa-brands fa-whatsapp"></i></div></a>`; }); document.getElementById('ai-content').innerHTML = html + '</div>'; }
+        function generateWhatsappMessages() { const c = document.getElementById('ai-output'); c.classList.remove('hidden'); const t = new Date(); t.setDate(t.getDate()+1); const dateStr = t.toISOString().split('T')[0]; const apps = (db.appointments||[]).filter(a => a.date === dateStr && a.status === 'scheduled'); if(!apps.length) { document.getElementById('ai-content').innerHTML = '<p class="italic text-center text-cream-400">Agenda livre para amanhã.</p>'; return; } let html = `<p class="font-bold text-gold-700 text-xs uppercase tracking-wider mb-3">Agenda de Amanhã (${dateStr.split('-').reverse().join('/')})</p><div class="space-y-3">`; apps.forEach(a => { const msg = `Olá ${a.client.split(' ')[0]}! ✨ Passando para confirmar nosso horário de amanhã às ${a.time} para ${a.serviceName}. Posso confirmar?`; let link = `https://wa.me/?text=${encodeURIComponent(msg)}`; if(a.phone) link = `https://wa.me/55${a.phone.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`; html += `<a href="${link}" target="_blank" class="block bg-cream-50 p-4 rounded-2xl border border-cream-100 flex justify-between items-center hover:bg-green-50 transition group"><div><h5 class="font-bold text-cream-900 text-sm">${a.client}</h5><span class="text-xs text-cream-500">${a.time} • ${a.serviceName}</span></div><div class="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center shadow-sm group-hover:scale-110 transition"><i class="fa-brands fa-whatsapp"></i></div></a>`; }); document.getElementById('ai-content').innerHTML = html + '</div>'; }
+
+        // NOVA FUNÇÃO DE MANUTENÇÃO
+        function generateMaintenanceMessages() { 
+            const c = document.getElementById('ai-output'); 
+            c.classList.remove('hidden'); 
+            
+            let candidates = [];
+            const today = new Date();
+            
+            // Pega clientes únicos
+            const uniqueClients = [...new Set(db.clients.map(c => c.name))];
+            
+            uniqueClients.forEach(clientName => {
+                // Pega último agendamento CONCLUÍDO
+                const clientApps = db.appointments
+                    .filter(a => a.client === clientName && a.status === 'completed')
+                    .sort((a,b) => new Date(b.date) - new Date(a.date));
+                
+                if(clientApps.length > 0) {
+                    const lastApp = clientApps[0];
+                    const lastDate = new Date(lastApp.date);
+                    
+                    // Diferença em dias
+                    const diffTime = Math.abs(today - lastDate);
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    
+                    // Regra: > 20 dias E não tem agendamento futuro
+                    if (diffDays > 20) {
+                        const hasFuture = db.appointments.some(a => a.client === clientName && a.status === 'scheduled' && new Date(a.date) >= today);
+                        
+                        if (!hasFuture) {
+                            // Busca dados do cliente para pegar o telefone
+                            const clientData = db.clients.find(c => c.name === clientName);
+                            candidates.push({ 
+                                name: clientName, 
+                                days: diffDays, 
+                                service: lastApp.serviceName, 
+                                phone: clientData ? clientData.phone : null
+                            });
+                        }
+                    }
+                }
+            });
+
+            if(!candidates.length) { 
+                document.getElementById('ai-content').innerHTML = '<p class="italic text-center text-cream-400">Nenhuma cliente precisando de manutenção hoje.</p>'; 
+                return; 
+            } 
+            
+            let html = `<p class="font-bold text-purple-700 text-xs uppercase tracking-wider mb-3">Lista de Retorno</p><div class="space-y-3">`; 
+            
+            candidates.forEach(c => { 
+                const msg = `Oi ${c.name.split(' ')[0]}! 💖 Já fazem ${c.days} dias das suas unhas (${c.service}). Vamos agendar a manutenção para manter elas lindas?`; 
+                let link = `https://wa.me/?text=${encodeURIComponent(msg)}`; 
+                if(c.phone) link = `https://wa.me/55${c.phone.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`; 
+                
+                html += `<a href="${link}" target="_blank" class="block bg-cream-50 p-4 rounded-2xl border border-cream-100 flex justify-between items-center hover:bg-purple-50 transition group"><div><h5 class="font-bold text-cream-900 text-sm">${c.name}</h5><span class="text-xs text-red-400 font-bold">Ausente há ${c.days} dias</span></div><div class="w-8 h-8 bg-purple-500 text-white rounded-full flex items-center justify-center shadow-sm group-hover:scale-110 transition"><i class="fa-brands fa-whatsapp"></i></div></a>`; 
+            }); 
+            
+            document.getElementById('ai-content').innerHTML = html + '</div>'; 
+        }
+
         function openModal(id) { document.getElementById(id).classList.remove('hidden'); document.getElementById(id).classList.add('flex'); }
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); document.getElementById(id).classList.remove('flex'); }
         function saveLocalData() { localStorage.setItem('emelyData', JSON.stringify(db)); }
