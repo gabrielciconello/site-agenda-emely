@@ -59,8 +59,10 @@
         @keyframes pulse-red { 0% { background-color: #fee2e2; } 50% { background-color: #fecaca; } 100% { background-color: #fee2e2; } }
         .animate-pulse-red { animation: pulse-red 2s infinite; }
 
-        /* Estilo das Tags */
         .tag-pill { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 99px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.02em; color: #2E2B22; border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        
+        /* Checkmark animado para seleção de cor */
+        .color-option.selected { transform: scale(1.1); box-shadow: 0 0 0 2px #fff, 0 0 0 4px #D4AF37; }
     </style>
 </head>
 <body class="bg-cream-50">
@@ -348,15 +350,22 @@
             </div>
             
             <div class="bg-cream-50 p-4 rounded-xl border border-cream-100 mb-6">
-                <h4 class="text-xs font-bold text-cream-400 uppercase mb-2">Criar Nova</h4>
-                <div class="flex gap-2">
-                    <input type="color" id="new-tag-color" class="w-10 h-10 rounded-lg cursor-pointer border-0 bg-transparent p-0" value="#D4AF37">
-                    <input type="text" id="new-tag-name" placeholder="Nome (ex: VIP)" class="flex-1 h-10 input-elegant rounded-lg px-3 text-sm">
-                    <button onclick="addNewTag()" class="bg-gold-600 text-white w-10 h-10 rounded-lg flex items-center justify-center shadow-sm"><i class="fa-solid fa-plus"></i></button>
+                <h4 class="text-xs font-bold text-cream-400 uppercase mb-3">Criar Nova</h4>
+                
+                <div class="space-y-4">
+                    <input type="text" id="new-tag-name" placeholder="Nome (ex: VIP)" class="w-full h-12 input-elegant rounded-xl px-4 text-sm">
+                    
+                    <div>
+                        <label class="block text-[10px] font-bold text-cream-400 uppercase mb-2 ml-1">Escolha a Cor</label>
+                        <div class="flex items-center gap-3 overflow-x-auto no-scrollbar py-1" id="color-palette"></div>
+                        <input type="hidden" id="new-tag-color" value="#D4AF37">
+                    </div>
+                    
+                    <button onclick="addNewTag()" class="w-full bg-gold-600 text-white h-12 rounded-xl flex items-center justify-center gap-2 shadow-sm font-bold text-sm"><i class="fa-solid fa-plus"></i> Criar Etiqueta</button>
                 </div>
             </div>
 
-            <div class="space-y-2 max-h-60 overflow-y-auto" id="tags-management-list"></div>
+            <div class="space-y-2 max-h-48 overflow-y-auto" id="tags-management-list"></div>
         </div>
     </div>
 
@@ -390,6 +399,22 @@
         };
         let selectedDate = new Date().toISOString().split('T')[0];
         let hasUnsaved = false;
+
+        // PALETA DE CORES PRÉ-DEFINIDA
+        const tagColors = [
+            '#D4AF37', // Gold
+            '#EF4444', // Red
+            '#F97316', // Orange
+            '#F59E0B', // Amber
+            '#84CC16', // Lime
+            '#10B981', // Emerald
+            '#06B6D4', // Cyan
+            '#3B82F6', // Blue
+            '#8B5CF6', // Violet
+            '#EC4899', // Pink
+            '#64748B', // Slate
+            '#000000'  // Black
+        ];
 
         // FUNÇÕES UTILITÁRIAS GLOBAIS
         function openModal(id) {
@@ -524,7 +549,27 @@
         // ================= TAGS LOGIC =================
         function openTagsModal() {
             renderTagsList();
+            renderColorPalette(); // Inicializa o novo seletor
             openModal('modal-tags');
+        }
+
+        function renderColorPalette() {
+            const container = document.getElementById('color-palette');
+            container.innerHTML = '';
+            const currentSelected = document.getElementById('new-tag-color').value;
+
+            tagColors.forEach(color => {
+                const div = document.createElement('div');
+                div.className = `color-option w-8 h-8 rounded-full cursor-pointer transition flex-shrink-0 ${currentSelected === color ? 'selected' : ''}`;
+                div.style.backgroundColor = color;
+                div.onclick = () => {
+                    document.getElementById('new-tag-color').value = color;
+                    // Atualiza visual
+                    document.querySelectorAll('.color-option').forEach(el => el.classList.remove('selected'));
+                    div.classList.add('selected');
+                };
+                container.appendChild(div);
+            });
         }
 
         function renderTagsList() {
@@ -553,10 +598,14 @@
             db.tags.push(newTag);
             
             document.getElementById('new-tag-name').value = '';
+            // Reseta cor para padrão
+            document.getElementById('new-tag-color').value = '#D4AF37';
+            renderColorPalette();
+            
             hasUnsaved = true;
             saveLocalData();
             renderTagsList();
-            renderClients(); // Atualizar visualização se necessário
+            renderClients(); 
             checkUnsavedStatus();
         }
 
@@ -581,7 +630,6 @@
             clientTagsIds.forEach(tid => {
                 const tag = (db.tags || []).find(t => t.id === tid);
                 if(tag) {
-                    // Contraste simples: se for muito claro, borda escura, senão borda clara
                     html += `<span class="${sizeClass} rounded-full font-bold uppercase tracking-wide border border-black/5 shadow-sm inline-block mr-1 mb-1" style="background-color: ${tag.color}; color: #2E2B22;">${tag.name}</span>`;
                 }
             });
