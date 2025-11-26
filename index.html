@@ -8,11 +8,13 @@
     <meta name="apple-mobile-web-app-title" content="Emely Nails">
     <title>Emely - Nail Designer</title>
     
+    <!-- Ícone -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23D4AF37;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23AA8C2C;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' fill='%23FAF7F0' rx='25'/%3E%3Cpath d='M50 20 L80 45 L50 85 L20 45 Z' fill='url(%23grad)'/%3E%3C/svg%3E">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Fontes Originais -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Lora:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <script>
@@ -56,6 +58,7 @@
 </head>
 <body class="bg-cream-50">
 
+    <!-- Header -->
     <header class="bg-white px-4 py-5 z-30 flex justify-between items-center flex-shrink-0 border-b border-cream-200">
         <div>
             <h1 class="font-serif font-bold text-2xl text-cream-900 tracking-tight">Emely</h1>
@@ -66,9 +69,12 @@
         </button>
     </header>
 
+    <!-- Main Content -->
     <main class="flex-1 overflow-y-auto overflow-x-hidden pb-32 no-scrollbar" id="main-scroll">
         
+        <!-- VIEW: AGENDA -->
         <div id="view-agenda" class="view-section fade-in">
+            <!-- Calendário -->
             <div class="pt-4 pb-4 mb-2 sticky top-0 z-20 bg-cream-50/95 backdrop-blur-sm border-b border-cream-200">
                 <div class="flex justify-between items-center px-4 mb-4">
                     <h2 class="text-lg font-bold text-cream-900 capitalize" id="month-display">Agenda</h2>
@@ -94,6 +100,7 @@
                     <span class="text-xs font-bold text-cream-400 uppercase tracking-wider">Lista de Horários</span>
                     <span class="text-xs font-bold text-cream-900 bg-gold-100 px-2 py-1 rounded-lg text-gold-800" id="daily-total">R$ 0,00</span>
                 </div>
+                <!-- Lista de Agendamentos -->
                 <div id="appointments-list" class="space-y-3 pb-20"></div>
                 
                 <div id="empty-agenda" class="flex flex-col items-center justify-center py-16 text-cream-300 hidden">
@@ -102,6 +109,7 @@
             </div>
         </div>
 
+        <!-- VIEW: CLIENTES -->
         <div id="view-clients" class="view-section hidden fade-in px-4 pt-6">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-serif font-bold text-cream-900">Clientes</h2>
@@ -111,6 +119,7 @@
             <div id="clients-list" class="space-y-3 pb-20"></div>
         </div>
 
+        <!-- VIEW: SERVIÇOS -->
         <div id="view-servicos" class="view-section hidden fade-in px-4 pt-6">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-serif font-bold text-cream-900">Catálogo</h2>
@@ -122,6 +131,7 @@
             </div>
         </div>
 
+        <!-- VIEW: FINANCEIRO -->
         <div id="view-financeiro" class="view-section hidden fade-in px-4 pt-6">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-serif font-bold text-cream-900">Caixa</h2>
@@ -141,6 +151,7 @@
             </div>
         </div>
 
+        <!-- VIEW: IA -->
         <div id="view-ia" class="view-section hidden fade-in px-4 pt-6">
             <div class="text-center mb-8">
                 <h2 class="text-2xl font-serif font-bold text-cream-900">Assistente</h2>
@@ -158,6 +169,7 @@
             </div>
         </div>
 
+        <!-- VIEW: CLOUD -->
         <div id="view-cloud" class="view-section hidden fade-in px-4 pt-6">
             <div class="bg-white p-8 rounded-2xl shadow-soft border border-cream-200 text-center">
                 <h2 class="text-xl font-serif font-bold text-cream-900 mb-2">Nuvem</h2>
@@ -172,6 +184,7 @@
         </div>
     </main>
 
+    <!-- Nav Bar -->
     <nav class="fixed bottom-0 left-0 w-full glass-nav flex justify-around items-center pb-safe-bottom z-40 h-[72px]">
         <button onclick="router('agenda')" id="nav-agenda" class="nav-item flex-1 h-full flex flex-col items-center justify-center gap-1.5 text-gold-600 transition"><i class="fa-regular fa-calendar text-lg"></i><span class="text-[10px] font-bold uppercase tracking-wide">Agenda</span></button>
         <button onclick="router('clients')" id="nav-clients" class="nav-item flex-1 h-full flex flex-col items-center justify-center gap-1.5 text-cream-400 transition"><i class="fa-solid fa-users text-lg"></i><span class="text-[10px] font-bold uppercase tracking-wide">Clientes</span></button>
@@ -180,6 +193,7 @@
         <button onclick="router('ia')" id="nav-ia" class="nav-item flex-1 h-full flex flex-col items-center justify-center gap-1.5 text-cream-400 transition"><i class="fa-solid fa-wand-magic-sparkles text-lg"></i><span class="text-[10px] font-bold uppercase tracking-wide">IA</span></button>
     </nav>
 
+    <!-- MODAL AGENDAMENTO (EDITAR) -->
     <div id="modal-appointment" class="fixed inset-0 bg-black/40 z-50 hidden flex-col animate-slide-up backdrop-blur-sm">
         <div class="mt-auto bg-white rounded-t-[32px] h-[90vh] flex flex-col shadow-2xl overflow-hidden">
             <div class="p-6 border-b border-cream-100 flex justify-between items-center">
@@ -196,6 +210,7 @@
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div><label class="block text-[10px] font-bold text-gold-600 uppercase tracking-wider mb-1.5 ml-1">Data</label><input type="date" id="app-date" required class="w-full h-14 input-elegant rounded-2xl px-4 text-cream-900 font-medium bg-transparent cursor-pointer"></div>
+                        <!-- HORA (BLINDADO) -->
                         <div><label class="block text-[10px] font-bold text-gold-600 uppercase tracking-wider mb-1.5 ml-1">Horário</label><input type="tel" id="app-time" required class="w-full h-14 input-elegant rounded-2xl px-4 text-cream-900 font-medium text-center" placeholder="00:00" maxlength="5" oninput="handleTimeInput(this)"></div>
                     </div>
                     <div><label class="block text-[10px] font-bold text-gold-600 uppercase tracking-wider mb-1.5 ml-1">Procedimento</label><select id="app-service" onchange="calculateTotal()" required class="custom-select w-full h-14 input-elegant rounded-2xl px-4 bg-transparent text-cream-900 font-medium"></select></div>
@@ -209,9 +224,11 @@
         </div>
     </div>
 
+    <!-- MODAL DETALHES (LEITURA) -->
     <div id="modal-details" class="fixed inset-0 bg-black/40 z-50 hidden items-center justify-center backdrop-blur-sm px-4">
         <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl animate-fade-in-up relative overflow-hidden">
-             <div class="absolute top-0 right-0 w-32 h-32 bg-gold-100 opacity-50 rounded-full -mr-12 -mt-12"></div>
+             <!-- Decoracao -->
+            <div class="absolute top-0 right-0 w-32 h-32 bg-gold-100 opacity-50 rounded-full -mr-12 -mt-12"></div>
 
             <div class="relative z-10">
                 <div class="flex justify-between items-start mb-6">
@@ -253,6 +270,7 @@
         </div>
     </div>
 
+    <!-- MODAL CLIENTE (EDITAR/NOVO) -->
     <div id="modal-client" class="fixed inset-0 bg-black/40 z-50 hidden items-center justify-center backdrop-blur-sm px-4">
         <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl animate-fade-in-up">
             <h3 class="font-serif font-bold text-2xl text-cream-900 mb-6" id="modal-client-title">Nova Cliente</h3>
@@ -269,6 +287,7 @@
         </div>
     </div>
 
+    <!-- MODAL SERVIÇO -->
     <div id="modal-service" class="fixed inset-0 bg-black/40 z-50 hidden items-center justify-center backdrop-blur-sm px-4">
         <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl animate-fade-in-up">
             <h3 class="font-serif font-bold text-2xl text-cream-900 mb-6">Novo Item</h3>
@@ -308,9 +327,9 @@
 
         // Lógica de Input de Hora (BLINDADA)
         function handleTimeInput(input) {
-            let v = input.value.replace(/\D/g, ''); // Apenas números
+            let v = input.value.replace(/\D/g, ''); 
             
-            if (v.length > 4) v = v.slice(0, 4); // Limite de 4 dígitos
+            if (v.length > 4) v = v.slice(0, 4); 
             
             // Valida Horas (0-23)
             if (v.length >= 2) {
@@ -319,16 +338,13 @@
             }
             
             // Valida Minutos (00-59)
-            // Lógica: O primeiro dígito dos minutos (3º caractere da string) não pode ser > 5.
             if (v.length >= 3) {
                 let m1 = parseInt(v.slice(2, 3));
                 if (m1 > 5) {
-                    // Se digitar 6,7,8,9, substitui por 5
                     v = v.slice(0, 2) + '5' + v.slice(3);
                 }
             }
 
-            // Formatação Visual (XX:XX)
             if (v.length > 2) {
                 input.value = v.slice(0, 2) + ':' + v.slice(2);
             } else {
@@ -355,7 +371,7 @@
         }
         function goToToday() { selectedDate = new Date().toISOString().split('T')[0]; renderCalendar(); renderAppointments(); }
 
-        // --- RENDERIZAÇÃO DE AGENDAMENTOS (COM CORES E ADICIONAIS) ---
+        // --- RENDERIZAÇÃO DE AGENDAMENTOS (COM CORES, ADICIONAIS E ANIVERSÁRIO) ---
         function renderAppointments() {
             const list = document.getElementById('appointments-list'); list.innerHTML = '';
             const filter = document.getElementById('filter-status').value;
@@ -380,6 +396,22 @@
                         extrasHtml += `<span class="text-[10px] bg-gold-50 text-gold-700 px-1.5 py-0.5 rounded border border-gold-100">${ex}</span>`;
                     });
                     extrasHtml += '</div>';
+                }
+
+                // Lógica de Aniversário
+                let birthdayHtml = '';
+                const clientObj = db.clients.find(c => c.name === a.client);
+                if (clientObj && clientObj.birth) {
+                    // Formato birth: YYYY-MM-DD
+                    // Formato a.date: YYYY-MM-DD
+                    const birthParts = clientObj.birth.split('-');
+                    const appParts = a.date.split('-');
+                    // Compara Mês e Dia
+                    if (birthParts[1] === appParts[1] && birthParts[2] === appParts[2]) {
+                        birthdayHtml = `<div class="mt-2 inline-flex items-center gap-1.5 bg-gold-100 text-gold-800 text-[10px] font-bold uppercase px-2 py-1 rounded-lg border border-gold-200">
+                            <span>🎂</span> Aniversariante
+                        </div>`;
+                    }
                 }
                 
                 let actions = a.status === 'scheduled' ? 
@@ -412,6 +444,7 @@
                                     <span class="bg-cream-100 text-gray-800 text-sm px-2 py-0.5 rounded-md font-medium leading-tight inline-block max-w-full break-words">${a.serviceName}</span>
                                 </div>
                                 ${extrasHtml}
+                                ${birthdayHtml}
                             </div>
                             <div class="flex justify-end gap-2 border-t border-cream-50 pt-2 mt-auto">
                                 ${actions}
@@ -460,6 +493,26 @@
             document.getElementById('app-total-display').innerText = 'R$ 0,00';
             renderServiceOptions(); openModal('modal-appointment');
         }
+        // Nova função para Reagendar a partir da lista de clientes
+        function rescheduleClient(name) {
+            // Fecha qualquer modal aberto (só por precaução)
+            document.querySelectorAll('.fixed.inset-0').forEach(m => m.classList.add('hidden'));
+            
+            // Muda para aba Agenda
+            router('agenda');
+            
+            // Abre modal novo agendamento
+            openNewAppointment();
+            
+            // Preenche dados
+            document.getElementById('app-client').value = name;
+            // Tenta achar o cliente para preencher o telefone também
+            const c = db.clients.find(cli => cli.name === name);
+            if(c && c.phone) {
+                document.getElementById('app-phone').value = c.phone;
+            }
+        }
+
         function editAppointment(id) {
             const app = db.appointments.find(a => a.id === id); if(!app) return;
             document.getElementById('modal-title').innerText = 'Editar';
@@ -531,10 +584,19 @@
                 const birthIcon = c.birth ? `<i class="fa-solid fa-cake-candles text-gold-400 ml-2 text-xs" title="${c.birth}"></i>` : '';
                 const zapBtn = c.phone ? `<a href="https://wa.me/55${c.phone.replace(/\D/g,'')}" target="_blank" class="w-8 h-8 rounded-full bg-green-50 text-green-600 flex items-center justify-center"><i class="fa-brands fa-whatsapp text-sm"></i></a>` : '';
                 
+                // Adicionado botão de Reagendar (ícone calendário com +)
                 list.innerHTML += `
                     <div class="bg-white p-4 rounded-2xl shadow-soft border border-cream-100 flex justify-between items-center">
                         <div><h4 class="font-serif font-bold text-cream-900 text-lg flex items-center">${c.name} ${birthIcon}</h4><p class="text-xs text-gray-400 mt-0.5">${c.phone||'-'}</p></div>
-                        <div class="flex items-center gap-3">${zapBtn}<div class="flex flex-col items-center px-2 border-l border-cream-100"><span class="text-lg font-bold text-gold-600 leading-none">${visits}</span><span class="text-[8px] text-gray-300 uppercase">Visitas</span></div><button onclick="openEditClient(${c.id})" class="text-cream-300 hover:text-gold-500 p-1"><i class="fa-solid fa-pen text-sm"></i></button><button onclick="delClient(${c.id})" class="text-cream-300 hover:text-red-400 p-1"><i class="fa-solid fa-trash text-sm"></i></button></div>
+                        <div class="flex items-center gap-3">
+                            ${zapBtn}
+                            <button onclick="rescheduleClient('${c.name}')" class="w-8 h-8 rounded-full bg-gold-100 text-gold-700 flex items-center justify-center hover:bg-gold-200 transition" title="Agendar Novamente">
+                                <i class="fa-solid fa-calendar-plus text-sm"></i>
+                            </button>
+                            <div class="flex flex-col items-center px-2 border-l border-cream-100"><span class="text-lg font-bold text-gold-600 leading-none">${visits}</span><span class="text-[8px] text-gray-300 uppercase">Visitas</span></div>
+                            <button onclick="openEditClient(${c.id})" class="text-cream-300 hover:text-gold-500 p-1"><i class="fa-solid fa-pen text-sm"></i></button>
+                            <button onclick="delClient(${c.id})" class="text-cream-300 hover:text-red-400 p-1"><i class="fa-solid fa-trash text-sm"></i></button>
+                        </div>
                     </div>`;
             });
         }
