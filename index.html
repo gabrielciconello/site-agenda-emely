@@ -12,6 +12,7 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Lora:wght@400;500;600;700&display=swap" rel="stylesheet">
 
@@ -34,8 +35,6 @@
     </script>
     <style>
         body { background-color: #FDFCF8; color: #2E2B22; -webkit-tap-highlight-color: transparent; height: 100dvh; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; overflow: hidden; transition: background-color 0.3s, color 0.3s; }
-        
-        /* Dark Mode overrides */
         .dark body { background-color: #121212; color: #F0EAD6; }
         .dark .input-elegant, .dark .bg-white { background-color: #1E1E1E; border-color: #2C2C2C; color: #F0EAD6; }
         .dark .text-cream-900 { color: #F0EAD6; }
@@ -53,9 +52,8 @@
         .fade-in { animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         
-        .calendar-day { min-width: 68px; height: 84px; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.2s; cursor: pointer; border: 1px solid #E6DCC0; background: #FFFFFF; }
+        .calendar-day { min-width: 68px; width: 68px; flex-shrink: 0; height: 84px; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.2s; cursor: pointer; border: 1px solid #E6DCC0; background: #FFFFFF; }
         .calendar-day.active { background: #2E2B22; color: #D4AF37; border-color: #2E2B22; box-shadow: 0 8px 16px rgba(46, 43, 34, 0.15); transform: translateY(-2px); }
-        
         .calendar-day .badge-container { display: flex; gap: 3px; margin-top: 4px; justify-content: center; }
         .calendar-day .badge { width: 18px; height: 18px; border-radius: 50%; font-size: 10px; font-weight: bold; display: flex; align-items: center; justify-content: center; color: white; line-height: 1; }
         .badge-pending { background-color: #D4AF37; } 
@@ -64,39 +62,47 @@
         .input-elegant { background: #FFFFFF; border: 1px solid #E6DCC0; transition: all 0.3s; font-family: 'Inter', sans-serif; }
         .input-elegant:focus { border-color: #AA8C2C; box-shadow: 0 0 0 1px #AA8C2C; }
         
-        select.custom-select { -webkit-appearance: none; -moz-appearance: none; appearance: none; background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%2357534e' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3e"); background-position: right 0.75rem center; background-repeat: no-repeat; background-size: 1.2em 1.2em; padding-right: 2.5rem; }
+        /* ESTILO DE ERRO PARA O INPUT */
+        .input-error { border-color: #ef4444 !important; background-color: #fef2f2 !important; color: #991b1b !important; }
         
+        select.custom-select { -webkit-appearance: none; -moz-appearance: none; appearance: none; background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%2357534e' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3e"); background-position: right 0.75rem center; background-repeat: no-repeat; background-size: 1.2em 1.2em; padding-right: 2.5rem; }
         .glass-nav { background: rgba(253, 252, 248, 0.98); border-top: 1px solid rgba(0,0,0,0.05); }
         .unsaved-badge::after { content: ''; position: absolute; top: 0; right: 0; width: 10px; height: 10px; background-color: #ef4444; border-radius: 50%; border: 2px solid #FDFCF8; }
-        
         input, select, textarea { font-size: 16px !important; }
-        
-        @keyframes pulse-red { 0% { background-color: #fee2e2; } 50% { background-color: #fecaca; } 100% { background-color: #fee2e2; } }
-        .animate-pulse-red { animation: pulse-red 2s infinite; }
-        .dark .animate-pulse-red { animation: none; background-color: #7f1d1d; border-color: #991b1b; color: #fca5a5; }
-
+        @keyframes pulse-red { 0% { background-color: #fee2e2; border-color: #ef4444; } 50% { background-color: #fecaca; border-color: #b91c1c; } 100% { background-color: #fee2e2; border-color: #ef4444; } }
+        .animate-pulse-red { animation: pulse-red 1.5s infinite; }
+        .dark .animate-pulse-red { animation: none; background-color: #7f1d1d; border-color: #f87171; color: #fca5a5; }
         .tag-pill { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 99px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.02em; color: #2E2B22; border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
         .color-option.selected { transform: scale(1.1); box-shadow: 0 0 0 2px #fff, 0 0 0 4px #D4AF37; }
         .dark .color-option.selected { box-shadow: 0 0 0 2px #1E1E1E, 0 0 0 4px #D4AF37; }
+        
+        #loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.8); z-index: 9999; display: none; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
+        .dark #loading-overlay { background: rgba(0,0,0,0.8); }
+        
+        .dark .calendar-day.active .badge-pending {
+        background-color: #121212;
+        color: #D4AF37; 
+    }
+        
     </style>
 </head>
 <body class="bg-cream-50">
 
-    <header class="bg-white px-4 py-5 z-30 flex justify-between items-center flex-shrink-0 border-b border-cream-200 transition-colors">
+    <div id="loading-overlay"><i class="fa-solid fa-circle-notch fa-spin text-4xl text-gold-600"></i></div>
+
+    <header class="bg-white px-4 py-5 z-30 flex justify-between items-center flex-shrink-0 border-b border-cream-200 transition-colors relative">
         <div>
             <h1 class="font-serif font-bold text-2xl text-cream-900 tracking-tight">Emely</h1>
             <p class="text-[10px] text-gold-600 uppercase tracking-[0.2em] font-sans font-semibold mt-0.5">Nail Designer</p>
         </div>
         <div class="flex gap-2">
-            <button onclick="router('ia')" class="w-10 h-10 rounded-full bg-cream-50 flex items-center justify-center text-gold-600 active:scale-95 transition border border-cream-100 dark:bg-dark-700 dark:border-dark-600 dark:text-gold-400" title="Assistente IA">
-                <i class="fa-solid fa-wand-magic-sparkles"></i>
-            </button>
+            <button onclick="router('ia')" class="w-10 h-10 rounded-full bg-cream-50 flex items-center justify-center text-gold-600 active:scale-95 transition border border-cream-100 dark:bg-dark-700 dark:border-dark-600 dark:text-gold-400" title="Assistente IA"><i class="fa-solid fa-wand-magic-sparkles"></i></button>
             <button onclick="toggleTheme()" class="w-10 h-10 rounded-full bg-cream-50 flex items-center justify-center text-gold-600 active:scale-95 transition border border-cream-100 dark:bg-dark-700 dark:border-dark-600 dark:text-gold-400">
-                <i class="fa-solid fa-moon dark:hidden"></i>
-                <i class="fa-solid fa-sun hidden dark:block"></i>
+                <i class="fa-solid fa-moon dark:hidden"></i><i class="fa-solid fa-sun hidden dark:block"></i>
             </button>
-            <button onclick="router('cloud')" class="relative w-10 h-10 rounded-full bg-cream-50 flex items-center justify-center text-gold-600 active:scale-95 transition border border-cream-100 dark:bg-dark-700 dark:border-dark-600 dark:text-gold-400" id="cloud-btn">
-                <i class="fa-solid fa-cloud"></i>
+            <button onclick="router('settings')" class="relative w-10 h-10 rounded-full bg-cream-50 flex items-center justify-center text-gold-600 active:scale-95 transition border border-cream-100 dark:bg-dark-700 dark:border-dark-600 dark:text-gold-400" id="conn-btn">
+                <i class="fa-solid fa-gear"></i>
+                <div id="conn-status" class="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-dark-700"></div>
             </button>
         </div>
     </header>
@@ -108,7 +114,6 @@
                 <h2 class="text-2xl font-serif font-bold text-cream-900">Olá, <span class="text-gold-600">Emely</span></h2>
                 <p class="text-sm text-cream-500" id="home-date">Carregando...</p>
             </div>
-
             <div class="grid grid-cols-2 gap-4 mb-6">
                 <div class="bg-gold-500 text-white p-4 rounded-2xl shadow-lg relative overflow-hidden dark:bg-gold-600">
                     <div class="absolute top-0 right-0 w-16 h-16 bg-white opacity-20 rounded-full -mr-6 -mt-6"></div>
@@ -120,14 +125,12 @@
                     <h3 class="text-2xl font-serif font-bold text-cream-900 mt-1" id="home-remaining-count">0</h3>
                 </div>
             </div>
-
             <div class="mb-8">
                 <h3 class="font-bold text-cream-900 text-xs uppercase tracking-widest mb-3 border-b border-cream-200 pb-2 dark:border-dark-700">Próxima Cliente</h3>
                 <div id="home-next-client" class="bg-white p-5 rounded-2xl shadow-soft border border-gold-200 flex items-center gap-4 dark:bg-dark-800 dark:border-dark-600">
                     <p class="text-sm text-cream-400 italic">Nenhum agendamento próximo hoje.</p>
                 </div>
             </div>
-
             <h3 class="font-bold text-cream-900 text-xs uppercase tracking-widest mb-3 border-b border-cream-200 pb-2 dark:border-dark-700">Acesso Rápido</h3>
             <div class="grid grid-cols-2 gap-3">
                 <button onclick="router('agenda'); openNewAppointment()" class="p-4 bg-white border border-cream-100 rounded-2xl shadow-sm text-left active:scale-98 transition dark:bg-dark-800 dark:border-dark-700">
@@ -153,10 +156,9 @@
                             <input type="date" id="date-jumper" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full" onchange="jumpToDate(this.value)">
                         </div>
                     </div>
-                    
                     <button onclick="goToToday()" class="text-[10px] font-bold text-cream-800 bg-white border border-cream-300 px-3 py-1.5 rounded-full uppercase tracking-wider dark:bg-dark-800 dark:border-dark-600 dark:text-cream-300">Hoje</button>
                 </div>
-                <div class="flex overflow-x-auto px-4 gap-3 no-scrollbar pb-2 scroll-smooth" id="horizontal-calendar"></div>
+                <div class="flex overflow-x-auto px-4 gap-3 no-scrollbar pb-2 scroll-smooth" id="horizontal-calendar" style="min-height: 90px;"></div>
             </div>
 
             <div class="px-4">
@@ -168,7 +170,6 @@
                         <option value="cancelled">Cancelados</option>
                     </select>
                 </div>
-
                 <div class="flex justify-between items-center mb-3">
                     <span class="text-xs font-bold text-cream-400 uppercase tracking-wider">Lista de Horários</span>
                     <span class="text-xs font-bold text-cream-900 bg-gold-100 px-2 py-1 rounded-lg text-gold-800 dark:bg-gold-900 dark:text-gold-200" id="daily-total">R$ 0,00</span>
@@ -180,11 +181,15 @@
             </div>
         </div>
 
+        <button id="fab-add-appointment" onclick="openNewAppointment()" class="hidden fixed bottom-24 right-5 w-14 h-14 bg-gold-600 text-white rounded-full shadow-lg flex items-center justify-center text-2xl z-50 active:scale-95 transition hover:bg-gold-700 animate-fade-in-up">
+            <i class="fa-solid fa-plus"></i>
+        </button>
+
         <div id="view-clients" class="view-section hidden fade-in px-4 pt-6">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-serif font-bold text-cream-900">Clientes</h2>
                 <div class="flex gap-2">
-                    <button onclick="openTagsModal()" class="bg-white border border-cream-300 text-cream-600 w-10 h-10 rounded-full shadow-sm flex items-center justify-center active:scale-95 transition hover:bg-cream-50 dark:bg-dark-800 dark:border-dark-600 dark:text-cream-400" title="Gerenciar Etiquetas"><i class="fa-solid fa-tags"></i></button>
+                    <button onclick="openTagsModal()" class="bg-white border border-cream-300 text-cream-600 w-10 h-10 rounded-full shadow-sm flex items-center justify-center active:scale-95 transition hover:bg-cream-50 dark:bg-dark-800 dark:border-dark-600 dark:text-cream-400"><i class="fa-solid fa-tags"></i></button>
                     <button onclick="openClientModal()" class="bg-gold-600 text-white w-10 h-10 rounded-full shadow-sm flex items-center justify-center active:scale-95 transition"><i class="fa-solid fa-plus"></i></button>
                 </div>
             </div>
@@ -227,49 +232,32 @@
                 <h2 class="text-2xl font-serif font-bold text-cream-900">Assistente</h2>
                 <p class="text-sm text-cream-500">Automação e inteligência.</p>
             </div>
-            
             <div class="grid grid-cols-1 gap-4 mb-6">
                 <div class="bg-white p-6 rounded-2xl shadow-soft border border-cream-200 active:scale-98 transition cursor-pointer group dark:bg-dark-800 dark:border-dark-700" onclick="generateWhatsappMessages()">
-                    <div class="flex items-center gap-4">
-                        <div class="bg-green-50 p-3 rounded-full text-green-700 group-hover:bg-green-100 transition dark:bg-green-900/30 dark:text-green-400"><i class="fa-brands fa-whatsapp text-2xl"></i></div>
-                        <div><h3 class="font-bold text-cream-900">Confirmar Agenda</h3><p class="text-xs text-cream-500 mt-1">Gerar mensagens para amanhã.</p></div>
-                    </div>
+                    <div class="flex items-center gap-4"><div class="bg-green-50 p-3 rounded-full text-green-700 group-hover:bg-green-100 transition dark:bg-green-900/30 dark:text-green-400"><i class="fa-brands fa-whatsapp text-2xl"></i></div><div><h3 class="font-bold text-cream-900">Confirmar Agenda</h3><p class="text-xs text-cream-500 mt-1">Gerar mensagens para amanhã.</p></div></div>
                 </div>
-
                 <div class="bg-white p-6 rounded-2xl shadow-soft border border-cream-200 active:scale-98 transition cursor-pointer group dark:bg-dark-800 dark:border-dark-700" onclick="generateMaintenanceMessages()">
-                    <div class="flex items-center gap-4">
-                        <div class="bg-purple-50 p-3 rounded-full text-purple-700 group-hover:bg-purple-100 transition dark:bg-purple-900/30 dark:text-purple-400"><i class="fa-solid fa-wand-magic-sparkles text-2xl"></i></div>
-                        <div><h3 class="font-bold text-cream-900">Lembrete de Manutenção</h3><p class="text-xs text-cream-500 mt-1">Clientes sem retorno há 20+ dias.</p></div>
-                    </div>
+                    <div class="flex items-center gap-4"><div class="bg-purple-50 p-3 rounded-full text-purple-700 group-hover:bg-purple-100 transition dark:bg-purple-900/30 dark:text-purple-400"><i class="fa-solid fa-wand-magic-sparkles text-2xl"></i></div><div><h3 class="font-bold text-cream-900">Lembrete de Manutenção</h3><p class="text-xs text-cream-500 mt-1">Clientes sem retorno há 20+ dias.</p></div></div>
                 </div>
             </div>
-
             <div id="ai-output" class="mt-6 hidden bg-white p-5 rounded-2xl shadow-soft border border-gold-100 mb-20 dark:bg-dark-800 dark:border-dark-600">
-                <div class="flex justify-between items-center mb-3 pb-2 border-b border-cream-100 dark:border-dark-700">
-                    <h4 class="font-bold text-gold-700 text-xs uppercase tracking-wide" id="ai-title">Mensagens Geradas</h4>
-                    <button onclick="document.getElementById('ai-output').classList.add('hidden')" class="text-cream-400 hover:text-gold-600"><i class="fa-solid fa-times"></i></button>
-                </div>
+                <div class="flex justify-between items-center mb-3 pb-2 border-b border-cream-100 dark:border-dark-700"><h4 class="font-bold text-gold-700 text-xs uppercase tracking-wide" id="ai-title">Mensagens Geradas</h4><button onclick="document.getElementById('ai-output').classList.add('hidden')" class="text-cream-400 hover:text-gold-600"><i class="fa-solid fa-times"></i></button></div>
                 <div id="ai-content" class="space-y-4 text-cream-800 text-sm dark:text-cream-200"></div>
             </div>
         </div>
 
-        <div id="view-cloud" class="view-section hidden fade-in px-4 pt-6">
+        <div id="view-settings" class="view-section hidden fade-in px-4 pt-6">
             <div class="bg-white p-8 rounded-2xl shadow-soft border border-cream-200 text-center dark:bg-dark-800 dark:border-dark-700">
-                <h2 class="text-xl font-serif font-bold text-cream-900 mb-2">Nuvem</h2>
-                <p class="text-xs text-cream-400 mb-6">Sincronização de dados.</p>
-                <input type="text" id="cloud-url" placeholder="URL do Script..." class="w-full border border-cream-200 rounded-xl p-3 text-xs mb-3 bg-cream-50 outline-none focus:border-gold-400 dark:bg-dark-900 dark:border-dark-600 dark:text-white">
-                <button onclick="saveCloudUrl()" class="text-xs text-gold-600 font-bold mb-6 underline">Salvar URL</button>
-                <div class="space-y-3">
-                    <button onclick="syncUpload()" id="btn-upload" class="w-full bg-gold-600 text-white py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 text-sm shadow-md"><i class="fa-solid fa-cloud-arrow-up"></i> Enviar</button>
-                    <button onclick="syncDownload()" id="btn-download" class="w-full bg-white border border-cream-300 text-cream-600 py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 text-sm dark:bg-dark-700 dark:border-dark-600 dark:text-cream-200"><i class="fa-solid fa-cloud-arrow-down"></i> Baixar</button>
+                <h2 class="text-xl font-serif font-bold text-cream-900 mb-2">Conexão Supabase</h2>
+                <p class="text-xs text-cream-400 mb-6">Configure para salvar na nuvem.</p>
+                <div class="space-y-4 text-left">
+                    <div><label class="text-xs font-bold text-cream-400 uppercase">Project URL</label><input type="text" id="sb-url" class="w-full border border-cream-200 rounded-xl p-3 text-xs bg-cream-50 outline-none focus:border-gold-400 dark:bg-dark-900 dark:border-dark-600 dark:text-white"></div>
+                    <div><label class="text-xs font-bold text-cream-400 uppercase">API Key (Anon)</label><input type="password" id="sb-key" class="w-full border border-cream-200 rounded-xl p-3 text-xs bg-cream-50 outline-none focus:border-gold-400 dark:bg-dark-900 dark:border-dark-600 dark:text-white"></div>
+                    <button onclick="saveConnection()" class="w-full bg-gold-600 text-white py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 text-sm shadow-md">Salvar e Conectar</button>
                 </div>
             </div>
         </div>
     </main>
-
-    <button id="fab-add-appointment" onclick="openNewAppointment()" class="hidden fixed bottom-24 right-5 w-14 h-14 bg-gold-600 text-white rounded-full shadow-lg flex items-center justify-center text-2xl z-50 active:scale-95 transition hover:bg-gold-700 animate-fade-in-up">
-        <i class="fa-solid fa-plus"></i>
-    </button>
 
     <nav class="fixed bottom-0 left-0 w-full glass-nav flex justify-around items-center pb-safe-bottom z-40 h-[72px]">
         <button onclick="router('home')" id="nav-home" class="nav-item flex-1 h-full flex flex-col items-center justify-center gap-1.5 text-gold-600 transition"><i class="fa-solid fa-house text-lg"></i><span class="text-[10px] font-bold uppercase tracking-wide">Início</span></button>
@@ -281,48 +269,19 @@
 
     <div id="modal-appointment" class="fixed inset-0 bg-black/40 z-50 hidden flex-col animate-slide-up backdrop-blur-sm">
         <div class="mt-auto bg-white rounded-t-[32px] h-[90vh] flex flex-col shadow-2xl overflow-hidden dark:bg-dark-800">
-            <div class="p-6 border-b border-cream-100 flex justify-between items-center dark:border-dark-700">
-                <h3 class="font-serif font-bold text-xl text-cream-900" id="modal-title">Novo Agendamento</h3>
-                <button onclick="closeModal('modal-appointment')" class="w-10 h-10 flex items-center justify-center bg-cream-50 rounded-full text-cream-400 hover:text-gold-600 dark:bg-dark-700"><i class="fa-solid fa-times"></i></button>
-            </div>
+            <div class="p-6 border-b border-cream-100 flex justify-between items-center dark:border-dark-700"><h3 class="font-serif font-bold text-xl text-cream-900" id="modal-title">Novo Agendamento</h3><button onclick="closeModal('modal-appointment')" class="w-10 h-10 flex items-center justify-center bg-cream-50 rounded-full text-cream-400 hover:text-gold-600 dark:bg-dark-700"><i class="fa-solid fa-times"></i></button></div>
             <div class="flex-1 overflow-y-auto p-6">
-                <div id="conflict-alert" class="hidden animate-pulse-red mb-4 p-4 rounded-xl border border-red-200 text-red-700 text-sm font-bold flex items-center gap-2">
-                    <i class="fa-solid fa-circle-exclamation"></i>
-                    <span id="conflict-msg">Choque de horário!</span>
+                <div id="conflict-alert" class="hidden animate-pulse-red mb-4 p-4 rounded-xl border border-red-200 bg-red-50 text-red-700 text-sm font-bold flex items-center gap-2">
+                    <i class="fa-solid fa-circle-exclamation"></i><span id="conflict-msg">Choque de horário!</span>
                 </div>
-
                 <form id="form-appointment" class="space-y-5">
                     <input type="hidden" id="app-id">
-                    <div class="relative">
-                        <label class="block text-[10px] font-bold text-gold-600 uppercase tracking-wider mb-1.5 ml-1">Cliente</label>
-                        <input type="text" id="app-client" required class="w-full h-14 input-elegant rounded-2xl px-4 text-cream-900 font-medium" placeholder="Buscar nome..." autocomplete="off" oninput="searchClients(this.value)">
-                        <div id="client-suggestions" class="absolute top-full left-0 w-full bg-white shadow-xl rounded-xl border border-cream-200 mt-1 hidden z-50 max-h-40 overflow-y-auto dark:bg-dark-800 dark:border-dark-600"></div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div><label class="block text-[10px] font-bold text-gold-600 uppercase tracking-wider mb-1.5 ml-1">Data</label><input type="date" id="app-date" required class="w-full h-14 input-elegant rounded-2xl px-4 text-cream-900 font-medium bg-transparent cursor-pointer" onchange="checkConflict()"></div>
-                        <div><label class="block text-[10px] font-bold text-gold-600 uppercase tracking-wider mb-1.5 ml-1">Horário</label><input type="tel" id="app-time" required class="w-full h-14 input-elegant rounded-2xl px-4 text-cream-900 font-medium text-center" placeholder="00:00" maxlength="5" oninput="handleTimeInput(this); checkConflict()"></div>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-[10px] font-bold text-gold-600 uppercase tracking-wider mb-1.5 ml-1">WhatsApp</label>
-                        <input type="tel" id="app-phone" class="w-full h-14 input-elegant rounded-2xl px-4 text-cream-900 font-medium" placeholder="(00) 00000-0000">
-                    </div>
-
+                    <div class="relative"><label class="block text-[10px] font-bold text-gold-600 uppercase tracking-wider mb-1.5 ml-1">Cliente</label><input type="text" id="app-client" required class="w-full h-14 input-elegant rounded-2xl px-4 text-cream-900 font-medium" placeholder="Buscar nome..." autocomplete="off" oninput="searchClients(this.value)"><div id="client-suggestions" class="absolute top-full left-0 w-full bg-white shadow-xl rounded-xl border border-cream-200 mt-1 hidden z-50 max-h-40 overflow-y-auto dark:bg-dark-800 dark:border-dark-600"></div></div>
+                    <div class="grid grid-cols-2 gap-4"><div><label class="block text-[10px] font-bold text-gold-600 uppercase tracking-wider mb-1.5 ml-1">Data</label><input type="date" id="app-date" required class="w-full h-14 input-elegant rounded-2xl px-4 text-cream-900 font-medium bg-transparent cursor-pointer" onchange="checkConflict()"></div><div><label class="block text-[10px] font-bold text-gold-600 uppercase tracking-wider mb-1.5 ml-1">Horário</label><input type="tel" id="app-time" required class="w-full h-14 input-elegant rounded-2xl px-4 text-cream-900 font-medium text-center" placeholder="00:00" maxlength="5" oninput="handleTimeInput(this); checkConflict()"></div></div>
+                    <div><label class="block text-[10px] font-bold text-gold-600 uppercase tracking-wider mb-1.5 ml-1">WhatsApp</label><input type="tel" id="app-phone" class="w-full h-14 input-elegant rounded-2xl px-4 text-cream-900 font-medium" placeholder="(00) 00000-0000"></div>
                     <div><label class="block text-[10px] font-bold text-gold-600 uppercase tracking-wider mb-1.5 ml-1">Procedimento</label><select id="app-service" onchange="calculateTotal(); checkConflict()" required class="custom-select w-full h-14 input-elegant rounded-2xl px-4 bg-transparent text-cream-900 font-medium"></select></div>
                     <div class="bg-cream-50 p-5 rounded-2xl border border-cream-100 dark:bg-dark-900 dark:border-dark-700"><label class="block text-[10px] font-bold text-cream-400 uppercase tracking-wider mb-3">Extras</label><div id="app-extras-list" class="space-y-3"></div></div>
-                    
-                    <div class="flex items-center gap-3">
-                        <div class="flex-1">
-                            <label class="block text-[10px] font-bold text-gold-600 uppercase tracking-wider mb-1.5 ml-1">Sinal Pago (R$)</label>
-                            <input type="number" id="app-deposit" step="0.01" class="w-full h-14 input-elegant rounded-2xl px-4 text-cream-900 font-medium" placeholder="0,00" oninput="calculateTotal()">
-                        </div>
-                        <div class="w-px h-10 bg-cream-200 mx-1 dark:bg-dark-600"></div>
-                        <div class="flex-1 text-right">
-                            <span class="block text-[10px] font-bold text-cream-400 uppercase tracking-wider mb-0.5">Falta Pagar</span>
-                            <span id="app-remaining-display" class="text-xl font-serif font-bold text-gold-600">R$ 0,00</span>
-                        </div>
-                    </div>
-
+                    <div class="flex items-center gap-3"><div class="flex-1"><label class="block text-[10px] font-bold text-gold-600 uppercase tracking-wider mb-1.5 ml-1">Sinal Pago (R$)</label><input type="number" id="app-deposit" step="0.01" class="w-full h-14 input-elegant rounded-2xl px-4 text-cream-900 font-medium" placeholder="0,00" oninput="calculateTotal()"></div><div class="w-px h-10 bg-cream-200 mx-1 dark:bg-dark-600"></div><div class="flex-1 text-right"><span class="block text-[10px] font-bold text-cream-400 uppercase tracking-wider mb-0.5">Falta Pagar</span><span id="app-remaining-display" class="text-xl font-serif font-bold text-gold-600">R$ 0,00</span></div></div>
                     <div class="flex justify-between items-center p-5 bg-cream-900 text-white rounded-2xl shadow-lg dark:bg-black"><span class="text-xs font-medium opacity-80 uppercase tracking-wide">Valor Total</span><span id="app-total-display" class="text-2xl font-serif font-bold text-gold-300">R$ 0,00</span></div>
                     <div><label class="block text-[10px] font-bold text-gold-600 uppercase tracking-wider mb-1.5 ml-1">Observações</label><textarea id="app-notes" class="w-full input-elegant rounded-2xl p-4 text-cream-900" rows="2" placeholder="..."></textarea></div>
                 </form>
@@ -334,100 +293,43 @@
     <div id="modal-details" class="fixed inset-0 bg-black/40 z-50 hidden flex items-center justify-center backdrop-blur-sm px-4">
         <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl animate-fade-in-up relative overflow-hidden dark:bg-dark-800">
              <div class="absolute top-0 right-0 w-32 h-32 bg-gold-100 opacity-50 rounded-full -mr-12 -mt-12"></div>
-
             <div class="relative z-10">
-                <div class="flex justify-between items-start mb-6">
-                    <div>
-                        <h3 class="font-serif font-bold text-2xl text-cream-900 mb-0.5" id="det-client">Cliente</h3>
-                        <p class="text-xs text-cream-500" id="det-phone">Telefone</p>
-                    </div>
-                    <button onclick="closeModal('modal-details')" class="w-8 h-8 flex items-center justify-center bg-cream-50 rounded-full text-cream-400 hover:text-gold-600 dark:bg-dark-700"><i class="fa-solid fa-times"></i></button>
-                </div>
-
-                <div class="bg-cream-50 rounded-2xl p-4 mb-4 border border-cream-100 dark:bg-dark-900 dark:border-dark-700">
-                    <div class="flex justify-between items-center mb-3 pb-3 border-b border-cream-200 dark:border-dark-700">
-                        <span class="text-xs font-bold text-cream-400 uppercase tracking-wide">Horário</span>
-                        <span class="font-serif font-bold text-lg text-cream-900" id="det-time">00:00</span>
-                    </div>
-                    <div class="space-y-2">
-                         <div class="flex justify-between">
-                            <span class="text-sm text-cream-700 dark:text-cream-300" id="det-service">Serviço</span>
-                        </div>
-                        <div id="det-extras-list" class="flex flex-col gap-1 text-xs text-cream-500 italic pl-2 border-l-2 border-gold-200"></div>
-                    </div>
-                </div>
-
-                <div class="mb-6 hidden" id="det-notes-box">
-                    <h4 class="text-[10px] font-bold text-cream-400 uppercase tracking-wide mb-1">Observações</h4>
-                    <p class="text-sm text-cream-700 bg-white border border-cream-100 p-3 rounded-xl dark:bg-dark-900 dark:border-dark-700 dark:text-cream-300" id="det-notes"></p>
-                </div>
-
-                <div class="bg-cream-900 text-white rounded-xl shadow-lg p-4 space-y-2 dark:bg-black">
-                    <div class="flex justify-between text-xs opacity-70"><span>Total Serviço</span><span id="det-full-price">R$ 0,00</span></div>
-                    <div class="flex justify-between text-xs text-gold-300 font-bold"><span>- Sinal Pago</span><span id="det-deposit">R$ 0,00</span></div>
-                    <div class="border-t border-white/10 pt-2 mt-2 flex justify-between items-center">
-                        <span class="text-xs font-medium uppercase tracking-wide">Resta Pagar</span>
-                        <span id="det-total" class="text-xl font-serif font-bold text-white">R$ 0,00</span>
-                    </div>
-                </div>
-                
-                <div class="mt-4 flex justify-center">
-                    <button onclick="editFromDetails()" class="text-xs text-cream-400 hover:text-gold-600 underline">Editar este agendamento</button>
-                    <input type="hidden" id="det-id">
-                </div>
+                <div class="flex justify-between items-start mb-6"><div><h3 class="font-serif font-bold text-2xl text-cream-900 mb-0.5" id="det-client">Cliente</h3><p class="text-xs text-cream-500" id="det-phone">Telefone</p></div><button onclick="closeModal('modal-details')" class="w-8 h-8 flex items-center justify-center bg-cream-50 rounded-full text-cream-400 hover:text-gold-600 dark:bg-dark-700"><i class="fa-solid fa-times"></i></button></div>
+                <div class="bg-cream-50 rounded-2xl p-4 mb-4 border border-cream-100 dark:bg-dark-900 dark:border-dark-700"><div class="flex justify-between items-center mb-3 pb-3 border-b border-cream-200 dark:border-dark-700"><span class="text-xs font-bold text-cream-400 uppercase tracking-wide">Horário</span><span class="font-serif font-bold text-lg text-cream-900" id="det-time">00:00</span></div><div class="space-y-2"><div class="flex justify-between"><span class="text-sm text-cream-700 dark:text-cream-300" id="det-service">Serviço</span></div><div id="det-extras-list" class="flex flex-col gap-1 text-xs text-cream-500 italic pl-2 border-l-2 border-gold-200"></div></div></div>
+                <div class="mb-6 hidden" id="det-notes-box"><h4 class="text-[10px] font-bold text-cream-400 uppercase tracking-wide mb-1">Observações</h4><p class="text-sm text-cream-700 bg-white border border-cream-100 p-3 rounded-xl dark:bg-dark-900 dark:border-dark-700 dark:text-cream-300" id="det-notes"></p></div>
+                <div class="bg-cream-900 text-white rounded-xl shadow-lg p-4 space-y-2 dark:bg-black"><div class="flex justify-between text-xs opacity-70"><span>Total Serviço</span><span id="det-full-price">R$ 0,00</span></div><div class="flex justify-between text-xs text-gold-300 font-bold"><span>- Sinal Pago</span><span id="det-deposit">R$ 0,00</span></div><div class="border-t border-white/10 pt-2 mt-2 flex justify-between items-center"><span class="text-xs font-medium uppercase tracking-wide">Resta Pagar</span><span id="det-total" class="text-xl font-serif font-bold text-white">R$ 0,00</span></div></div>
+                <div class="mt-4 flex justify-center"><button onclick="editFromDetails()" class="text-xs text-cream-400 hover:text-gold-600 underline">Editar este agendamento</button><input type="hidden" id="det-id"></div>
             </div>
         </div>
     </div>
 
     <div id="modal-client" class="fixed inset-0 bg-black/40 z-50 hidden flex-col animate-slide-up backdrop-blur-sm">
          <div class="mt-auto bg-white rounded-t-[32px] h-[85vh] flex flex-col shadow-2xl overflow-hidden dark:bg-dark-800">
-            <div class="p-6 border-b border-cream-100 flex justify-between items-center dark:border-dark-700">
-                <h3 class="font-serif font-bold text-xl text-cream-900" id="modal-client-title">Nova Cliente</h3>
-                 <button onclick="closeModal('modal-client')" class="w-10 h-10 flex items-center justify-center bg-cream-50 rounded-full text-cream-400 hover:text-gold-600 dark:bg-dark-700"><i class="fa-solid fa-times"></i></button>
-            </div>
-            
+            <div class="p-6 border-b border-cream-100 flex justify-between items-center dark:border-dark-700"><h3 class="font-serif font-bold text-xl text-cream-900" id="modal-client-title">Nova Cliente</h3><button onclick="closeModal('modal-client')" class="w-10 h-10 flex items-center justify-center bg-cream-50 rounded-full text-cream-400 hover:text-gold-600 dark:bg-dark-700"><i class="fa-solid fa-times"></i></button></div>
             <div class="flex-1 overflow-y-auto p-6">
                  <form id="form-client" class="space-y-5">
                     <input type="hidden" id="client-id">
                     <div><label class="block text-[10px] font-bold text-cream-400 uppercase mb-1 ml-1">Nome Completo</label><input type="text" id="client-name" required class="w-full h-12 input-elegant rounded-xl px-4 text-cream-900"></div>
                     <div><label class="block text-[10px] font-bold text-cream-400 uppercase mb-1 ml-1">WhatsApp</label><input type="tel" id="client-phone" class="w-full h-12 input-elegant rounded-xl px-4 text-cream-900"></div>
                     <div><label class="block text-[10px] font-bold text-cream-400 uppercase mb-1 ml-1">Aniversário</label><input type="date" id="client-birth" class="w-full h-12 input-elegant rounded-xl px-4 text-cream-900 bg-transparent cursor-pointer"></div>
-                    
-                    <div class="pt-2">
-                         <label class="block text-[10px] font-bold text-cream-400 uppercase mb-2 ml-1">Etiquetas</label>
-                         <div id="client-tags-selector" class="flex flex-wrap gap-2"></div>
-                    </div>
+                    <div class="pt-2"><label class="block text-[10px] font-bold text-cream-400 uppercase mb-2 ml-1">Etiquetas</label><div id="client-tags-selector" class="flex flex-wrap gap-2"></div></div>
                 </form>
             </div>
-             <div class="p-6 border-t border-cream-100 bg-white pb-safe-bottom dark:bg-dark-800 dark:border-dark-700">
-                  <button onclick="document.getElementById('form-client').dispatchEvent(new Event('submit'))" class="w-full h-14 bg-gold-600 text-white rounded-2xl font-bold text-sm uppercase tracking-widest shadow-md">Salvar Cliente</button>
-             </div>
+             <div class="p-6 border-t border-cream-100 bg-white pb-safe-bottom dark:bg-dark-800 dark:border-dark-700"><button onclick="document.getElementById('form-client').dispatchEvent(new Event('submit'))" class="w-full h-14 bg-gold-600 text-white rounded-2xl font-bold text-sm uppercase tracking-widest shadow-md">Salvar Cliente</button></div>
         </div>
     </div>
 
     <div id="modal-tags" class="fixed inset-0 bg-black/40 z-50 hidden flex items-center justify-center backdrop-blur-sm px-4">
         <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl animate-fade-in-up dark:bg-dark-800">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="font-serif font-bold text-2xl text-cream-900">Etiquetas</h3>
-                <button onclick="closeModal('modal-tags')" class="w-8 h-8 flex items-center justify-center bg-cream-50 rounded-full text-cream-400 hover:text-gold-600 dark:bg-dark-700"><i class="fa-solid fa-times"></i></button>
-            </div>
-            
+            <div class="flex justify-between items-center mb-6"><h3 class="font-serif font-bold text-2xl text-cream-900">Etiquetas</h3><button onclick="closeModal('modal-tags')" class="w-8 h-8 flex items-center justify-center bg-cream-50 rounded-full text-cream-400 hover:text-gold-600 dark:bg-dark-700"><i class="fa-solid fa-times"></i></button></div>
             <div class="bg-cream-50 p-4 rounded-xl border border-cream-100 mb-6 dark:bg-dark-900 dark:border-dark-700">
                 <h4 class="text-xs font-bold text-cream-400 uppercase mb-3">Criar Nova</h4>
-                
                 <div class="space-y-4">
                     <input type="text" id="new-tag-name" placeholder="Nome (ex: VIP)" class="w-full h-12 input-elegant rounded-xl px-4 text-sm">
-                    
-                    <div>
-                        <label class="block text-[10px] font-bold text-cream-400 uppercase mb-2 ml-1">Escolha a Cor</label>
-                        <div class="flex items-center gap-3 overflow-x-auto no-scrollbar py-1" id="color-palette"></div>
-                        <input type="hidden" id="new-tag-color" value="#D4AF37">
-                    </div>
-                    
+                    <div><label class="block text-[10px] font-bold text-cream-400 uppercase mb-2 ml-1">Escolha a Cor</label><div class="flex items-center gap-3 overflow-x-auto no-scrollbar py-1" id="color-palette"></div><input type="hidden" id="new-tag-color" value="#D4AF37"></div>
                     <button onclick="addNewTag()" class="w-full bg-gold-600 text-white h-12 rounded-xl flex items-center justify-center gap-2 shadow-sm font-bold text-sm"><i class="fa-solid fa-plus"></i> Criar Etiqueta</button>
                 </div>
             </div>
-
             <div class="space-y-2 max-h-48 overflow-y-auto" id="tags-management-list"></div>
         </div>
     </div>
@@ -439,259 +341,319 @@
                 <select id="serv-type" onchange="toggleDurationField()" class="custom-select w-full h-12 input-elegant rounded-xl px-4 bg-transparent text-cream-900 dark:bg-dark-900"><option value="service">Procedimento</option><option value="extra">Adicional</option></select>
                 <input type="text" id="serv-name" required class="w-full h-12 input-elegant rounded-xl px-4" placeholder="Nome">
                 <input type="number" id="serv-price" step="0.01" required class="w-full h-12 input-elegant rounded-xl px-4" placeholder="Preço (R$)">
-                
-                <div id="serv-duration-wrapper">
-                    <label class="block text-[10px] font-bold text-cream-400 uppercase mb-1 ml-1">Duração (minutos)</label>
-                    <input type="number" id="serv-duration" class="w-full h-12 input-elegant rounded-xl px-4" placeholder="Ex: 60" value="90">
-                </div>
-
-                <div class="grid grid-cols-2 gap-3 pt-4">
-                    <button type="button" onclick="closeModal('modal-service')" class="h-12 text-cream-400 font-bold text-xs uppercase tracking-wide hover:bg-cream-50 rounded-xl dark:hover:bg-dark-700">Cancelar</button>
-                    <button type="submit" class="h-12 bg-gold-600 text-white rounded-xl font-bold text-xs uppercase tracking-wide shadow-md">Salvar</button>
-                </div>
+                <div id="serv-duration-wrapper"><label class="block text-[10px] font-bold text-cream-400 uppercase mb-1 ml-1">Duração (minutos)</label><input type="number" id="serv-duration" class="w-full h-12 input-elegant rounded-xl px-4" placeholder="Ex: 60" value="90"></div>
+                <div class="grid grid-cols-2 gap-3 pt-4"><button type="button" onclick="closeModal('modal-service')" class="h-12 text-cream-400 font-bold text-xs uppercase tracking-wide hover:bg-cream-50 rounded-xl dark:hover:bg-dark-700">Cancelar</button><button type="submit" class="h-12 bg-gold-600 text-white rounded-xl font-bold text-xs uppercase tracking-wide shadow-md">Salvar</button></div>
             </form>
         </div>
     </div>
 
     <script>
-        // DB INICIALIZADO COM ESTRUTURA ATUALIZADA
-        let db = { 
-            // Adicionado campo 'duration' aos serviços padrão
-            services: [{id:1,name:'Manicure',price:35,duration:60},{id:2,name:'Gel',price:70,duration:120},{id:3,name:'Blindagem',price:90,duration:90}], 
-            extras: [{id:101,name:'Francesa',price:15}], 
-            appointments: [], 
-            clients: [],
-            tags: [
-                { id: 1, name: 'VIP', color: '#FFD700' },
-                { id: 2, name: 'Alergia', color: '#FF6B6B' },
-                { id: 3, name: 'Nova', color: '#4ECDC4' }
-            ] 
-        };
-        let selectedDate = new Date().toISOString().split('T')[0];
-        let hasUnsaved = false;
-
-        // PALETA DE CORES PARA TAGS
+        let supabase = null;
+        let db = { services: [], extras: [], appointments: [], clients: [], tags: [] };
         const tagColors = ['#D4AF37','#EF4444','#F97316','#F59E0B','#84CC16','#10B981','#06B6D4','#3B82F6','#8B5CF6','#EC4899','#64748B','#000000'];
 
-        // DARK MODE
-        function toggleTheme() {
-            document.documentElement.classList.toggle('dark');
-            const isDark = document.documentElement.classList.contains('dark');
-            localStorage.setItem('emelyTheme', isDark ? 'dark' : 'light');
+        function getLocalDateString() {
+            const d = new Date();
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
         }
-        function initTheme() {
-            const saved = localStorage.getItem('emelyTheme');
-            if(saved === 'dark') document.documentElement.classList.add('dark');
+        let selectedDate = getLocalDateString();
+
+        function initSupabase() {
+            const url = localStorage.getItem('emely_sb_url');
+            const key = localStorage.getItem('emely_sb_key');
+            if(url && key) {
+                try {
+                    supabase = window.supabase.createClient(url, key);
+                    document.getElementById('conn-status').classList.remove('bg-red-500');
+                    document.getElementById('conn-status').classList.add('bg-green-500');
+                    document.getElementById('sb-url').value = url;
+                    document.getElementById('sb-key').value = key;
+                    fetchData();
+                } catch(e) { console.error("Erro Supabase", e); alert("Erro de conexão."); }
+            }
         }
 
-        // NAVIGATION
+        async function saveConnection() {
+            const url = document.getElementById('sb-url').value;
+            const key = document.getElementById('sb-key').value;
+            if(!url || !key) return alert("Preencha ambos!");
+            localStorage.setItem('emely_sb_url', url);
+            localStorage.setItem('emely_sb_key', key);
+            initSupabase();
+            alert("Conectado!");
+        }
+
+        async function showLoading() { document.getElementById('loading-overlay').style.display = 'flex'; }
+        async function hideLoading() { document.getElementById('loading-overlay').style.display = 'none'; }
+
+        async function fetchData() {
+            if(!supabase) return;
+            showLoading();
+            try {
+                const [resClients, resApps, resServices, resExtras, resTags] = await Promise.all([
+                    supabase.from('clients').select('*'),
+                    supabase.from('appointments').select('*'),
+                    supabase.from('services').select('*'),
+                    supabase.from('extras').select('*'),
+                    supabase.from('tags').select('*')
+                ]);
+                if(resClients.error) throw resClients.error;
+                db.clients = resClients.data || [];
+                db.appointments = (resApps.data || []).map(a => ({ ...a, client: a.client_name, phone: a.client_phone, serviceName: a.service_name, serviceId: a.service_id, price: parseFloat(a.price), deposit: parseFloat(a.deposit) }));
+                db.services = (resServices.data || []).map(s => ({...s, price: parseFloat(s.price), duration: parseInt(s.duration || 90)}));
+                db.extras = (resExtras.data || []).map(e => ({...e, price: parseFloat(e.price)}));
+                db.tags = resTags.data || [];
+                if(!document.getElementById('view-home').classList.contains('hidden')) renderHome();
+                if(!document.getElementById('view-agenda').classList.contains('hidden')) { renderCalendar(); renderAppointments(); }
+                if(!document.getElementById('view-clients').classList.contains('hidden')) renderClients();
+                if(!document.getElementById('view-servicos').classList.contains('hidden')) renderServices();
+                if(!document.getElementById('view-financeiro').classList.contains('hidden')) updateFinancials();
+            } catch(e) { console.error(e); } finally { hideLoading(); }
+        }
+
+        // === LÓGICA DE CONFLITO CORRIGIDA ===
+        function timeToMinutes(time) { 
+            if (!time) return 0; 
+            const [h, m] = time.split(':').map(Number); 
+            return h * 60 + m; 
+        }
+
+        function checkConflict() {
+            const date = document.getElementById('app-date').value;
+            const time = document.getElementById('app-time').value;
+            const serviceId = document.getElementById('app-service').value; // Pega o ID do serviço selecionado
+            const timeInput = document.getElementById('app-time');
+            const alertBox = document.getElementById('conflict-alert');
+            
+            // Reseta estilos de erro
+            timeInput.classList.remove('input-error');
+            alertBox.classList.add('hidden');
+
+            if(!date || time.length < 5 || !serviceId) return;
+            
+            const currentId = document.getElementById('app-id').value ? parseInt(document.getElementById('app-id').value) : null;
+            
+            // 1. Pega duração do NOVO agendamento baseado na seleção do dropdown
+            // Precisa pegar o data-duration do option selecionado porque db.services pode ter mudado, mas o HTML é fonte de verdade da seleção
+            const selectElement = document.getElementById('app-service');
+            const selectedOption = selectElement.options[selectElement.selectedIndex];
+            const newDuration = selectedOption ? parseInt(selectedOption.getAttribute('data-duration') || 90) : 90;
+            
+            const newStart = timeToMinutes(time);
+            const newEnd = newStart + newDuration;
+
+            // console.log(`Novo: ${time} (${newStart}) até ${newEnd} (${newDuration}min)`);
+
+            const conflict = db.appointments.find(app => {
+                if (app.date !== date || app.status === 'cancelled' || app.id === currentId) return false;
+                
+                // 2. Pega duração do agendamento EXISTENTE
+                // Importante: Tenta achar o serviço pelo ID salvo (mais seguro) ou pelo nome
+                let existingDuration = 90; 
+                
+                const existingService = db.services.find(s => s.id === app.serviceId) || db.services.find(s => s.name === app.serviceName);
+                
+                if (existingService) {
+                    existingDuration = existingService.duration + 1;
+                }
+                
+                const startExisting = timeToMinutes(app.time);
+                const endExisting = startExisting + existingDuration; 
+                
+                // console.log(`Existente: ${app.time} (${startExisting}) até ${endExisting} (${existingDuration}min)`);
+
+                // Lógica de colisão: Começa ANTES de terminar E Termina DEPOIS de começar
+                return (newStart < endExisting && newEnd > startExisting);
+            });
+            
+            if (conflict) {
+                const cName = conflict.client || 'Cliente';
+                const cTime = conflict.time;
+                document.getElementById('conflict-msg').innerText = `Choque: ${cName} (${cTime})`;
+                alertBox.classList.remove('hidden');
+                timeInput.classList.add('input-error'); // Borda vermelha
+            }
+        }
+
+        document.getElementById('form-client').addEventListener('submit', async e => { 
+            e.preventDefault(); 
+            if(!supabase) return alert("Conecte-se ao banco primeiro (Engrenagem).");
+            const id = document.getElementById('client-id').value; 
+            const name = document.getElementById('client-name').value; 
+            const phone = document.getElementById('client-phone').value; 
+            const birth = document.getElementById('client-birth').value; 
+            const tags = document.getElementById('client-tags-selector').dataset.selected ? JSON.parse(document.getElementById('client-tags-selector').dataset.selected) : [];
+            showLoading();
+            const payload = { name, phone, birth: birth || null, tags }; 
+            let error = null;
+            if (id) { const { error: err } = await supabase.from('clients').update(payload).eq('id', id); error = err; } 
+            else { const { error: err } = await supabase.from('clients').insert(payload); error = err; }
+            if(error) alert("Erro: " + error.message);
+            else { closeModal('modal-client'); e.target.reset(); fetchData(); }
+            hideLoading();
+        });
+
+        async function saveAppointment() {
+            if(!supabase) return alert("Conecte-se ao banco primeiro.");
+            const id = document.getElementById('app-id').value;
+            const client = document.getElementById('app-client').value;
+            const sel = document.getElementById('app-service');
+            if(!sel.value) return alert('Selecione procedimento');
+            if(!client) return alert('Nome obrigatório');
+            const serv = db.services.find(s => s.id == sel.value);
+            const extras = Array.from(document.querySelectorAll('.extra-checkbox:checked')).map(cb => { const f = db.extras.find(e => e.id == cb.value); return f ? f.name : null; }).filter(i=>i);
+            const total = calculateTotal(); 
+            const dep = parseFloat(document.getElementById('app-deposit').value) || 0;
+            const payload = {
+                client_name: client, client_phone: document.getElementById('app-phone').value,
+                date: document.getElementById('app-date').value, time: document.getElementById('app-time').value,
+                service_id: serv.id, service_name: serv.name,
+                price: total, deposit: dep, notes: document.getElementById('app-notes').value,
+                status: 'scheduled', extras: extras
+            };
+            showLoading();
+            let error = null;
+            if(id) { const { error: err } = await supabase.from('appointments').update(payload).eq('id', id); error = err; } 
+            else { const { error: err } = await supabase.from('appointments').insert(payload); error = err; }
+            if(error) alert("Erro: " + error.message);
+            else { closeModal('modal-appointment'); fetchData(); }
+            hideLoading();
+        }
+
+        async function toggleStatus(id, status) {
+            if(!supabase) return;
+            if(status==='cancelled' && !confirm('Cancelar?')) return;
+            showLoading();
+            const { error } = await supabase.from('appointments').update({ status }).eq('id', id);
+            if(error) alert("Erro: " + error.message); else fetchData();
+            hideLoading();
+        }
+
+        document.getElementById('form-service').addEventListener('submit', async e => {
+            e.preventDefault();
+            if(!supabase) return alert("Conecte-se ao banco primeiro.");
+            const type = document.getElementById('serv-type').value;
+            const name = document.getElementById('serv-name').value;
+            const price = parseFloat(document.getElementById('serv-price').value);
+            const duration = parseInt(document.getElementById('serv-duration').value) || 60;
+            showLoading();
+            let table = type === 'service' ? 'services' : 'extras';
+            let payload = { name, price };
+            if(type === 'service') payload.duration = duration;
+            const { error } = await supabase.from(table).insert(payload);
+            if(error) alert("Erro: " + error.message);
+            else { closeModal('modal-service'); e.target.reset(); fetchData(); }
+            hideLoading();
+        });
+
+        async function delService(id, type) {
+            if(!confirm('Excluir?')) return;
+            showLoading();
+            const table = type === 's' ? 'services' : 'extras';
+            const { error } = await supabase.from(table).delete().eq('id', id);
+            if(error) alert("Erro: " + error.message); else fetchData();
+            hideLoading();
+        }
+
+        async function delClient(id) {
+            if(!confirm('Remover?')) return;
+            showLoading();
+            const { error } = await supabase.from('clients').delete().eq('id', id);
+            if(error) alert("Erro: " + error.message); else fetchData();
+            hideLoading();
+        }
+
+        async function addNewTag() {
+            const name = document.getElementById('new-tag-name').value;
+            const color = document.getElementById('new-tag-color').value;
+            if(!name) return alert('Nome obrigatório');
+            showLoading();
+            const { error } = await supabase.from('tags').insert({ name, color });
+            if(error) alert("Erro: " + error.message);
+            else { document.getElementById('new-tag-name').value = ''; fetchData(); }
+            hideLoading();
+        }
+
+        async function deleteTag(id) {
+            if(!confirm('Excluir?')) return;
+            showLoading();
+            const { error } = await supabase.from('tags').delete().eq('id', id);
+            if(error) alert("Erro: " + error.message); else fetchData();
+            hideLoading();
+        }
+
+        // UTILS
+        function toggleTheme() { document.documentElement.classList.toggle('dark'); localStorage.setItem('emelyTheme', document.documentElement.classList.contains('dark') ? 'dark' : 'light'); }
+        function initTheme() { if(localStorage.getItem('emelyTheme') === 'dark') document.documentElement.classList.add('dark'); }
         function router(view) {
             document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
             document.getElementById('view-' + view).classList.remove('hidden');
             document.getElementById('main-scroll').scrollTop = 0;
             document.querySelectorAll('.nav-item').forEach(el => { el.classList.remove('text-gold-600'); el.classList.add('text-cream-400'); });
             const navBtn = document.getElementById('nav-' + view);
-            if(navBtn) {
-                navBtn.classList.add('text-gold-600');
-                navBtn.classList.remove('text-cream-400');
-            }
-            
-            // CONTROLAR BOTÃO FLUTUANTE (FAB)
+            if(navBtn) { navBtn.classList.add('text-gold-600'); navBtn.classList.remove('text-cream-400'); }
             const fab = document.getElementById('fab-add-appointment');
-            if (view === 'agenda') {
-                fab.classList.remove('hidden');
-            } else {
-                fab.classList.add('hidden');
-            }
-
+            if (view === 'agenda') fab.classList.remove('hidden'); else fab.classList.add('hidden');
             if(view==='financeiro') updateFinancials(); 
             if(view==='clients') renderClients();
             if(view==='home') renderHome();
             if(view==='servicos') renderServices();
+            if(view==='agenda') { renderCalendar(); renderAppointments(); }
         }
 
-        // ================= FEATURE 7: HOME DASHBOARD =================
         function renderHome() {
             const today = new Date();
-            const todayStr = today.toISOString().split('T')[0];
-            
-            // 1. Data e Saudação
             document.getElementById('home-date').innerText = today.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
-            
-            // 2. Resumos
+            const todayStr = getLocalDateString(); 
             const todaysApps = (db.appointments||[]).filter(a => a.date === todayStr && a.status !== 'cancelled');
             const completedTotal = todaysApps.filter(a => a.status === 'completed').reduce((sum, a) => sum + a.price, 0);
-            const remainingCount = todaysApps.filter(a => a.status === 'scheduled').length;
-
             document.getElementById('home-today-total').innerText = 'R$ ' + completedTotal.toFixed(2);
-            document.getElementById('home-remaining-count').innerText = remainingCount;
-
-            // 3. Próxima Cliente
+            document.getElementById('home-remaining-count').innerText = todaysApps.filter(a => a.status === 'scheduled').length;
             const nowTime = today.getHours() * 60 + today.getMinutes();
-            const upcoming = todaysApps
-                .filter(a => a.status === 'scheduled')
-                .map(a => ({...a, mins: timeToMinutes(a.time)}))
-                .filter(a => a.mins >= nowTime)
-                .sort((a,b) => a.mins - b.mins);
-            
+            const upcoming = todaysApps.filter(a => a.status === 'scheduled').map(a => ({...a, mins: timeToMinutes(a.time)})).filter(a => a.mins >= nowTime).sort((a,b) => a.mins - b.mins);
             const nextContainer = document.getElementById('home-next-client');
             if(upcoming.length > 0) {
                 const next = upcoming[0];
-                const clientObj = db.clients.find(c => c.name === next.client);
+                const clientName = next.client_name || next.client;
+                const clientObj = db.clients.find(c => c.name === clientName);
                 const tagsHtml = clientObj && clientObj.tags ? getClientTagsHtml(clientObj.tags, 'small') : '';
-                
-                nextContainer.innerHTML = `
-                    <div class="flex-1">
-                        <span class="text-3xl font-serif font-bold text-gold-600 block mb-1">${next.time}</span>
-                        <h4 class="font-bold text-cream-900 text-lg">${next.client}</h4>
-                        <div class="mt-1">${tagsHtml}</div>
-                        <p class="text-xs text-cream-500 mt-1">${next.serviceName}</p>
-                    </div>
-                    <button onclick="toggleStatus(${next.id}, 'completed'); renderHome()" class="w-12 h-12 rounded-full bg-cream-50 text-gold-600 flex items-center justify-center border border-cream-200 active:scale-95 transition dark:bg-dark-700 dark:border-dark-600">
-                        <i class="fa-solid fa-check"></i>
-                    </button>
-                `;
-            } else if (remainingCount > 0) {
-                 nextContainer.innerHTML = '<p class="text-sm text-cream-400 italic">Sem horários futuros. Há pendências anteriores.</p>';
-            } else {
-                nextContainer.innerHTML = '<div class="flex items-center gap-3"><i class="fa-solid fa-mug-hot text-gold-400 text-xl"></i><p class="text-sm text-cream-400 italic">Tudo pronto por hoje!</p></div>';
-            }
+                nextContainer.innerHTML = `<div class="flex-1"><span class="text-3xl font-serif font-bold text-gold-600 block mb-1">${next.time}</span><h4 class="font-bold text-cream-900 text-lg">${clientName}</h4><div class="mt-1">${tagsHtml}</div><p class="text-xs text-cream-500 mt-1">${next.service_name || next.serviceName}</p></div><button onclick="toggleStatus(${next.id}, 'completed')" class="w-12 h-12 rounded-full bg-cream-50 text-gold-600 flex items-center justify-center border border-cream-200 active:scale-95 transition dark:bg-dark-700 dark:border-dark-600"><i class="fa-solid fa-check"></i></button>`;
+            } else { nextContainer.innerHTML = '<p class="text-sm text-cream-400 italic">Sem horários futuros.</p>'; }
         }
 
-        // ================= CONFLICT & DURATION LOGIC (FEATURE 1) =================
-        function timeToMinutes(time) {
-            if (!time) return 0;
-            const [h, m] = time.split(':').map(Number);
-            return h * 60 + m;
-        }
-        function minutesToTime(mins) {
-             const h = Math.floor(mins / 60);
-             const m = mins % 60;
-             return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
-        }
-
-        function checkConflict() {
-            const date = document.getElementById('app-date').value;
-            const time = document.getElementById('app-time').value;
-            const currentId = document.getElementById('app-id').value;
-            const serviceId = document.getElementById('app-service').value;
-            const alertBox = document.getElementById('conflict-alert');
-            
-            if(!date || time.length < 5 || !serviceId) { alertBox.classList.add('hidden'); return; }
-            
-            // Determina a duração do NOVO agendamento
-            const selectedService = db.services.find(s => s.id == serviceId);
-            const newDuration = selectedService ? (selectedService.duration || 90) : 90;
-
-            const currentIdNum = currentId ? parseInt(currentId) : null;
-            const newStart = timeToMinutes(time);
-            const newEnd = newStart + newDuration;
-
-            const conflict = db.appointments.find(a => {
-                if (a.date !== date || a.status === 'cancelled' || a.id === currentIdNum) return false;
-                
-                // Determina duração do agendamento EXISTENTE
-                // Tenta pegar duração salva no agendamento, senão busca no serviço atual, senão padrão 90
-                let existingDuration = a.duration;
-                if(!existingDuration) {
-                     const s = db.services.find(ser => ser.name === a.serviceName); // Fallback pelo nome se ID mudou
-                     existingDuration = s ? (s.duration || 90) : 90;
-                }
-
-                const existingStart = timeToMinutes(a.time);
-                const existingEnd = existingStart + existingDuration; 
-                
-                // Lógica de overlap
-                return (newStart < existingEnd && newEnd > existingStart);
-            });
-            
-            if (conflict) { 
-                // Calcula horario termino para exibir melhor
-                let conflictDur = conflict.duration || 90;
-                let conflictEnd = minutesToTime(timeToMinutes(conflict.time) + conflictDur);
-                document.getElementById('conflict-msg').innerText = `Choque! ${conflict.time} - ${conflictEnd} (${conflict.client})`; 
-                alertBox.classList.remove('hidden');
-            } else { 
-                alertBox.classList.add('hidden'); 
-            }
-        }
+        function minutesToTime(mins) { const h = Math.floor(mins / 60); const m = mins % 60; return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`; }
 
         function toggleDurationField() {
             const type = document.getElementById('serv-type').value;
             const div = document.getElementById('serv-duration-wrapper');
-            if(type === 'extra') div.classList.add('hidden');
-            else div.classList.remove('hidden');
+            if(type === 'extra') div.classList.add('hidden'); else div.classList.remove('hidden');
         }
 
-        // ================= STANDARD FUNCTIONS =================
-        function openModal(id) {
-            const el = document.getElementById(id);
-            if(el) { el.classList.remove('hidden'); el.classList.add('flex'); }
-        }
-        function closeModal(id) {
-            const el = document.getElementById(id);
-            if(el) { el.classList.add('hidden'); el.classList.remove('flex'); }
-        }
-        function saveLocalData() { localStorage.setItem('emelyData', JSON.stringify(db)); }
-        function checkUnsavedStatus() {
-            const btn = document.getElementById('cloud-btn');
-            if (btn) { hasUnsaved ? btn.classList.add('unsaved-badge') : btn.classList.remove('unsaved-badge'); }
-        }
-        function saveCloudUrl() { localStorage.setItem('emelyCloudUrl', document.getElementById('cloud-url').value); alert('Salvo!'); }
+        function openModal(id) { const el = document.getElementById(id); if(el) { el.classList.remove('hidden'); el.classList.add('flex'); } }
+        function closeModal(id) { const el = document.getElementById(id); if(el) { el.classList.add('hidden'); el.classList.remove('flex'); } }
 
-        async function syncUpload() { 
-            const u=localStorage.getItem('emelyCloudUrl'); if(!u) return alert('Sem URL'); 
-            const b=document.getElementById('btn-upload'); const originalText = b.innerHTML; b.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Enviando...'; 
-            try { await fetch(u, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(db) }); alert('Dados enviados!'); hasUnsaved = false; checkUnsavedStatus(); } catch(e) { alert('Erro.'); console.error(e); } finally { b.innerHTML = originalText; } 
-        }
-
-        async function syncDownload() { 
-            const u=localStorage.getItem('emelyCloudUrl'); if(!u) return alert('Sem URL'); if(!confirm('Substituir dados locais?')) return; 
-            const b=document.getElementById('btn-download'); const originalText = b.innerHTML; b.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Baixando...'; 
-            try { 
-                const r=await fetch(u); const d=await r.json(); 
-                if(d && !d.error) { 
-                    db = d; 
-                    if(!db.services) db.services=[]; if(!db.extras) db.extras=[]; if(!db.appointments) db.appointments=[]; if(!db.clients) db.clients=[]; if(!db.tags) db.tags=[]; 
-                    hasUnsaved = false; saveLocalData(); location.reload(); 
-                } else { alert('Erro dados.'); }
-            } catch(e) { alert('Erro rede.'); console.error(e); } finally { b.innerHTML = originalText; } 
-        }
-
-        // INITIALIZATION
         window.onload = () => {
-            initTheme(); // Start theme
-            loadLocalData();
-            document.getElementById('fin-month').value = new Date().toISOString().slice(0, 7);
-            const url = localStorage.getItem('emelyCloudUrl'); 
-            if(url && document.getElementById('cloud-url')) document.getElementById('cloud-url').value = url;
-            
-            // Start on Home
-            router('home'); 
-            renderCalendar(); 
-            renderServices(); 
-            renderAppointments(); 
-            renderClients(); 
-            updateFinancials(); 
-            checkUnsavedStatus();
+            initTheme();
+            initSupabase();
+            const localD = new Date();
+            const y = localD.getFullYear();
+            const m = String(localD.getMonth() + 1).padStart(2, '0');
+            document.getElementById('fin-month').value = `${y}-${m}`;
+            renderCalendar();
+            router('home');
         };
 
-        function loadLocalData() { 
-            const d = localStorage.getItem('emelyData'); 
-            if(d) { try { db = JSON.parse(d); } catch(e) { console.error(e); db = {}; } }
-            if(!db.services) db.services=[]; if(!db.extras) db.extras=[]; if(!db.appointments) db.appointments=[]; if(!db.clients) db.clients=[]; if(!db.tags) db.tags=[];
-        }
-
-        // TAGS UI
         function openTagsModal() { renderTagsList(); renderColorPalette(); openModal('modal-tags'); }
         function renderColorPalette() {
             const container = document.getElementById('color-palette'); container.innerHTML = '';
-            const currentSelected = document.getElementById('new-tag-color').value;
             tagColors.forEach(color => {
                 const div = document.createElement('div');
-                div.className = `color-option w-8 h-8 rounded-full cursor-pointer transition flex-shrink-0 ${currentSelected === color ? 'selected' : ''}`;
+                div.className = `color-option w-8 h-8 rounded-full cursor-pointer transition flex-shrink-0 ${document.getElementById('new-tag-color').value === color ? 'selected' : ''}`;
                 div.style.backgroundColor = color;
-                div.onclick = () => { document.getElementById('new-tag-color').value = color; document.querySelectorAll('.color-option').forEach(el => el.classList.remove('selected')); div.classList.add('selected'); };
+                div.onclick = () => { document.getElementById('new-tag-color').value = color; renderColorPalette(); };
                 container.appendChild(div);
             });
         }
@@ -701,14 +663,6 @@
                 list.innerHTML += `<div class="flex justify-between items-center bg-cream-50 p-3 rounded-lg border border-cream-100 dark:bg-dark-900 dark:border-dark-700"><div class="flex items-center gap-3"><div class="w-4 h-4 rounded-full border border-black/10 shadow-sm" style="background-color: ${tag.color}"></div><span class="text-sm font-bold text-cream-900">${tag.name}</span></div><button onclick="deleteTag(${tag.id})" class="text-cream-400 hover:text-red-500"><i class="fa-solid fa-trash"></i></button></div>`;
             });
         }
-        function addNewTag() {
-            const name = document.getElementById('new-tag-name').value; const color = document.getElementById('new-tag-color').value;
-            if(!name) return alert('Nome obrigatório');
-            if(!db.tags) db.tags = []; db.tags.push({ id: Date.now(), name, color });
-            document.getElementById('new-tag-name').value = ''; document.getElementById('new-tag-color').value = '#D4AF37'; renderColorPalette();
-            hasUnsaved = true; saveLocalData(); renderTagsList(); renderClients(); checkUnsavedStatus();
-        }
-        function deleteTag(id) { if(!confirm('Excluir?')) return; db.tags = db.tags.filter(t => t.id !== id); db.clients.forEach(c => { if(c.tags) c.tags = c.tags.filter(tid => tid !== id); }); hasUnsaved = true; saveLocalData(); renderTagsList(); checkUnsavedStatus(); }
         function getClientTagsHtml(ids, size='normal') {
             if(!ids || !ids.length) return '';
             let html = ''; const sizeClass = size === 'small' ? 'px-1.5 py-0.5 text-[8px]' : 'px-2 py-0.5 text-[10px]';
@@ -716,26 +670,36 @@
             return html;
         }
 
-        // APPOINTMENTS UI
-        function handleTimeInput(input) { let v = input.value.replace(/\D/g, ''); if (v.length > 4) v = v.slice(0, 4); if (v.length >= 2) { let hh = parseInt(v.slice(0, 2)); if (hh > 23) v = '23' + v.slice(2); } if (v.length >= 3) { let m1 = parseInt(v.slice(2, 3)); if (m1 > 5) v = v.slice(0, 2) + '5' + v.slice(3); } if (v.length > 2) { input.value = v.slice(0, 2) + ':' + v.slice(2); } else { input.value = v; } }
+        function handleTimeInput(input) { 
+            let v = input.value.replace(/\D/g, ''); 
+            if (v.length > 4) v = v.slice(0, 4); 
+            if (v.length >= 2) { let hh = parseInt(v.slice(0, 2)); if (hh > 23) v = '23' + v.slice(2); } 
+            if (v.length >= 3) { let m1 = parseInt(v.slice(2, 3)); if (m1 > 5) v = v.slice(0, 2) + '5' + v.slice(3); } 
+            if (v.length > 2) { input.value = v.slice(0, 2) + ':' + v.slice(2); } else { input.value = v; } 
+            checkConflict(); // Verifica conflito enquanto digita
+        }
+        
         function jumpToDate(val) { if (!val) return; selectedDate = val; renderCalendar(); renderAppointments(); }
         function renderCalendar() {
             const c = document.getElementById('horizontal-calendar'); c.innerHTML = '';
             const [y, m, d_val] = selectedDate.split('-').map(Number); const pivot = new Date(y, m - 1, d_val); const startDate = new Date(pivot); startDate.setDate(startDate.getDate() - 7);
             for (let i = 0; i < 68; i++) {
-                const d = new Date(startDate); d.setDate(d.getDate() + i); const dateStr = d.toLocaleDateString('pt-BR').split('/').reverse().join('-');
+                const d = new Date(startDate); d.setDate(d.getDate() + i); 
+                const dy = d.getFullYear(); const dm = String(d.getMonth() + 1).padStart(2, '0'); const dd = String(d.getDate()).padStart(2, '0');
+                const dateStr = `${dy}-${dm}-${dd}`;
                 const countScheduled = (db.appointments||[]).filter(a => a.date === dateStr && a.status === 'scheduled').length;
                 const countCompleted = (db.appointments||[]).filter(a => a.date === dateStr && a.status === 'completed').length;
                 const active = dateStr === selectedDate ? 'active' : '';
                 let badgesHtml = '<div class="badge-container">'; if (countScheduled > 0) badgesHtml += `<div class="badge badge-pending">${countScheduled}</div>`; if (countCompleted > 0) badgesHtml += `<div class="badge badge-completed">${countCompleted}</div>`; badgesHtml += '</div>';
                 const el = document.createElement('div'); el.className = `calendar-day ${active}`; el.onclick = () => { selectedDate = dateStr; renderCalendar(); renderAppointments(); };
-                el.innerHTML = `<span class="text-[10px] uppercase font-bold mt-1 opacity-60 tracking-wide">${d.toLocaleDateString('pt-BR',{weekday:'short'}).replace('.','')}</span><span class="text-xl font-serif font-bold leading-none my-1">${d.getDate()}</span>${badgesHtml}`;
+                const weekDay = d.toLocaleDateString('pt-BR',{weekday:'short'}).replace('.','');
+                el.innerHTML = `<span class="text-[10px] uppercase font-bold mt-1 opacity-60 tracking-wide">${weekDay}</span><span class="text-xl font-serif font-bold leading-none my-1">${d.getDate()}</span>${badgesHtml}`;
                 c.appendChild(el);
             }
             document.getElementById('month-display').innerText = pivot.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
             setTimeout(() => { const a = document.querySelector('.calendar-day.active'); if(a) a.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'}); }, 100);
         }
-        function goToToday() { const today = new Date(); selectedDate = today.toLocaleDateString('pt-BR').split('/').reverse().join('-'); renderCalendar(); renderAppointments(); }
+        function goToToday() { selectedDate = getLocalDateString(); renderCalendar(); renderAppointments(); }
         function renderAppointments() {
             const list = document.getElementById('appointments-list'); list.innerHTML = '';
             const filter = document.getElementById('filter-status').value;
@@ -745,14 +709,16 @@
             let total = 0;
             filtered.forEach(a => {
                 if(a.status !== 'cancelled') total += a.price;
-                let extrasHtml = ''; if(a.extras && a.extras.length > 0) { extrasHtml = '<div class="flex flex-wrap gap-1 mt-1">'; a.extras.forEach(ex => extrasHtml += `<span class="text-[10px] bg-gold-50 text-gold-700 px-1.5 py-0.5 rounded border border-gold-100 dark:bg-gold-900 dark:border-gold-800 dark:text-gold-400">${ex}</span>`); extrasHtml += '</div>'; }
-                let tagsHtml = ''; const clientObj = db.clients.find(c => c.name === a.client); if (clientObj && clientObj.tags) { tagsHtml = `<div class="mb-1">${getClientTagsHtml(clientObj.tags, 'small')}</div>`; }
+                let extrasHtml = ''; if(a.extras && Array.isArray(a.extras) && a.extras.length > 0) { extrasHtml = '<div class="flex flex-wrap gap-1 mt-1">'; a.extras.forEach(ex => extrasHtml += `<span class="text-[10px] bg-gold-50 text-gold-700 px-1.5 py-0.5 rounded border border-gold-100 dark:bg-gold-900 dark:border-gold-800 dark:text-gold-400">${ex}</span>`); extrasHtml += '</div>'; }
+                const clientName = a.client_name || a.client;
+                const serviceName = a.service_name || a.serviceName;
+                let tagsHtml = ''; const clientObj = db.clients.find(c => c.name === clientName); if (clientObj && clientObj.tags) { tagsHtml = `<div class="mb-1">${getClientTagsHtml(clientObj.tags, 'small')}</div>`; }
                 let birthdayHtml = ''; if (clientObj && clientObj.birth) { const bp = clientObj.birth.split('-'); const ap = a.date.split('-'); if (bp[1] === ap[1] && bp[2] === ap[2]) birthdayHtml = `<div class="mt-2 inline-flex items-center gap-1.5 bg-gold-100 text-gold-800 text-[10px] font-bold uppercase px-2 py-1 rounded-lg border border-gold-200 dark:bg-gold-900 dark:border-gold-700 dark:text-gold-300"><span>🎂</span> Aniversariante</div>`; }
                 let actions = a.status === 'scheduled' ? `<button onclick="event.stopPropagation(); editAppointment(${a.id})" class="w-9 h-9 rounded-full bg-cream-100 text-cream-500 flex items-center justify-center hover:bg-cream-200 transition dark:bg-dark-700 dark:text-cream-400"><i class="fa-solid fa-pen text-sm"></i></button><button onclick="event.stopPropagation(); toggleStatus(${a.id},'completed')" class="w-9 h-9 rounded-full bg-gold-100 text-gold-700 flex items-center justify-center hover:bg-gold-200 transition dark:bg-gold-900 dark:text-gold-400"><i class="fa-solid fa-check text-sm"></i></button><button onclick="event.stopPropagation(); toggleStatus(${a.id},'cancelled')" class="w-9 h-9 rounded-full bg-red-50 text-red-400 flex items-center justify-center hover:bg-red-100 transition dark:bg-red-900/30 dark:text-red-400"><i class="fa-solid fa-times text-sm"></i></button>` : `<button onclick="event.stopPropagation(); toggleStatus(${a.id},'scheduled')" class="text-[10px] font-bold text-gold-600 uppercase bg-gold-50 px-3 py-1 rounded-full dark:bg-gold-900 dark:text-gold-400">Restaurar</button>`;
-                const safePhone = String(a.phone || ''); const wa = safePhone ? `<a href="https://wa.me/55${safePhone.replace(/\D/g,'')}" target="_blank" onclick="event.stopPropagation()" class="text-green-600 ml-1 dark:text-green-400"><i class="fa-brands fa-whatsapp"></i></a>` : '';
+                const safePhone = String(a.phone || a.client_phone || ''); const wa = safePhone ? `<a href="https://wa.me/55${safePhone.replace(/\D/g,'')}" target="_blank" onclick="event.stopPropagation()" class="text-green-600 ml-1 dark:text-green-400"><i class="fa-brands fa-whatsapp"></i></a>` : '';
                 let statusClasses = a.status === 'completed' ? 'bg-green-50 border-l-4 border-l-green-400 border-y border-r border-green-100 dark:bg-green-900/10 dark:border-green-800' : (a.status === 'cancelled' ? 'bg-red-50 border-l-4 border-l-red-300 border-y border-r border-red-100 opacity-75 dark:bg-red-900/10 dark:border-red-800' : 'bg-white border-l-4 border-l-gold-400 border-y border-r border-cream-100 dark:bg-dark-800 dark:border-dark-700 dark:border-l-gold-500');
                 const remaining = a.price - (a.deposit || 0); const remainingHtml = remaining > 0 ? `<div class="mt-1 text-xs font-bold text-gold-600 bg-gold-50 px-2 py-1 rounded w-fit dark:bg-gold-900 dark:text-gold-400">Falta: R$ ${remaining.toFixed(2)}</div>` : '';
-                list.innerHTML += `<div onclick="openDetails(${a.id})" class="cursor-pointer ${statusClasses} p-4 rounded-2xl shadow-soft flex gap-4 transition-all active:scale-[0.99]"><div class="flex flex-col items-center justify-center w-14 border-r border-cream-100 pr-4 flex-shrink-0 dark:border-white/5"><span class="font-serif font-bold text-cream-900 text-2xl">${a.time}</span></div><div class="flex-1 flex flex-col justify-between gap-3"><div class="min-w-0"><h4 class="font-bold text-cream-900 text-base leading-tight mb-1 truncate">${a.client} ${wa}</h4>${tagsHtml}<div class="flex flex-wrap gap-1 items-center mb-1"><span class="bg-cream-100 text-gray-800 text-sm px-2 py-0.5 rounded-md font-medium leading-tight inline-block max-w-full break-words dark:bg-dark-700 dark:text-cream-300">${a.serviceName}</span></div>${extrasHtml} ${birthdayHtml} ${remainingHtml}</div><div class="flex justify-end gap-2 border-t border-cream-50 pt-2 mt-auto dark:border-white/5">${actions}</div></div></div>`;
+                list.innerHTML += `<div onclick="openDetails(${a.id})" class="cursor-pointer ${statusClasses} p-4 rounded-2xl shadow-soft flex gap-4 transition-all active:scale-[0.99]"><div class="flex flex-col items-center justify-center w-14 border-r border-cream-100 pr-4 flex-shrink-0 dark:border-white/5"><span class="font-serif font-bold text-cream-900 text-2xl">${a.time}</span></div><div class="flex-1 flex flex-col justify-between gap-3"><div class="min-w-0"><h4 class="font-bold text-cream-900 text-base leading-tight mb-1 truncate">${clientName} ${wa}</h4>${tagsHtml}<div class="flex flex-wrap gap-1 items-center mb-1"><span class="bg-cream-100 text-gray-800 text-sm px-2 py-0.5 rounded-md font-medium leading-tight inline-block max-w-full break-words dark:bg-dark-700 dark:text-cream-300">${serviceName}</span></div>${extrasHtml} ${birthdayHtml} ${remainingHtml}</div><div class="flex justify-end gap-2 border-t border-cream-50 pt-2 mt-auto dark:border-white/5">${actions}</div></div></div>`;
             });
             document.getElementById('daily-total').innerText = 'R$ ' + total.toFixed(2);
         }
@@ -760,16 +726,16 @@
         function openDetails(id) {
             const app = db.appointments.find(a => a.id === id); if(!app) return;
             document.getElementById('det-id').value = app.id;
-            document.getElementById('det-client').innerText = app.client;
-            document.getElementById('det-phone').innerText = app.phone || 'Sem telefone';
+            document.getElementById('det-client').innerText = app.client_name || app.client;
+            document.getElementById('det-phone').innerText = app.client_phone || app.phone || 'Sem telefone';
             document.getElementById('det-time').innerText = `${app.date.split('-').reverse().join('/')} às ${app.time}`;
-            document.getElementById('det-service').innerText = app.serviceName;
+            document.getElementById('det-service').innerText = app.service_name || app.serviceName;
             const fullPrice = app.price; const deposit = app.deposit || 0; const remaining = fullPrice - deposit;
             document.getElementById('det-full-price').innerText = 'R$ ' + fullPrice.toFixed(2);
             document.getElementById('det-deposit').innerText = 'R$ ' + deposit.toFixed(2);
             document.getElementById('det-total').innerText = 'R$ ' + remaining.toFixed(2);
             const extraList = document.getElementById('det-extras-list'); extraList.innerHTML = '';
-            if(app.extras && app.extras.length > 0) app.extras.forEach(e => extraList.innerHTML += `<span>+ ${e}</span>`); else extraList.innerHTML = '<span>Nenhum adicional</span>';
+            if(app.extras && Array.isArray(app.extras)) { app.extras.forEach(e => extraList.innerHTML += `<span>+ ${e}</span>`); } else { extraList.innerHTML = '<span>Nenhum adicional</span>'; }
             if(app.notes) { document.getElementById('det-notes-box').classList.remove('hidden'); document.getElementById('det-notes').innerText = app.notes; } else { document.getElementById('det-notes-box').classList.add('hidden'); }
             openModal('modal-details');
         }
@@ -784,62 +750,42 @@
         function renderServiceOptions() {
             const sel = document.getElementById('app-service'), list = document.getElementById('app-extras-list'); if(!sel || !list) return;
             sel.innerHTML='<option value="" disabled selected>Selecione...</option>'; list.innerHTML='';
-            (db.services||[]).forEach(s => sel.innerHTML+=`<option value="${s.id}" data-price="${s.price}">${s.name} - R$${s.price.toFixed(2)} (${s.duration||90}m)</option>`);
+            // IMPORTANTE: Adicionamos data-duration ao option para leitura fácil
+            (db.services||[]).forEach(s => sel.innerHTML+=`<option value="${s.id}" data-price="${s.price}" data-duration="${s.duration||90}">${s.name} - R$${s.price.toFixed(2)} (${s.duration||90}m)</option>`);
             (db.extras||[]).forEach(e => list.innerHTML+=`<label class="flex items-center gap-3 p-3 bg-white rounded-xl border border-cream-100 transition cursor-pointer dark:bg-dark-800 dark:border-dark-700"><input type="checkbox" id="extra-${e.id}" value="${e.id}" data-price="${e.price}" class="extra-checkbox w-5 h-5 text-gold-600 rounded border-cream-300 focus:ring-gold-400" onchange="calculateTotal()"><div class="flex-1 flex justify-between"><span class="text-sm text-cream-700 dark:text-cream-300">${e.name}</span><span class="font-bold text-gold-600 text-xs">+ R$ ${e.price.toFixed(2)}</span></div></label>`);
         }
 
         function openNewAppointment() {
-            document.getElementById('modal-title').innerText = 'Novo Agendamento'; document.getElementById('form-appointment').reset(); document.getElementById('app-id').value = ''; document.getElementById('app-date').value = selectedDate; document.getElementById('app-total-display').innerText = 'R$ 0,00'; document.getElementById('app-remaining-display').innerText = 'R$ 0,00'; document.getElementById('conflict-alert').classList.add('hidden'); renderServiceOptions(); openModal('modal-appointment');
+            document.getElementById('modal-title').innerText = 'Novo Agendamento'; document.getElementById('form-appointment').reset(); document.getElementById('app-id').value = ''; 
+            document.getElementById('app-date').value = selectedDate;
+            document.getElementById('app-total-display').innerText = 'R$ 0,00'; document.getElementById('app-remaining-display').innerText = 'R$ 0,00'; 
+            // Reset do alerta
+            document.getElementById('conflict-alert').classList.add('hidden'); 
+            document.getElementById('app-time').classList.remove('input-error');
+            
+            renderServiceOptions(); openModal('modal-appointment');
         }
         function rescheduleClient(name) { document.querySelectorAll('.fixed.inset-0').forEach(m => m.classList.add('hidden')); router('agenda'); openNewAppointment(); document.getElementById('app-client').value = name; const c = db.clients.find(cli => cli.name === name); if(c && c.phone) document.getElementById('app-phone').value = c.phone; }
 
         function editAppointment(id) {
             const app = db.appointments.find(a => a.id === id); if(!app) return;
-            document.getElementById('modal-title').innerText = 'Editar'; document.getElementById('app-id').value = app.id; document.getElementById('app-client').value = app.client; document.getElementById('app-phone').value = app.phone || ''; document.getElementById('app-date').value = app.date; document.getElementById('app-time').value = app.time; document.getElementById('app-notes').value = app.notes || ''; document.getElementById('app-deposit').value = app.deposit || '';
-            renderServiceOptions(); document.getElementById('app-service').value = app.serviceId; if(app.extras) app.extras.forEach(ex => { const obj = db.extras.find(e => e.name === ex); if(obj) document.getElementById(`extra-${obj.id}`).checked = true; });
+            document.getElementById('modal-title').innerText = 'Editar'; document.getElementById('app-id').value = app.id; document.getElementById('app-client').value = app.client_name || app.client; document.getElementById('app-phone').value = app.phone || app.client_phone || ''; document.getElementById('app-date').value = app.date; document.getElementById('app-time').value = app.time; document.getElementById('app-notes').value = app.notes || ''; document.getElementById('app-deposit').value = app.deposit || '';
+            renderServiceOptions(); document.getElementById('app-service').value = app.service_id || app.serviceId; 
+            if(app.extras && Array.isArray(app.extras)) { app.extras.forEach(exName => { const obj = db.extras.find(e => e.name === exName); if(obj) document.getElementById(`extra-${obj.id}`).checked = true; }); }
             calculateTotal(); openModal('modal-appointment');
         }
-        function saveAppointment() {
-            const id = document.getElementById('app-id').value; const client = document.getElementById('app-client').value; const sel = document.getElementById('app-service');
-            if(!sel.value || sel.value === "") return alert('Selecione procedimento'); if(!client) return alert('Nome obrigatório');
-            const serv = db.services.find(s => s.id == sel.value); if (!serv) return alert('Erro serviço');
-            const extras = Array.from(document.querySelectorAll('.extra-checkbox:checked')).map(cb => { const f = db.extras.find(e => e.id == cb.value); return f ? f.name : null; }).filter(i=>i);
-            const total = calculateTotal(); const dep = parseFloat(document.getElementById('app-deposit').value) || 0;
-            const data = { client, phone: document.getElementById('app-phone').value, date: document.getElementById('app-date').value, time: document.getElementById('app-time').value, serviceId: serv.id, serviceName: serv.name, duration: serv.duration || 90, extras: extras, price: total, deposit: dep, notes: document.getElementById('app-notes').value, status: 'scheduled' };
-            if(id) { const idx = db.appointments.findIndex(a => a.id == id); if(idx!==-1) { data.id=parseInt(id); data.status=db.appointments[idx].status; db.appointments[idx]=data; } } else { data.id = Date.now(); db.appointments.push(data); }
-            hasUnsaved = true; saveLocalData(); closeModal('modal-appointment'); renderCalendar(); renderAppointments(); checkUnsavedStatus();
-        }
-        function toggleStatus(id, s) { const app = db.appointments.find(a => a.id === id); if(app) { if(s==='cancelled' && !confirm('Cancelar?')) return; app.status = s; hasUnsaved = true; saveLocalData(); renderCalendar(); renderAppointments(); checkUnsavedStatus(); } }
-
-        function openClientModal() { document.getElementById('modal-client-title').innerText = "Nova Cliente"; document.getElementById('form-client').reset(); document.getElementById('client-id').value = ""; renderClientTagsSelector([]); openModal('modal-client'); }
-        function openEditClient(id) { const c = db.clients.find(cli => cli.id === id); if(!c) return; document.getElementById('modal-client-title').innerText = "Editar Cliente"; document.getElementById('client-id').value = c.id; document.getElementById('client-name').value = c.name; document.getElementById('client-phone').value = c.phone || ""; document.getElementById('client-birth').value = c.birth || ""; renderClientTagsSelector(c.tags || []); openModal('modal-client'); }
-        function renderClientTagsSelector(selectedTagsIds) {
-            const container = document.getElementById('client-tags-selector'); container.innerHTML = ''; if(!db.tags || !db.tags.length) { container.innerHTML = '<span class="text-xs text-gray-400 italic">Nenhuma etiqueta.</span>'; return; }
-            db.tags.forEach(tag => { const isSelected = selectedTagsIds.includes(tag.id); const opacity = isSelected ? '1' : '0.5'; const border = isSelected ? 'border-black/20' : 'border-transparent'; const pill = document.createElement('div'); pill.className = `cursor-pointer px-3 py-1.5 rounded-full text-xs font-bold border transition select-none flex items-center gap-1`; pill.style.backgroundColor = tag.color; pill.style.opacity = opacity; pill.style.borderColor = isSelected ? '#2E2B22' : 'transparent'; pill.innerHTML = `${tag.name} ${isSelected ? '<i class="fa-solid fa-check ml-1 text-[10px]"></i>' : ''}`; pill.onclick = () => { if (selectedTagsIds.includes(tag.id)) { selectedTagsIds.splice(selectedTagsIds.indexOf(tag.id), 1); } else { selectedTagsIds.push(tag.id); } renderClientTagsSelector(selectedTagsIds); }; container.appendChild(pill); }); container.dataset.selected = JSON.stringify(selectedTagsIds);
-        }
-        document.getElementById('form-client').addEventListener('submit', e => { 
-            e.preventDefault(); const id = document.getElementById('client-id').value; const name = document.getElementById('client-name').value; const phone = document.getElementById('client-phone').value; const birth = document.getElementById('client-birth').value; const tags = document.getElementById('client-tags-selector').dataset.selected ? JSON.parse(document.getElementById('client-tags-selector').dataset.selected) : [];
-            if (id) { const idx = db.clients.findIndex(c => c.id == id); if(idx !== -1) { const oldName = db.clients[idx].name; db.clients[idx] = { id: parseInt(id), name, phone, birth, tags }; if (oldName !== name) { db.appointments.forEach(app => { if(app.client === oldName) app.client = name; }); } } } else { const exists = db.clients.find(c => c.name.toLowerCase() === name.toLowerCase() && c.birth === birth); if(exists) { alert('Cliente já existe!'); return; } db.clients.push({ id: Date.now(), name, phone, birth, tags }); } 
-            hasUnsaved = true; saveLocalData(); closeModal('modal-client'); renderClients(); renderAppointments(); e.target.reset(); checkUnsavedStatus(); 
-        });
-        document.getElementById('form-service').addEventListener('submit', e => {
-            e.preventDefault(); const type = document.getElementById('serv-type').value; const dur = parseInt(document.getElementById('serv-duration').value) || 60;
-            const item = { id: Date.now(), name: document.getElementById('serv-name').value, price: parseFloat(document.getElementById('serv-price').value), duration: type === 'service' ? dur : 0 };
-            if(type === 'service') { if(!db.services) db.services=[]; db.services.push(item); } else { if(!db.extras) db.extras=[]; db.extras.push(item); }
-            hasUnsaved = true; saveLocalData(); closeModal('modal-service'); renderServices(); e.target.reset(); checkUnsavedStatus();
-        });
         function calculateTotal() { const sel = document.getElementById('app-service'); let t = 0; if (sel.selectedIndex >= 0 && sel.options[sel.selectedIndex] && !sel.options[sel.selectedIndex].disabled) { t = parseFloat(sel.options[sel.selectedIndex].dataset.price || 0); } document.querySelectorAll('.extra-checkbox:checked').forEach(cb => t += parseFloat(cb.dataset.price)); const dep = parseFloat(document.getElementById('app-deposit').value) || 0; document.getElementById('app-total-display').innerText = 'R$ ' + t.toFixed(2); document.getElementById('app-remaining-display').innerText = 'R$ ' + (t - dep > 0 ? t - dep : 0).toFixed(2); return t; }
         function delService(id, t) { if(confirm('Excluir?')) { if(t==='s') db.services=db.services.filter(s=>s.id!==id); else db.extras=db.extras.filter(e=>e.id!==id); hasUnsaved = true; saveLocalData(); renderServices(); checkUnsavedStatus(); } }
         function searchClients(q) { const box = document.getElementById('client-suggestions'); box.innerHTML = ''; if(q.length < 2) { box.classList.add('hidden'); return; } const m = (db.clients||[]).filter(c => c.name.toLowerCase().includes(q.toLowerCase())); if(m.length) { box.classList.remove('hidden'); m.forEach(c => { const div = document.createElement('div'); div.className = "p-3 hover:bg-cream-50 border-b border-cream-50 cursor-pointer dark:border-dark-700 dark:hover:bg-dark-700"; div.innerHTML = `<div class="font-bold text-sm text-cream-900">${c.name}</div>`; div.onclick = () => { document.getElementById('app-client').value=c.name; document.getElementById('app-phone').value=c.phone; box.classList.add('hidden'); }; box.appendChild(div); }); } else { box.classList.add('hidden'); } }
-        function updateFinancials() { const m = document.getElementById('fin-month').value; if(!m) return; const apps = (db.appointments||[]).filter(a => a.date.startsWith(m) && a.status === 'completed').sort((a,b) => a.date.localeCompare(b.date)); document.getElementById('fin-total').innerText = 'R$ ' + apps.reduce((s, a) => s + a.price, 0).toFixed(2); const tb = document.getElementById('financial-table-body'); tb.innerHTML=''; apps.forEach(a => tb.innerHTML+=`<tr class="border-b border-cream-50 hover:bg-cream-50/50 dark:border-dark-700 dark:hover:bg-dark-700"><td class="p-4 text-cream-500 text-xs font-medium dark:text-cream-400">${a.date.split('-')[2]}/${a.date.split('-')[1]}</td><td class="p-4 font-bold text-cream-800 text-xs dark:text-cream-200">${a.client}</td><td class="p-4 font-mono font-bold text-gold-600 text-xs text-right">R$ ${a.price.toFixed(2)}</td></tr>`); }
-        function generateWhatsappMessages() { const c = document.getElementById('ai-output'); c.classList.remove('hidden'); const t = new Date(); t.setDate(t.getDate()+1); const dateStr = t.toLocaleDateString('pt-BR').split('/').reverse().join('-'); const apps = (db.appointments||[]).filter(a => a.date === dateStr && a.status === 'scheduled'); if(!apps.length) { document.getElementById('ai-content').innerHTML = '<p class="italic text-center text-cream-400">Agenda livre.</p>'; return; } let html = `<p class="font-bold text-gold-700 text-xs uppercase tracking-wider mb-3">Amanhã (${dateStr.split('-').reverse().join('/')})</p><div class="space-y-3">`; apps.forEach(a => { const msg = `Olá ${a.client.split(' ')[0]}! ✨ Confirmando nosso horário amanhã às ${a.time} (${a.serviceName}). Posso confirmar?`; let link = `https://wa.me/?text=${encodeURIComponent(msg)}`; if(a.phone) link = `https://wa.me/55${String(a.phone).replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`; html += `<a href="${link}" target="_blank" class="block bg-cream-50 p-4 rounded-2xl border border-cream-100 flex justify-between items-center hover:bg-green-50 transition group dark:bg-dark-900 dark:border-dark-700 dark:hover:bg-green-900/30"><div><h5 class="font-bold text-cream-900 text-sm">${a.client}</h5><span class="text-xs text-cream-500">${a.time} • ${a.serviceName}</span></div><div class="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center shadow-sm group-hover:scale-110 transition"><i class="fa-brands fa-whatsapp"></i></div></a>`; }); document.getElementById('ai-content').innerHTML = html + '</div>'; }
-        function generateMaintenanceMessages() { const c = document.getElementById('ai-output'); c.classList.remove('hidden'); const today = new Date(); const uniqueClients = [...new Set(db.clients.map(c => c.name))]; let candidates = []; uniqueClients.forEach(name => { const apps = db.appointments.filter(a => a.client === name && a.status === 'completed').sort((a,b) => new Date(b.date) - new Date(a.date)); if(apps.length) { const last = apps[0]; const diff = Math.ceil(Math.abs(today - new Date(last.date)) / (86400000)); if (diff > 20) { if (!db.appointments.some(a => a.client === name && a.status === 'scheduled' && new Date(a.date) >= today)) { const cli = db.clients.find(cl => cl.name === name); candidates.push({ name, days: diff, service: last.serviceName, phone: cli?cli.phone:null }); } } } }); if(!candidates.length) { document.getElementById('ai-content').innerHTML = '<p class="italic text-center text-cream-400">Ninguém para retorno.</p>'; return; } let html = `<p class="font-bold text-purple-700 text-xs uppercase tracking-wider mb-3">Retorno</p><div class="space-y-3">`; candidates.forEach(c => { const msg = `Oi ${c.name.split(' ')[0]}! 💖 Fazem ${c.days} dias das unhas (${c.service}). Vamos agendar a manutenção?`; let link = `https://wa.me/?text=${encodeURIComponent(msg)}`; if(c.phone) link = `https://wa.me/55${String(c.phone).replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`; html += `<a href="${link}" target="_blank" class="block bg-cream-50 p-4 rounded-2xl border border-cream-100 flex justify-between items-center hover:bg-purple-50 transition group dark:bg-dark-900 dark:border-dark-700 dark:hover:bg-purple-900/30"><div><h5 class="font-bold text-cream-900 text-sm">${c.name}</h5><span class="text-xs text-red-400 font-bold">Ausente ${c.days}d</span></div><div class="w-8 h-8 bg-purple-500 text-white rounded-full flex items-center justify-center shadow-sm group-hover:scale-110 transition"><i class="fa-brands fa-whatsapp"></i></div></a>`; }); document.getElementById('ai-content').innerHTML = html + '</div>'; }
+        function updateFinancials() { const m = document.getElementById('fin-month').value; if(!m) return; const apps = (db.appointments||[]).filter(a => a.date.startsWith(m) && a.status === 'completed').sort((a,b) => a.date.localeCompare(b.date)); document.getElementById('fin-total').innerText = 'R$ ' + apps.reduce((s, a) => s + a.price, 0).toFixed(2); const tb = document.getElementById('financial-table-body'); tb.innerHTML=''; apps.forEach(a => tb.innerHTML+=`<tr class="border-b border-cream-50 hover:bg-cream-50/50 dark:border-dark-700 dark:hover:bg-dark-700"><td class="p-4 text-cream-500 text-xs font-medium dark:text-cream-400">${a.date.split('-')[2]}/${a.date.split('-')[1]}</td><td class="p-4 font-bold text-cream-800 text-xs dark:text-cream-200">${a.client_name || a.client}</td><td class="p-4 font-mono font-bold text-gold-600 text-xs text-right">R$ ${a.price.toFixed(2)}</td></tr>`); }
+        function generateWhatsappMessages() { const c = document.getElementById('ai-output'); c.classList.remove('hidden'); const t = new Date(); t.setDate(t.getDate()+1); const dateStr = t.toLocaleDateString('pt-BR').split('/').reverse().join('-'); const apps = (db.appointments||[]).filter(a => a.date === dateStr && a.status === 'scheduled'); if(!apps.length) { document.getElementById('ai-content').innerHTML = '<p class="italic text-center text-cream-400">Agenda livre.</p>'; return; } let html = `<p class="font-bold text-gold-700 text-xs uppercase tracking-wider mb-3">Amanhã (${dateStr.split('-').reverse().join('/')})</p><div class="space-y-3">`; apps.forEach(a => { const msg = `Olá ${ (a.client_name||a.client).split(' ')[0]}! ✨ Confirmando nosso horário amanhã às ${a.time} (${a.service_name||a.serviceName}). Posso confirmar?`; let link = `https://wa.me/?text=${encodeURIComponent(msg)}`; if(a.phone) link = `https://wa.me/55${String(a.phone).replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`; html += `<a href="${link}" target="_blank" class="block bg-cream-50 p-4 rounded-2xl border border-cream-100 flex justify-between items-center hover:bg-green-50 transition group dark:bg-dark-900 dark:border-dark-700 dark:hover:bg-green-900/30"><div><h5 class="font-bold text-cream-900 text-sm">${a.client_name||a.client}</h5><span class="text-xs text-cream-500">${a.time} • ${a.service_name||a.serviceName}</span></div><div class="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center shadow-sm group-hover:scale-110 transition"><i class="fa-brands fa-whatsapp"></i></div></a>`; }); document.getElementById('ai-content').innerHTML = html + '</div>'; }
+        function generateMaintenanceMessages() { const c = document.getElementById('ai-output'); c.classList.remove('hidden'); const today = new Date(); const uniqueClients = [...new Set(db.clients.map(c => c.name))]; let candidates = []; uniqueClients.forEach(name => { const apps = db.appointments.filter(a => (a.client_name===name || a.client===name) && a.status === 'completed').sort((a,b) => new Date(b.date) - new Date(a.date)); if(apps.length) { const last = apps[0]; const diff = Math.ceil(Math.abs(today - new Date(last.date)) / (86400000)); if (diff > 20) { if (!db.appointments.some(a => (a.client_name===name || a.client===name) && a.status === 'scheduled' && new Date(a.date) >= today)) { const cli = db.clients.find(cl => cl.name === name); candidates.push({ name, days: diff, service: last.service_name||last.serviceName, phone: cli?cli.phone:null }); } } } }); if(!candidates.length) { document.getElementById('ai-content').innerHTML = '<p class="italic text-center text-cream-400">Ninguém para retorno.</p>'; return; } let html = `<p class="font-bold text-purple-700 text-xs uppercase tracking-wider mb-3">Retorno</p><div class="space-y-3">`; candidates.forEach(c => { const msg = `Oi ${c.name.split(' ')[0]}! 💖 Fazem ${c.days} dias das unhas (${c.service}). Vamos agendar a manutenção?`; let link = `https://wa.me/?text=${encodeURIComponent(msg)}`; if(c.phone) link = `https://wa.me/55${String(c.phone).replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`; html += `<a href="${link}" target="_blank" class="block bg-cream-50 p-4 rounded-2xl border border-cream-100 flex justify-between items-center hover:bg-purple-50 transition group dark:bg-dark-900 dark:border-dark-700 dark:hover:bg-purple-900/30"><div><h5 class="font-bold text-cream-900 text-sm">${c.name}</h5><span class="text-xs text-red-400 font-bold">Ausente ${c.days}d</span></div><div class="w-8 h-8 bg-purple-500 text-white rounded-full flex items-center justify-center shadow-sm group-hover:scale-110 transition"><i class="fa-brands fa-whatsapp"></i></div></a>`; }); document.getElementById('ai-content').innerHTML = html + '</div>'; }
 
         function renderClients() {
             const list = document.getElementById('clients-list'); const q = document.getElementById('search-client-list').value.toLowerCase(); list.innerHTML = '';
             (db.clients||[]).filter(c => c.name.toLowerCase().includes(q)).sort((a,b) => a.name.localeCompare(b.name)).forEach(c => {
-                const visits = db.appointments.filter(a => a.client === c.name && a.status === 'completed').length;
-                let statusHtml = ''; const lastApp = db.appointments.filter(a => a.client === c.name && a.status === 'completed').sort((a,b) => a.date < b.date ? 1 : -1)[0];
+                const visits = db.appointments.filter(a => (a.client_name===c.name || a.client===c.name) && a.status === 'completed').length;
+                let statusHtml = ''; const lastApp = db.appointments.filter(a => (a.client_name===c.name || a.client===c.name) && a.status === 'completed').sort((a,b) => a.date < b.date ? 1 : -1)[0];
                 if(lastApp) { const diff = Math.ceil(Math.abs(new Date() - new Date(lastApp.date)) / 86400000); if(diff > 25) statusHtml = `<span class="text-[9px] bg-red-50 text-red-500 px-1.5 py-0.5 rounded-md border border-red-100 font-bold ml-1 inline-block dark:bg-red-900/30 dark:border-red-800 dark:text-red-300">Ausente ${diff}d</span>`; }
                 const whatsappBtn = c.phone ? `<a href="https://wa.me/55${String(c.phone).replace(/\D/g,'')}" target="_blank" class="text-green-500 hover:text-green-700 tooltip-action dark:text-green-400" title="WhatsApp"><i class="fa-brands fa-whatsapp text-xl"></i></a>` : '<span class="text-gray-300 dark:text-gray-600"><i class="fa-brands fa-whatsapp text-xl"></i></span>';
                 const tagsHtml = getClientTagsHtml(c.tags);
@@ -847,6 +793,65 @@
             });
         }
         function delClient(id) { if(confirm('Remover?')) { db.clients = db.clients.filter(c => c.id !== id); hasUnsaved = true; saveLocalData(); renderClients(); checkUnsavedStatus(); } }
+
+        // ================= CLIENT MODAL AND TAGS LOGIC =================
+        function openClientModal() { 
+            document.getElementById('modal-client-title').innerText = "Nova Cliente"; 
+            document.getElementById('form-client').reset(); 
+            document.getElementById('client-id').value = ""; 
+            renderClientTagsSelector([]); // Inicializa tags vazias
+            openModal('modal-client'); 
+        }
+        
+        function openEditClient(id) { 
+            const c = db.clients.find(cli => cli.id === id); 
+            if(!c) return; 
+            document.getElementById('modal-client-title').innerText = "Editar Cliente"; 
+            document.getElementById('client-id').value = c.id; 
+            document.getElementById('client-name').value = c.name; 
+            document.getElementById('client-phone').value = c.phone || ""; 
+            document.getElementById('client-birth').value = c.birth || ""; 
+            renderClientTagsSelector(c.tags || []);
+            openModal('modal-client'); 
+        }
+
+        function renderClientTagsSelector(selectedTagsIds) {
+            const container = document.getElementById('client-tags-selector');
+            container.innerHTML = '';
+            // Safe check: if db.tags is not loaded yet, use empty array
+            const tags = db.tags || [];
+            
+            if(tags.length === 0) {
+                container.innerHTML = '<span class="text-xs text-gray-400 italic">Nenhuma etiqueta criada.</span>';
+                return;
+            }
+            
+            tags.forEach(tag => {
+                const isSelected = selectedTagsIds.includes(tag.id);
+                const opacity = isSelected ? '1' : '0.5';
+                const border = isSelected ? 'border-black/20' : 'border-transparent';
+                
+                const pill = document.createElement('div');
+                pill.className = `cursor-pointer px-3 py-1.5 rounded-full text-xs font-bold border transition select-none flex items-center gap-1`;
+                pill.style.backgroundColor = tag.color;
+                pill.style.opacity = opacity;
+                pill.style.borderColor = isSelected ? '#2E2B22' : 'transparent';
+                pill.innerHTML = `${tag.name} ${isSelected ? '<i class="fa-solid fa-check ml-1 text-[10px]"></i>' : ''}`;
+                
+                pill.onclick = () => {
+                    if (selectedTagsIds.includes(tag.id)) {
+                        const idx = selectedTagsIds.indexOf(tag.id);
+                        selectedTagsIds.splice(idx, 1);
+                    } else {
+                        selectedTagsIds.push(tag.id);
+                    }
+                    renderClientTagsSelector(selectedTagsIds);
+                };
+                
+                container.appendChild(pill);
+            });
+            container.dataset.selected = JSON.stringify(selectedTagsIds);
+        }
 
         const style = document.createElement('style'); style.innerHTML = `@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } } .animate-slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; } @keyframes fadeInUp { from { opacity:0; transform: scale(0.95); } to { opacity:1; transform: scale(1); } } .animate-fade-in-up { animation: fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }`; document.head.appendChild(style);
     </script>
