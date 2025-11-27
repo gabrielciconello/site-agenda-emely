@@ -84,6 +84,13 @@
         color: #D4AF37; 
     }
         
+    .timeline-item::before { content: ''; position: absolute; left: 19px; top: 0; bottom: 0; width: 2px; background-color: #E6DCC0; }
+    .dark .timeline-item::before { background-color: #2C2C2C; }
+    .timeline-item:first-child::before { top: 20px; }
+    .timeline-item:last-child::before { bottom: calc(100% - 20px); }
+    .timeline-dot { position: absolute; left: 10px; top: 10px; width: 20px; height: 20px; border-radius: 50%; background-color: #D4AF37; border: 3px solid #FDFCF8; }
+    .dark .timeline-dot { border-color: #1E1E1E; }
+
     </style>
 </head>
 <body class="bg-cream-50">
@@ -347,6 +354,38 @@
         </div>
     </div>
 
+    <div id="modal-gallery" class="fixed inset-0 bg-black/40 z-50 hidden flex-col animate-slide-up backdrop-blur-sm">
+        <div class="mt-auto bg-cream-50 rounded-t-[32px] h-[90vh] flex flex-col shadow-2xl overflow-hidden dark:bg-dark-900">
+            <div class="p-6 border-b border-cream-100 flex justify-between items-center dark:border-dark-700"><h3 class="font-serif font-bold text-xl text-cream-900" id="gallery-client-name">Galeria do Cliente</h3><button onclick="closeModal('modal-gallery')" class="w-10 h-10 flex items-center justify-center bg-white rounded-full text-cream-400 hover:text-gold-600 dark:bg-dark-700"><i class="fa-solid fa-times"></i></button></div>
+            <div class="flex-1 overflow-y-auto p-6">
+                <div class="bg-white p-5 rounded-2xl border border-cream-200 shadow-soft mb-6 dark:bg-dark-800 dark:border-dark-700">
+                    <h4 class="text-xs font-bold text-gold-600 uppercase tracking-wider mb-3">Adicionar na Galeria</h4>
+                    <form id="form-gallery" class="space-y-3">
+                        <input type="hidden" id="gallery-client-id">
+                        <div id="photo-preview-container" class="hidden w-full aspect-video bg-cream-100 rounded-lg overflow-hidden mb-3 dark:bg-dark-700">
+                            <img id="photo-preview" src="" class="w-full h-full object-cover">
+                        </div>
+                        <input type="file" id="gallery-photo" accept="image/*" required class="block w-full text-sm text-cream-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gold-50 file:text-gold-700 hover:file:bg-gold-100 cursor-pointer" onchange="previewPhoto(event)">
+                        <textarea id="gallery-description" class="w-full input-elegant rounded-xl p-3 text-sm" rows="2" placeholder="Descrição (opcional)..."></textarea>
+                        <button type="submit" class="w-full h-12 bg-gold-600 text-white rounded-xl font-bold text-xs uppercase tracking-wide shadow-md flex items-center justify-center gap-2"><i class="fa-solid fa-plus"></i> Adicionar Foto</button>
+                    </form>
+                </div>
+                <div id="gallery-timeline" class="relative space-y-8"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-photo-viewer" class="fixed inset-0 bg-black/80 z-[60] hidden items-center justify-center p-4 backdrop-blur-sm animate-fade-in-up" onclick="closeModal('modal-photo-viewer')">
+        <div class="relative max-w-full max-h-full" onclick="event.stopPropagation()">
+            <img id="viewer-img" src="" class="max-w-full max-h-[80vh] rounded-lg shadow-2xl object-contain">
+            <div id="viewer-info" class="text-white text-center mt-3 max-w-lg mx-auto">
+                <p id="viewer-description" class="text-sm"></p>
+                <p id="viewer-date" class="text-xs opacity-60 mt-1"></p>
+            </div>
+            <button onclick="closeModal('modal-photo-viewer')" class="absolute -top-3 -right-3 w-8 h-8 bg-white text-black rounded-full flex items-center justify-center shadow-lg text-xl font-bold">&times;</button>
+        </div>
+    </div>
+
     <script>
         let supabase = null;
         let db = { services: [], extras: [], appointments: [], clients: [], tags: [] };
@@ -392,13 +431,15 @@
         async function fetchData() {
             if(!supabase) return;
             showLoading();
+            // Adicionando a busca da galeria
             try {
-                const [resClients, resApps, resServices, resExtras, resTags] = await Promise.all([
+                const [resClients, resApps, resServices, resExtras, resTags, resGallery] = await Promise.all([
                     supabase.from('clients').select('*'),
                     supabase.from('appointments').select('*'),
                     supabase.from('services').select('*'),
                     supabase.from('extras').select('*'),
-                    supabase.from('tags').select('*')
+                    supabase.from('tags').select('*'),
+                    supabase.from('client_gallery').select('*') // Busca a galeria
                 ]);
                 if(resClients.error) throw resClients.error;
                 db.clients = resClients.data || [];
@@ -406,6 +447,7 @@
                 db.services = (resServices.data || []).map(s => ({...s, price: parseFloat(s.price), duration: parseInt(s.duration || 90)}));
                 db.extras = (resExtras.data || []).map(e => ({...e, price: parseFloat(e.price)}));
                 db.tags = resTags.data || [];
+                db.gallery = resGallery.data || []; // Armazena os dados da galeria
                 if(!document.getElementById('view-home').classList.contains('hidden')) renderHome();
                 if(!document.getElementById('view-agenda').classList.contains('hidden')) { renderCalendar(); renderAppointments(); }
                 if(!document.getElementById('view-clients').classList.contains('hidden')) renderClients();
@@ -584,6 +626,86 @@
             if(error) alert("Erro: " + error.message); else fetchData();
             hideLoading();
         }
+
+        // ================= FUNÇÕES DA GALERIA =================
+        async function openGallery(clientId) {
+            const client = db.clients.find(c => c.id === clientId);
+            if (!client) return;
+
+            document.getElementById('gallery-client-name').innerText = `Galeria de ${client.name.split(' ')[0]}`;
+            document.getElementById('gallery-client-id').value = clientId;
+            document.getElementById('form-gallery').reset();
+
+            const clientPhotos = (db.gallery || []).filter(p => p.client_id === clientId).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            renderGalleryTimeline(clientPhotos);
+            openModal('modal-gallery');
+        }
+
+        function renderGalleryTimeline(items) {
+            const container = document.getElementById('gallery-timeline');
+            if (items.length === 0) {
+                container.innerHTML = '<div class="text-center py-10 col-span-full"><i class="fa-solid fa-camera text-3xl text-cream-300 mb-2"></i><p class="text-sm text-cream-400">Nenhuma foto na galeria.</p></div>';
+                return;
+            }
+            container.innerHTML = '';
+            items.forEach(item => {
+                const date = new Date(item.created_at);
+                const formattedDate = `${date.toLocaleDateString('pt-BR')} às ${date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
+                const description = item.description ? `'${item.description.replace(/'/g, "\\'")}'` : 'null';
+                const photoUrl = `'${item.photo_url}'`;
+
+                container.innerHTML += `
+                    <div class="timeline-item relative pl-12">
+                        <div class="timeline-dot"></div>
+                        <p class="text-xs text-cream-400 font-medium mb-2">${formattedDate}</p>
+                        <div class="bg-white rounded-2xl shadow-soft border border-cream-100 overflow-hidden dark:bg-dark-800 dark:border-dark-700">
+                            <img src="${item.photo_url}" onclick="openPhotoViewer(${photoUrl}, ${description}, '${formattedDate}')" class="w-full h-auto max-h-60 object-cover cursor-pointer">
+                            ${item.description ? `<p class="p-4 text-sm text-cream-800 dark:text-cream-300">${item.description}</p>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function previewPhoto(event) {
+            const reader = new FileReader();
+            reader.onload = function(){
+                const preview = document.getElementById('photo-preview');
+                preview.src = reader.result;
+                document.getElementById('photo-preview-container').classList.remove('hidden');
+            };
+            reader.readAsDataURL(event.target.files[0]);
+        }
+
+        function openPhotoViewer(url, description, date) {
+            document.getElementById('viewer-img').src = url;
+            document.getElementById('viewer-description').innerText = description || '';
+            document.getElementById('viewer-date').innerText = date || '';
+            document.getElementById('viewer-description').style.display = description ? 'block' : 'none';
+            openModal('modal-photo-viewer');
+        }
+
+        document.getElementById('form-gallery').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!supabase) return alert("Conecte-se ao banco primeiro.");
+            const clientId = parseInt(document.getElementById('gallery-client-id').value);
+            const description = document.getElementById('gallery-description').value;
+            const photoFile = document.getElementById('gallery-photo').files[0];
+            if (!photoFile) return alert('Selecione uma foto.');
+
+            showLoading();
+            const fileName = `public/${clientId}-${Date.now()}`;
+            const { data: uploadData, error: uploadError } = await supabase.storage.from('client-photos').upload(fileName, photoFile);
+            if (uploadError) { hideLoading(); return alert('Erro no upload: ' + uploadError.message); }
+            const { data: urlData } = supabase.storage.from('client-photos').getPublicUrl(fileName);
+            const { error: dbError } = await supabase.from('client_gallery').insert({ client_id: clientId, photo_url: urlData.publicUrl, description });
+            if (dbError) { hideLoading(); return alert('Erro ao salvar no banco: ' + dbError.message); }
+            await fetchData(); // Recarrega todos os dados, incluindo a galeria
+            document.getElementById('photo-preview-container').classList.add('hidden');
+            document.getElementById('photo-preview').src = "";
+            openGallery(clientId); // Reabre a galeria atualizada
+            hideLoading();
+        });
 
         // UTILS
         function toggleTheme() { document.documentElement.classList.toggle('dark'); localStorage.setItem('emelyTheme', document.documentElement.classList.contains('dark') ? 'dark' : 'light'); }
@@ -775,7 +897,6 @@
             calculateTotal(); openModal('modal-appointment');
         }
         function calculateTotal() { const sel = document.getElementById('app-service'); let t = 0; if (sel.selectedIndex >= 0 && sel.options[sel.selectedIndex] && !sel.options[sel.selectedIndex].disabled) { t = parseFloat(sel.options[sel.selectedIndex].dataset.price || 0); } document.querySelectorAll('.extra-checkbox:checked').forEach(cb => t += parseFloat(cb.dataset.price)); const dep = parseFloat(document.getElementById('app-deposit').value) || 0; document.getElementById('app-total-display').innerText = 'R$ ' + t.toFixed(2); document.getElementById('app-remaining-display').innerText = 'R$ ' + (t - dep > 0 ? t - dep : 0).toFixed(2); return t; }
-        function delService(id, t) { if(confirm('Excluir?')) { if(t==='s') db.services=db.services.filter(s=>s.id!==id); else db.extras=db.extras.filter(e=>e.id!==id); hasUnsaved = true; saveLocalData(); renderServices(); checkUnsavedStatus(); } }
         function searchClients(q) { const box = document.getElementById('client-suggestions'); box.innerHTML = ''; if(q.length < 2) { box.classList.add('hidden'); return; } const m = (db.clients||[]).filter(c => c.name.toLowerCase().includes(q.toLowerCase())); if(m.length) { box.classList.remove('hidden'); m.forEach(c => { const div = document.createElement('div'); div.className = "p-3 hover:bg-cream-50 border-b border-cream-50 cursor-pointer dark:border-dark-700 dark:hover:bg-dark-700"; div.innerHTML = `<div class="font-bold text-sm text-cream-900">${c.name}</div>`; div.onclick = () => { document.getElementById('app-client').value=c.name; document.getElementById('app-phone').value=c.phone; box.classList.add('hidden'); }; box.appendChild(div); }); } else { box.classList.add('hidden'); } }
         function updateFinancials() { const m = document.getElementById('fin-month').value; if(!m) return; const apps = (db.appointments||[]).filter(a => a.date.startsWith(m) && a.status === 'completed').sort((a,b) => a.date.localeCompare(b.date)); document.getElementById('fin-total').innerText = 'R$ ' + apps.reduce((s, a) => s + a.price, 0).toFixed(2); const tb = document.getElementById('financial-table-body'); tb.innerHTML=''; apps.forEach(a => tb.innerHTML+=`<tr class="border-b border-cream-50 hover:bg-cream-50/50 dark:border-dark-700 dark:hover:bg-dark-700"><td class="p-4 text-cream-500 text-xs font-medium dark:text-cream-400">${a.date.split('-')[2]}/${a.date.split('-')[1]}</td><td class="p-4 font-bold text-cream-800 text-xs dark:text-cream-200">${a.client_name || a.client}</td><td class="p-4 font-mono font-bold text-gold-600 text-xs text-right">R$ ${a.price.toFixed(2)}</td></tr>`); }
         function generateWhatsappMessages() { const c = document.getElementById('ai-output'); c.classList.remove('hidden'); const t = new Date(); t.setDate(t.getDate()+1); const dateStr = t.toLocaleDateString('pt-BR').split('/').reverse().join('-'); const apps = (db.appointments||[]).filter(a => a.date === dateStr && a.status === 'scheduled'); if(!apps.length) { document.getElementById('ai-content').innerHTML = '<p class="italic text-center text-cream-400">Agenda livre.</p>'; return; } let html = `<p class="font-bold text-gold-700 text-xs uppercase tracking-wider mb-3">Amanhã (${dateStr.split('-').reverse().join('/')})</p><div class="space-y-3">`; apps.forEach(a => { const msg = `Olá ${ (a.client_name||a.client).split(' ')[0]}! ✨ Confirmando nosso horário amanhã às ${a.time} (${a.service_name||a.serviceName}). Posso confirmar?`; let link = `https://wa.me/?text=${encodeURIComponent(msg)}`; if(a.phone) link = `https://wa.me/55${String(a.phone).replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`; html += `<a href="${link}" target="_blank" class="block bg-cream-50 p-4 rounded-2xl border border-cream-100 flex justify-between items-center hover:bg-green-50 transition group dark:bg-dark-900 dark:border-dark-700 dark:hover:bg-green-900/30"><div><h5 class="font-bold text-cream-900 text-sm">${a.client_name||a.client}</h5><span class="text-xs text-cream-500">${a.time} • ${a.service_name||a.serviceName}</span></div><div class="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center shadow-sm group-hover:scale-110 transition"><i class="fa-brands fa-whatsapp"></i></div></a>`; }); document.getElementById('ai-content').innerHTML = html + '</div>'; }
@@ -789,10 +910,9 @@
                 if(lastApp) { const diff = Math.ceil(Math.abs(new Date() - new Date(lastApp.date)) / 86400000); if(diff > 25) statusHtml = `<span class="text-[9px] bg-red-50 text-red-500 px-1.5 py-0.5 rounded-md border border-red-100 font-bold ml-1 inline-block dark:bg-red-900/30 dark:border-red-800 dark:text-red-300">Ausente ${diff}d</span>`; }
                 const whatsappBtn = c.phone ? `<a href="https://wa.me/55${String(c.phone).replace(/\D/g,'')}" target="_blank" class="text-green-500 hover:text-green-700 tooltip-action dark:text-green-400" title="WhatsApp"><i class="fa-brands fa-whatsapp text-xl"></i></a>` : '<span class="text-gray-300 dark:text-gray-600"><i class="fa-brands fa-whatsapp text-xl"></i></span>';
                 const tagsHtml = getClientTagsHtml(c.tags);
-                list.innerHTML += `<div class="bg-white rounded-2xl shadow-soft border border-cream-100 overflow-hidden group hover:border-gold-200 transition-all dark:bg-dark-800 dark:border-dark-700"><div class="p-4 flex justify-between items-start"><div><div class="flex items-center gap-2 flex-wrap"><h4 class="font-serif font-bold text-cream-900 text-lg">${c.name}</h4>${c.birth ? '<i class="fa-solid fa-cake-candles text-gold-400 ml-2 text-xs"></i>' : ''}${statusHtml}</div><div class="mt-1 mb-1">${tagsHtml}</div><p class="text-xs text-gray-400 flex items-center gap-1"><i class="fa-solid fa-phone text-[10px]"></i> ${c.phone || 'Sem telefone'}</p></div><div class="bg-gold-50 px-3 py-1.5 rounded-lg text-center min-w-[3.5rem] ml-2 dark:bg-gold-900"><span class="block text-lg font-bold text-gold-700 leading-none dark:text-gold-400">${visits}</span><span class="text-[9px] text-gold-400 uppercase font-bold tracking-wider">Visitas</span></div></div><div class="bg-cream-50/50 px-4 py-3 border-t border-cream-100 flex items-center justify-between dark:bg-dark-900/50 dark:border-dark-700"><div class="flex items-center gap-5"><button onclick="rescheduleClient('${c.name}')" class="text-gold-600 hover:text-gold-800 tooltip-action dark:text-gold-400" title="Reagendar"><i class="fa-solid fa-calendar-plus text-xl"></i></button>${whatsappBtn}</div><div class="flex items-center gap-3 border-l border-cream-200 pl-4 dark:border-dark-600"><button onclick="openEditClient(${c.id})" class="text-gray-400 hover:text-blue-500"><i class="fa-solid fa-pen"></i></button><button onclick="delClient(${c.id})" class="text-gray-400 hover:text-red-500"><i class="fa-solid fa-trash"></i></button></div></div></div>`;
+                list.innerHTML += `<div class="bg-white rounded-2xl shadow-soft border border-cream-100 overflow-hidden group hover:border-gold-200 transition-all dark:bg-dark-800 dark:border-dark-700"><div class="p-4 flex justify-between items-start"><div><div class="flex items-center gap-2 flex-wrap"><h4 class="font-serif font-bold text-cream-900 text-lg">${c.name}</h4>${c.birth ? '<i class="fa-solid fa-cake-candles text-gold-400 ml-2 text-xs"></i>' : ''}${statusHtml}</div><div class="mt-1 mb-1">${tagsHtml}</div><p class="text-xs text-gray-400 flex items-center gap-1"><i class="fa-solid fa-phone text-[10px]"></i> ${c.phone || 'Sem telefone'}</p></div><div class="bg-gold-50 px-3 py-1.5 rounded-lg text-center min-w-[3.5rem] ml-2 dark:bg-gold-900"><span class="block text-lg font-bold text-gold-700 leading-none dark:text-gold-400">${visits}</span><span class="text-[9px] text-gold-400 uppercase font-bold tracking-wider">Visitas</span></div></div><div class="bg-cream-50/50 px-4 py-3 border-t border-cream-100 flex items-center justify-between dark:bg-dark-900/50 dark:border-dark-700"><div class="flex items-center gap-5"><button onclick="rescheduleClient('${c.name}')" class="text-gold-600 hover:text-gold-800 tooltip-action dark:text-gold-400" title="Reagendar"><i class="fa-solid fa-calendar-plus text-xl"></i></button>${whatsappBtn}</div><div class="flex items-center gap-3 border-l border-cream-200 pl-4 dark:border-dark-600"><button onclick="openGallery(${c.id})" class="text-gray-400 hover:text-purple-500"><i class="fa-solid fa-camera-retro"></i></button><button onclick="openEditClient(${c.id})" class="text-gray-400 hover:text-blue-500"><i class="fa-solid fa-pen"></i></button><button onclick="delClient(${c.id})" class="text-gray-400 hover:text-red-500"><i class="fa-solid fa-trash"></i></button></div></div></div>`;
             });
         }
-        function delClient(id) { if(confirm('Remover?')) { db.clients = db.clients.filter(c => c.id !== id); hasUnsaved = true; saveLocalData(); renderClients(); checkUnsavedStatus(); } }
 
         // ================= CLIENT MODAL AND TAGS LOGIC =================
         function openClientModal() { 
