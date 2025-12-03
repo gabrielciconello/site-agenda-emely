@@ -413,91 +413,19 @@
         // ============================================================
         //  FUNÇÃO DE INICIALIZAÇÃO CORRIGIDA COM NOTIFICAÇÃO REALTIME
         // ============================================================
-        function initSupabase() {
+                function initSupabase() {
             const url = localStorage.getItem('emely_sb_url');
             const key = localStorage.getItem('emely_sb_key');
-            
             if(url && key) {
                 try {
                     supabase = window.supabase.createClient(url, key);
                     document.getElementById('conn-status').classList.remove('bg-red-500');
                     document.getElementById('conn-status').classList.add('bg-green-500');
-                    
-                    // Preenche inputs de config
-                    if(document.getElementById('sb-url')) document.getElementById('sb-url').value = url;
-                    if(document.getElementById('sb-key')) document.getElementById('sb-key').value = key;
-                    
+                    document.getElementById('sb-url').value = url;
+                    document.getElementById('sb-key').value = key;
                     fetchData();
-
-                    // --- CONFIGURAÇÃO CORRETA DO REALTIME ---
-                    const channel = supabase.channel('appointments-changes')
-                    .on(
-                        'postgres_changes',
-                        { event: 'INSERT', schema: 'public', table: 'appointments' },
-                        (payload) => {
-                            console.log("🔔 NOTIFICAÇÃO RECEBIDA:", payload);
-                            
-                            // Tocar som
-                            const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-                            audio.play().catch(err => console.log('Som bloqueado, clique na página para habilitar.'));
-
-                            // Mostrar visual
-                            const nome = payload.new.client_name || 'Cliente';
-                            const hora = payload.new.time;
-                            showNotification(`Nova: ${nome} às ${hora}!`);
-                            
-                            // Atualizar dados
-                            fetchData();
-                        }
-                    )
-                    .subscribe((status) => {
-                        console.log("Status da conexão Realtime:", status);
-                    });
-
-                } catch(e) { console.error("Erro Supabase", e); }
-            } else {
-                router('settings');
+                } catch(e) { console.error("Erro Supabase", e); alert("Erro de conexão."); }
             }
-        }
-
-        function showNotification(text) {
-            // Cria o elemento
-            const div = document.createElement('div');
-            div.className = "fixed top-4 right-4 bg-gold-500 text-white px-6 py-4 rounded-xl shadow-2xl z-[100] animate-fade-in-up font-bold text-sm flex items-center gap-3 border border-white/20 cursor-pointer transform transition hover:scale-105";
-            div.style.animation = "slideDown 0.5s ease-out";
-            div.innerHTML = `<i class="fa-solid fa-bell"></i> <span>${text}</span>`;
-            
-            // CSS inline para animação rápida
-            if (!document.getElementById('anim-style')) {
-                const style = document.createElement('style');
-                style.id = 'anim-style';
-                style.innerHTML = `@keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }`;
-                document.head.appendChild(style);
-            }
-
-            div.onclick = () => div.remove();
-            document.body.appendChild(div);
-            setTimeout(() => div.remove(), 6000);
-        }
-            
-            // Adiciona estilo de animação se não existir
-            if (!document.getElementById('anim-style')) {
-                const style = document.createElement('style');
-                style.id = 'anim-style';
-                style.innerHTML = `@keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }`;
-                document.head.appendChild(style);
-            }
-
-            // Ao clicar, fecha
-            div.onclick = () => div.remove();
-            document.body.appendChild(div);
-            
-            // Remove automático após 6 segundos
-            setTimeout(() => {
-                div.style.opacity = '0';
-                div.style.transform = 'translateY(-20px)';
-                setTimeout(() => div.remove(), 500);
-            }, 6000);
         }
 
         async function saveConnection() {
@@ -1070,6 +998,7 @@
     </script>
 </body>
 </html>
+
 
 
 
