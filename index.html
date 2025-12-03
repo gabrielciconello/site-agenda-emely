@@ -411,19 +411,50 @@
         let selectedDate = getLocalDateString();
 
         function initSupabase() {
-            const url = localStorage.getItem('emely_sb_url');
-            const key = localStorage.getItem('emely_sb_key');
-            if(url && key) {
-                try {
-                    supabase = window.supabase.createClient(url, key);
-                    document.getElementById('conn-status').classList.remove('bg-red-500');
-                    document.getElementById('conn-status').classList.add('bg-green-500');
-                    document.getElementById('sb-url').value = url;
-                    document.getElementById('sb-key').value = key;
+    const url = localStorage.getItem('emely_sb_url');
+    const key = localStorage.getItem('emely_sb_key');
+    
+    if(url && key) {
+        try {
+            supabase = window.supabase.createClient(url, key);
+            document.getElementById('conn-status').classList.remove('bg-red-500');
+            document.getElementById('conn-status').classList.add('bg-green-500');
+            document.getElementById('sb-url').value = url;
+            document.getElementById('sb-key').value = key;
+            fetchData();
+
+            // --- ATIVAÇÃO DA NOTIFICAÇÃO EM TEMPO REAL ---
+            supabase.channel('custom-all-channel')
+            .on(
+                'postgres_changes',
+                { event: 'INSERT', schema: 'public', table: 'appointments' },
+                (payload) => {
+                    // Toca um som (opcional)
+                    const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+                    audio.play().catch(e => {}); // Ignora erro se navegador bloquear
+                    
+                    // Mostra alerta visual
+                    showNotification(`Nova cliente: ${payload.new.client_name} às ${payload.new.time}!`);
+                    
+                    // Atualiza a agenda na hora
                     fetchData();
-                } catch(e) { console.error("Erro Supabase", e); alert("Erro de conexão."); }
-            }
-        }
+                }
+            )
+            .subscribe();
+            // ---------------------------------------------
+
+        } catch(e) { console.error("Erro Supabase", e); }
+    }
+}
+
+// Função visual da notificação (Adicione isso no final do seu script principal)
+function showNotification(text) {
+    const div = document.createElement('div');
+    div.className = "fixed top-5 right-5 bg-gold-600 text-white px-6 py-4 rounded-xl shadow-2xl z-[100] animate-fade-in-up font-bold text-sm flex items-center gap-3 border border-white/20";
+    div.innerHTML = `<i class="fa-solid fa-bell"></i> ${text}`;
+    document.body.appendChild(div);
+    setTimeout(() => div.remove(), 5000);
+}
 
         async function saveConnection() {
             const url = document.getElementById('sb-url').value;
@@ -995,3 +1026,4 @@
     </script>
 </body>
 </html>
+
