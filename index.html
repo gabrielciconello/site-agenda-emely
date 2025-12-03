@@ -410,66 +410,99 @@
         }
         let selectedDate = getLocalDateString();
 
+        // ============================================================
+        //  FUNÇÃO DE INICIALIZAÇÃO CORRIGIDA COM NOTIFICAÇÃO REALTIME
+        // ============================================================
         function initSupabase() {
             const url = localStorage.getItem('emely_sb_url');
             const key = localStorage.getItem('emely_sb_key');
             
             if(url && key) {
                 try {
+                    // Cria o cliente
                     supabase = window.supabase.createClient(url, key);
                     
-                    // Atualiza status visual
-                    document.getElementById('conn-status').classList.remove('bg-red-500');
-                    document.getElementById('conn-status').classList.add('bg-green-500');
-                    document.getElementById('sb-url').value = url;
-                    document.getElementById('sb-key').value = key;
+                    // Atualiza status visual no header
+                    const statusBtn = document.getElementById('conn-status');
+                    if(statusBtn) {
+                        statusBtn.classList.remove('bg-red-500');
+                        statusBtn.classList.add('bg-green-500');
+                    }
                     
-                    // Busca dados iniciais
+                    // Preenche os campos de config
+                    if(document.getElementById('sb-url')) document.getElementById('sb-url').value = url;
+                    if(document.getElementById('sb-key')) document.getElementById('sb-key').value = key;
+                    
+                    // Carrega os dados iniciais
                     fetchData();
 
-                    // --- AQUI ESTÁ A MÁGICA DA NOTIFICAÇÃO ---
-                    // Se inscreve para ouvir mudanças no banco de dados
-                    supabase.channel('custom-all-channel')
-                    .on(
-                        'postgres_changes',
-                        { event: 'INSERT', schema: 'public', table: 'appointments' },
-                        (payload) => {
-                            // Quando entrar um agendamento novo:
-                            console.log('Novo agendamento recebido:', payload);
+                    // --- INSCRIÇÃO NO CANAL DE NOTIFICAÇÕES ---
+                    console.log("Iniciando canal de notificações...");
+                    
+                    supabase
+                        .channel('public:appointments') // Nome do canal
+                        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'appointments' }, (payload) => {
+                            console.log('🔔 NOVO AGENDAMENTO RECEBIDO!', payload);
                             
-                            // 1. Toca som (tente outro link se esse falhar, mas é um 'ding' padrão)
+                            // 1. Tocar som (Garante que o navegador permite)
                             const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-                            audio.play().catch(e => console.log("Áudio bloqueado pelo navegador"));
+                            audio.volume = 1.0;
+                            audio.play().catch(e => console.warn("Som bloqueado pelo navegador, interaja com a página primeiro."));
 
-                            // 2. Mostra o alerta visual
+                            // 2. Mostrar notificação visual
                             const nome = payload.new.client_name || 'Cliente';
                             const hora = payload.new.time;
-                            showNotification(`🔔 Novo agendamento: ${nome} às ${hora}!`);
+                            showNotification(`✨ Nova Cliente: ${nome} às ${hora}!`);
                             
-                            // 3. Atualiza a agenda na tela
+                            // 3. Atualizar a tela automaticamente
                             fetchData();
-                        }
-                    )
-                    .subscribe();
-                    // -----------------------------------------
+                        })
+                        .subscribe((status) => {
+                            console.log("Status da conexão Realtime:", status);
+                        });
+                    // -------------------------------------------
 
-                } catch(e) { console.error("Erro Supabase", e); }
+                } catch(e) { 
+                    console.error("Erro fatal no Supabase:", e); 
+                    alert("Erro de conexão. Verifique o console."); 
+                }
             } else {
-                router('settings');
+                // Se não tem chaves, vai para a tela de configurações (se existir)
+                // ou apenas loga o aviso
+                console.warn("Chaves do Supabase não encontradas.");
+                if(typeof router === 'function') router('settings');
             }
         }
 
-        // Adicione esta função logo abaixo da initSupabase se ela não existir
+        // Função Visual da Notificação (Coloque logo abaixo da initSupabase)
         function showNotification(text) {
+            // Cria o elemento
             const div = document.createElement('div');
-            // Estilo flutuante dourado no topo direito
-            div.className = "fixed top-5 right-5 bg-gold-600 text-white px-6 py-4 rounded-xl shadow-2xl z-[100] animate-fade-in-up font-bold text-sm flex items-center gap-3 border border-white/20 cursor-pointer transition transform hover:scale-105";
-            div.innerHTML = `<i class="fa-solid fa-bell text-lg"></i> <span>${text}</span>`;
+            div.className = "fixed top-4 right-4 bg-gold-500 text-white px-6 py-4 rounded-xl shadow-2xl z-[100] animate-fade-in-up font-bold text-sm flex items-center gap-3 border border-white/20 cursor-pointer transform transition hover:scale-105";
+            div.style.animation = "slideDown 0.5s ease-out";
+            div.innerHTML = `
+                <div class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center"><i class="fa-solid fa-bell"></i></div>
+                <span>${text}</span>
+            `;
+            
+            // Adiciona estilo de animação se não existir
+            if (!document.getElementById('anim-style')) {
+                const style = document.createElement('style');
+                style.id = 'anim-style';
+                style.innerHTML = `@keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }`;
+                document.head.appendChild(style);
+            }
+
+            // Ao clicar, fecha
             div.onclick = () => div.remove();
             document.body.appendChild(div);
             
-            // Some sozinho depois de 6 segundos
-            setTimeout(() => div.remove(), 6000);
+            // Remove automático após 6 segundos
+            setTimeout(() => {
+                div.style.opacity = '0';
+                div.style.transform = 'translateY(-20px)';
+                setTimeout(() => div.remove(), 500);
+            }, 6000);
         }
 
         async function saveConnection() {
@@ -1042,5 +1075,6 @@
     </script>
 </body>
 </html>
+
 
 
