@@ -419,71 +419,66 @@
             
             if(url && key) {
                 try {
-                    // Cria o cliente
                     supabase = window.supabase.createClient(url, key);
+                    document.getElementById('conn-status').classList.remove('bg-red-500');
+                    document.getElementById('conn-status').classList.add('bg-green-500');
                     
-                    // Atualiza status visual no header
-                    const statusBtn = document.getElementById('conn-status');
-                    if(statusBtn) {
-                        statusBtn.classList.remove('bg-red-500');
-                        statusBtn.classList.add('bg-green-500');
-                    }
-                    
-                    // Preenche os campos de config
+                    // Preenche inputs de config
                     if(document.getElementById('sb-url')) document.getElementById('sb-url').value = url;
                     if(document.getElementById('sb-key')) document.getElementById('sb-key').value = key;
                     
-                    // Carrega os dados iniciais
                     fetchData();
 
-                    // --- INSCRIÇÃO NO CANAL DE NOTIFICAÇÕES ---
-                    console.log("Iniciando canal de notificações...");
-                    
-                    supabase
-                        .channel('public:appointments') // Nome do canal
-                        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'appointments' }, (payload) => {
-                            console.log('🔔 NOVO AGENDAMENTO RECEBIDO!', payload);
+                    // --- CONFIGURAÇÃO CORRETA DO REALTIME ---
+                    const channel = supabase.channel('appointments-changes')
+                    .on(
+                        'postgres_changes',
+                        { event: 'INSERT', schema: 'public', table: 'appointments' },
+                        (payload) => {
+                            console.log("🔔 NOTIFICAÇÃO RECEBIDA:", payload);
                             
-                            // 1. Tocar som (Garante que o navegador permite)
+                            // Tocar som
                             const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-                            audio.volume = 1.0;
-                            audio.play().catch(e => console.warn("Som bloqueado pelo navegador, interaja com a página primeiro."));
+                            audio.play().catch(err => console.log('Som bloqueado, clique na página para habilitar.'));
 
-                            // 2. Mostrar notificação visual
+                            // Mostrar visual
                             const nome = payload.new.client_name || 'Cliente';
                             const hora = payload.new.time;
-                            showNotification(`✨ Nova Cliente: ${nome} às ${hora}!`);
+                            showNotification(`Nova: ${nome} às ${hora}!`);
                             
-                            // 3. Atualizar a tela automaticamente
+                            // Atualizar dados
                             fetchData();
-                        })
-                        .subscribe((status) => {
-                            console.log("Status da conexão Realtime:", status);
-                        });
-                    // -------------------------------------------
+                        }
+                    )
+                    .subscribe((status) => {
+                        console.log("Status da conexão Realtime:", status);
+                    });
 
-                } catch(e) { 
-                    console.error("Erro fatal no Supabase:", e); 
-                    alert("Erro de conexão. Verifique o console."); 
-                }
+                } catch(e) { console.error("Erro Supabase", e); }
             } else {
-                // Se não tem chaves, vai para a tela de configurações (se existir)
-                // ou apenas loga o aviso
-                console.warn("Chaves do Supabase não encontradas.");
-                if(typeof router === 'function') router('settings');
+                router('settings');
             }
         }
 
-        // Função Visual da Notificação (Coloque logo abaixo da initSupabase)
         function showNotification(text) {
             // Cria o elemento
             const div = document.createElement('div');
             div.className = "fixed top-4 right-4 bg-gold-500 text-white px-6 py-4 rounded-xl shadow-2xl z-[100] animate-fade-in-up font-bold text-sm flex items-center gap-3 border border-white/20 cursor-pointer transform transition hover:scale-105";
             div.style.animation = "slideDown 0.5s ease-out";
-            div.innerHTML = `
-                <div class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center"><i class="fa-solid fa-bell"></i></div>
-                <span>${text}</span>
-            `;
+            div.innerHTML = `<i class="fa-solid fa-bell"></i> <span>${text}</span>`;
+            
+            // CSS inline para animação rápida
+            if (!document.getElementById('anim-style')) {
+                const style = document.createElement('style');
+                style.id = 'anim-style';
+                style.innerHTML = `@keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }`;
+                document.head.appendChild(style);
+            }
+
+            div.onclick = () => div.remove();
+            document.body.appendChild(div);
+            setTimeout(() => div.remove(), 6000);
+        }
             
             // Adiciona estilo de animação se não existir
             if (!document.getElementById('anim-style')) {
@@ -1075,6 +1070,7 @@
     </script>
 </body>
 </html>
+
 
 
 
