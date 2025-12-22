@@ -114,7 +114,7 @@
         </div>
     </header>
 
-    <main class="flex-1 overflow-y-auto overflow-x-hidden pb-32 no-scrollbar" id="main-scroll">
+    <main class="flex-1 overflow-y-auto overflow-x-hidden pb-32 no-scrollbar relative" id="main-scroll">
         
         <div id="view-home" class="view-section fade-in px-4 pt-6">
             <div class="mb-6">
@@ -410,20 +410,22 @@
         }
         let selectedDate = getLocalDateString();
 
-        // ============================================================
-        //  FUNÇÃO DE INICIALIZAÇÃO CORRIGIDA COM NOTIFICAÇÃO REALTIME
-        // ============================================================
-                function initSupabase() {
+        function initSupabase() {
             const url = localStorage.getItem('emely_sb_url');
             const key = localStorage.getItem('emely_sb_key');
             if(url && key) {
                 try {
-                    supabase = window.supabase.createClient(url, key);
-                    document.getElementById('conn-status').classList.remove('bg-red-500');
-                    document.getElementById('conn-status').classList.add('bg-green-500');
-                    document.getElementById('sb-url').value = url;
-                    document.getElementById('sb-key').value = key;
-                    fetchData();
+                    // Verificacao de segurança
+                    if (window.supabase) {
+                        supabase = window.supabase.createClient(url, key);
+                        document.getElementById('conn-status').classList.remove('bg-red-500');
+                        document.getElementById('conn-status').classList.add('bg-green-500');
+                        document.getElementById('sb-url').value = url;
+                        document.getElementById('sb-key').value = key;
+                        fetchData();
+                    } else {
+                        console.warn("Supabase não carregou. Verifique sua conexão.");
+                    }
                 } catch(e) { console.error("Erro Supabase", e); alert("Erro de conexão."); }
             }
         }
@@ -444,7 +446,6 @@
         async function fetchData() {
             if(!supabase) return;
             showLoading();
-            // Adicionando a busca da galeria
             try {
                 const [resClients, resApps, resServices, resExtras, resTags, resGallery] = await Promise.all([
                     supabase.from('clients').select('*'),
@@ -452,7 +453,7 @@
                     supabase.from('services').select('*'),
                     supabase.from('extras').select('*'),
                     supabase.from('tags').select('*'),
-                    supabase.from('client_gallery').select('*') // Busca a galeria
+                    supabase.from('client_gallery').select('*') 
                 ]);
                 if(resClients.error) throw resClients.error;
                 db.clients = resClients.data || [];
@@ -460,7 +461,7 @@
                 db.services = (resServices.data || []).map(s => ({...s, price: parseFloat(s.price), duration: parseInt(s.duration || 90)}));
                 db.extras = (resExtras.data || []).map(e => ({...e, price: parseFloat(e.price)}));
                 db.tags = resTags.data || [];
-                db.gallery = resGallery.data || []; // Armazena os dados da galeria
+                db.gallery = resGallery.data || [];
                 if(!document.getElementById('view-home').classList.contains('hidden')) renderHome();
                 if(!document.getElementById('view-agenda').classList.contains('hidden')) { renderCalendar(); renderAppointments(); }
                 if(!document.getElementById('view-clients').classList.contains('hidden')) renderClients();
@@ -469,7 +470,6 @@
             } catch(e) { console.error(e); } finally { hideLoading(); }
         }
 
-        // === LÓGICA DE CONFLITO CORRIGIDA ===
         function timeToMinutes(time) { 
             if (!time) return 0; 
             const [h, m] = time.split(':').map(Number); 
@@ -479,11 +479,10 @@
         function checkConflict() {
             const date = document.getElementById('app-date').value;
             const time = document.getElementById('app-time').value;
-            const serviceId = document.getElementById('app-service').value; // Pega o ID do serviço selecionado
+            const serviceId = document.getElementById('app-service').value; 
             const timeInput = document.getElementById('app-time');
             const alertBox = document.getElementById('conflict-alert');
             
-            // Reseta estilos de erro
             timeInput.classList.remove('input-error');
             alertBox.classList.add('hidden');
 
@@ -491,8 +490,6 @@
             
             const currentId = document.getElementById('app-id').value ? parseInt(document.getElementById('app-id').value) : null;
             
-            // 1. Pega duração do NOVO agendamento baseado na seleção do dropdown
-            // Precisa pegar o data-duration do option selecionado porque db.services pode ter mudado, mas o HTML é fonte de verdade da seleção
             const selectElement = document.getElementById('app-service');
             const selectedOption = selectElement.options[selectElement.selectedIndex];
             const newDuration = selectedOption ? parseInt(selectedOption.getAttribute('data-duration') || 90) : 90;
@@ -500,13 +497,9 @@
             const newStart = timeToMinutes(time);
             const newEnd = newStart + newDuration;
 
-            // console.log(`Novo: ${time} (${newStart}) até ${newEnd} (${newDuration}min)`);
-
             const conflict = db.appointments.find(app => {
                 if (app.date !== date || app.status === 'cancelled' || app.id === currentId) return false;
                 
-                // 2. Pega duração do agendamento EXISTENTE
-                // Importante: Tenta achar o serviço pelo ID salvo (mais seguro) ou pelo nome
                 let existingDuration = 90; 
                 
                 const existingService = db.services.find(s => s.id === app.serviceId) || db.services.find(s => s.name === app.serviceName);
@@ -518,9 +511,6 @@
                 const startExisting = timeToMinutes(app.time);
                 const endExisting = startExisting + existingDuration; 
                 
-                // console.log(`Existente: ${app.time} (${startExisting}) até ${endExisting} (${existingDuration}min)`);
-
-                // Lógica de colisão: Começa ANTES de terminar E Termina DEPOIS de começar
                 return (newStart < endExisting && newEnd > startExisting);
             });
             
@@ -529,7 +519,7 @@
                 const cTime = conflict.time;
                 document.getElementById('conflict-msg').innerText = `Choque: ${cName} (${cTime})`;
                 alertBox.classList.remove('hidden');
-                timeInput.classList.add('input-error'); // Borda vermelha
+                timeInput.classList.add('input-error'); 
             }
         }
 
@@ -713,25 +703,30 @@
             const { data: urlData } = supabase.storage.from('client-photos').getPublicUrl(fileName);
             const { error: dbError } = await supabase.from('client_gallery').insert({ client_id: clientId, photo_url: urlData.publicUrl, description });
             if (dbError) { hideLoading(); return alert('Erro ao salvar no banco: ' + dbError.message); }
-            await fetchData(); // Recarrega todos os dados, incluindo a galeria
+            await fetchData(); 
             document.getElementById('photo-preview-container').classList.add('hidden');
             document.getElementById('photo-preview').src = "";
-            openGallery(clientId); // Reabre a galeria atualizada
+            openGallery(clientId); 
             hideLoading();
         });
 
         // UTILS
         function toggleTheme() { document.documentElement.classList.toggle('dark'); localStorage.setItem('emelyTheme', document.documentElement.classList.contains('dark') ? 'dark' : 'light'); }
         function initTheme() { if(localStorage.getItem('emelyTheme') === 'dark') document.documentElement.classList.add('dark'); }
+        
         function router(view) {
             document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
-            document.getElementById('view-' + view).classList.remove('hidden');
+            const target = document.getElementById('view-' + view);
+            if(target) target.classList.remove('hidden');
+            
             document.getElementById('main-scroll').scrollTop = 0;
             document.querySelectorAll('.nav-item').forEach(el => { el.classList.remove('text-gold-600'); el.classList.add('text-cream-400'); });
             const navBtn = document.getElementById('nav-' + view);
             if(navBtn) { navBtn.classList.add('text-gold-600'); navBtn.classList.remove('text-cream-400'); }
+            
             const fab = document.getElementById('fab-add-appointment');
             if (view === 'agenda') fab.classList.remove('hidden'); else fab.classList.add('hidden');
+            
             if(view==='financeiro') updateFinancials(); 
             if(view==='clients') renderClients();
             if(view==='home') renderHome();
@@ -772,13 +767,19 @@
 
         window.onload = () => {
             initTheme();
-            initSupabase();
+            // Primeiro abre a tela, para não travar
+            router('home'); 
+            
             const localD = new Date();
             const y = localD.getFullYear();
             const m = String(localD.getMonth() + 1).padStart(2, '0');
             document.getElementById('fin-month').value = `${y}-${m}`;
             renderCalendar();
-            router('home');
+
+            // Depois tenta o Supabase
+            setTimeout(() => {
+                initSupabase();
+            }, 100);
         };
 
         function openTagsModal() { renderTagsList(); renderColorPalette(); openModal('modal-tags'); }
@@ -811,7 +812,7 @@
             if (v.length >= 2) { let hh = parseInt(v.slice(0, 2)); if (hh > 23) v = '23' + v.slice(2); } 
             if (v.length >= 3) { let m1 = parseInt(v.slice(2, 3)); if (m1 > 5) v = v.slice(0, 2) + '5' + v.slice(3); } 
             if (v.length > 2) { input.value = v.slice(0, 2) + ':' + v.slice(2); } else { input.value = v; } 
-            checkConflict(); // Verifica conflito enquanto digita
+            checkConflict(); 
         }
         
         function jumpToDate(val) { if (!val) return; selectedDate = val; renderCalendar(); renderAppointments(); }
@@ -998,8 +999,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
