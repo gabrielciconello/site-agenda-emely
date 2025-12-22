@@ -114,7 +114,7 @@
         </div>
     </header>
 
-    <main class="flex-1 overflow-y-auto overflow-x-hidden pb-32 no-scrollbar relative" id="main-scroll">
+    <main class="flex-1 overflow-y-auto overflow-x-hidden pb-32 no-scrollbar" id="main-scroll">
         
         <div id="view-home" class="view-section fade-in px-4 pt-6">
             <div class="mb-6">
@@ -397,7 +397,8 @@
     </div>
 
     <script>
-        let supabase = null;
+        // Mudei de 'supabase' para '_sb' para corrigir o conflito com a biblioteca
+        let _sb = null; 
         let db = { services: [], extras: [], appointments: [], clients: [], tags: [] };
         const tagColors = ['#D4AF37','#EF4444','#F97316','#F59E0B','#84CC16','#10B981','#06B6D4','#3B82F6','#8B5CF6','#EC4899','#64748B','#000000'];
 
@@ -417,7 +418,7 @@
                 try {
                     // Verificacao de segurança
                     if (window.supabase) {
-                        supabase = window.supabase.createClient(url, key);
+                        _sb = window.supabase.createClient(url, key);
                         document.getElementById('conn-status').classList.remove('bg-red-500');
                         document.getElementById('conn-status').classList.add('bg-green-500');
                         document.getElementById('sb-url').value = url;
@@ -444,16 +445,16 @@
         async function hideLoading() { document.getElementById('loading-overlay').style.display = 'none'; }
 
         async function fetchData() {
-            if(!supabase) return;
+            if(!_sb) return;
             showLoading();
             try {
                 const [resClients, resApps, resServices, resExtras, resTags, resGallery] = await Promise.all([
-                    supabase.from('clients').select('*'),
-                    supabase.from('appointments').select('*'),
-                    supabase.from('services').select('*'),
-                    supabase.from('extras').select('*'),
-                    supabase.from('tags').select('*'),
-                    supabase.from('client_gallery').select('*') 
+                    _sb.from('clients').select('*'),
+                    _sb.from('appointments').select('*'),
+                    _sb.from('services').select('*'),
+                    _sb.from('extras').select('*'),
+                    _sb.from('tags').select('*'),
+                    _sb.from('client_gallery').select('*') 
                 ]);
                 if(resClients.error) throw resClients.error;
                 db.clients = resClients.data || [];
@@ -525,7 +526,7 @@
 
         document.getElementById('form-client').addEventListener('submit', async e => { 
             e.preventDefault(); 
-            if(!supabase) return alert("Conecte-se ao banco primeiro (Engrenagem).");
+            if(!_sb) return alert("Conecte-se ao banco primeiro (Engrenagem).");
             const id = document.getElementById('client-id').value; 
             const name = document.getElementById('client-name').value; 
             const phone = document.getElementById('client-phone').value; 
@@ -534,15 +535,15 @@
             showLoading();
             const payload = { name, phone, birth: birth || null, tags }; 
             let error = null;
-            if (id) { const { error: err } = await supabase.from('clients').update(payload).eq('id', id); error = err; } 
-            else { const { error: err } = await supabase.from('clients').insert(payload); error = err; }
+            if (id) { const { error: err } = await _sb.from('clients').update(payload).eq('id', id); error = err; } 
+            else { const { error: err } = await _sb.from('clients').insert(payload); error = err; }
             if(error) alert("Erro: " + error.message);
             else { closeModal('modal-client'); e.target.reset(); fetchData(); }
             hideLoading();
         });
 
         async function saveAppointment() {
-            if(!supabase) return alert("Conecte-se ao banco primeiro.");
+            if(!_sb) return alert("Conecte-se ao banco primeiro.");
             const id = document.getElementById('app-id').value;
             const client = document.getElementById('app-client').value;
             const sel = document.getElementById('app-service');
@@ -561,25 +562,25 @@
             };
             showLoading();
             let error = null;
-            if(id) { const { error: err } = await supabase.from('appointments').update(payload).eq('id', id); error = err; } 
-            else { const { error: err } = await supabase.from('appointments').insert(payload); error = err; }
+            if(id) { const { error: err } = await _sb.from('appointments').update(payload).eq('id', id); error = err; } 
+            else { const { error: err } = await _sb.from('appointments').insert(payload); error = err; }
             if(error) alert("Erro: " + error.message);
             else { closeModal('modal-appointment'); fetchData(); }
             hideLoading();
         }
 
         async function toggleStatus(id, status) {
-            if(!supabase) return;
+            if(!_sb) return;
             if(status==='cancelled' && !confirm('Cancelar?')) return;
             showLoading();
-            const { error } = await supabase.from('appointments').update({ status }).eq('id', id);
+            const { error } = await _sb.from('appointments').update({ status }).eq('id', id);
             if(error) alert("Erro: " + error.message); else fetchData();
             hideLoading();
         }
 
         document.getElementById('form-service').addEventListener('submit', async e => {
             e.preventDefault();
-            if(!supabase) return alert("Conecte-se ao banco primeiro.");
+            if(!_sb) return alert("Conecte-se ao banco primeiro.");
             const type = document.getElementById('serv-type').value;
             const name = document.getElementById('serv-name').value;
             const price = parseFloat(document.getElementById('serv-price').value);
@@ -588,7 +589,7 @@
             let table = type === 'service' ? 'services' : 'extras';
             let payload = { name, price };
             if(type === 'service') payload.duration = duration;
-            const { error } = await supabase.from(table).insert(payload);
+            const { error } = await _sb.from(table).insert(payload);
             if(error) alert("Erro: " + error.message);
             else { closeModal('modal-service'); e.target.reset(); fetchData(); }
             hideLoading();
@@ -598,7 +599,7 @@
             if(!confirm('Excluir?')) return;
             showLoading();
             const table = type === 's' ? 'services' : 'extras';
-            const { error } = await supabase.from(table).delete().eq('id', id);
+            const { error } = await _sb.from(table).delete().eq('id', id);
             if(error) alert("Erro: " + error.message); else fetchData();
             hideLoading();
         }
@@ -606,7 +607,7 @@
         async function delClient(id) {
             if(!confirm('Remover?')) return;
             showLoading();
-            const { error } = await supabase.from('clients').delete().eq('id', id);
+            const { error } = await _sb.from('clients').delete().eq('id', id);
             if(error) alert("Erro: " + error.message); else fetchData();
             hideLoading();
         }
@@ -616,7 +617,7 @@
             const color = document.getElementById('new-tag-color').value;
             if(!name) return alert('Nome obrigatório');
             showLoading();
-            const { error } = await supabase.from('tags').insert({ name, color });
+            const { error } = await _sb.from('tags').insert({ name, color });
             if(error) alert("Erro: " + error.message);
             else { document.getElementById('new-tag-name').value = ''; fetchData(); }
             hideLoading();
@@ -625,7 +626,7 @@
         async function deleteTag(id) {
             if(!confirm('Excluir?')) return;
             showLoading();
-            const { error } = await supabase.from('tags').delete().eq('id', id);
+            const { error } = await _sb.from('tags').delete().eq('id', id);
             if(error) alert("Erro: " + error.message); else fetchData();
             hideLoading();
         }
@@ -690,7 +691,7 @@
 
         document.getElementById('form-gallery').addEventListener('submit', async (e) => {
             e.preventDefault();
-            if (!supabase) return alert("Conecte-se ao banco primeiro.");
+            if (!_sb) return alert("Conecte-se ao banco primeiro.");
             const clientId = parseInt(document.getElementById('gallery-client-id').value);
             const description = document.getElementById('gallery-description').value;
             const photoFile = document.getElementById('gallery-photo').files[0];
@@ -698,10 +699,10 @@
 
             showLoading();
             const fileName = `public/${clientId}-${Date.now()}`;
-            const { data: uploadData, error: uploadError } = await supabase.storage.from('client-photos').upload(fileName, photoFile);
+            const { data: uploadData, error: uploadError } = await _sb.storage.from('client-photos').upload(fileName, photoFile);
             if (uploadError) { hideLoading(); return alert('Erro no upload: ' + uploadError.message); }
-            const { data: urlData } = supabase.storage.from('client-photos').getPublicUrl(fileName);
-            const { error: dbError } = await supabase.from('client_gallery').insert({ client_id: clientId, photo_url: urlData.publicUrl, description });
+            const { data: urlData } = _sb.storage.from('client-photos').getPublicUrl(fileName);
+            const { error: dbError } = await _sb.from('client_gallery').insert({ client_id: clientId, photo_url: urlData.publicUrl, description });
             if (dbError) { hideLoading(); return alert('Erro ao salvar no banco: ' + dbError.message); }
             await fetchData(); 
             document.getElementById('photo-preview-container').classList.add('hidden');
@@ -767,7 +768,7 @@
 
         window.onload = () => {
             initTheme();
-            // Primeiro abre a tela, para não travar
+            // PRIMEIRO: Inicializa a interface para que os botões funcionem imediatamente
             router('home'); 
             
             const localD = new Date();
@@ -776,7 +777,7 @@
             document.getElementById('fin-month').value = `${y}-${m}`;
             renderCalendar();
 
-            // Depois tenta o Supabase
+            // SEGUNDO: Tenta conectar ao banco depois da tela carregar
             setTimeout(() => {
                 initSupabase();
             }, 100);
