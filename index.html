@@ -207,7 +207,7 @@
         <div id="view-servicos" class="view-section hidden fade-in px-4 pt-6">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-serif font-bold text-cream-900">Catálogo</h2>
-                <button onclick="openModal('modal-service')" class="text-xs font-bold uppercase text-gold-700 border border-gold-200 px-4 py-2 rounded-full bg-gold-50 hover:bg-gold-100 dark:bg-gold-900/30 dark:border-gold-800 dark:text-gold-400">Adicionar</button>
+                <button onclick="openModal('modal-service'); document.getElementById('form-service').reset(); document.getElementById('serv-id').value = '';" class="text-xs font-bold uppercase text-gold-700 border border-gold-200 px-4 py-2 rounded-full bg-gold-50 hover:bg-gold-100 dark:bg-gold-900/30 dark:border-gold-800 dark:text-gold-400">Adicionar</button>
             </div>
             <div class="space-y-8 pb-20">
                 <div><h3 class="font-bold text-cream-900 text-xs uppercase tracking-widest mb-3 border-b border-cream-200 pb-2 dark:border-dark-700">Procedimentos</h3><div class="space-y-3" id="services-grid"></div></div>
@@ -297,7 +297,7 @@
                     <div class="grid grid-cols-2 gap-4"><div><label class="block text-[10px] font-bold text-gold-600 uppercase tracking-wider mb-1.5 ml-1">Data</label><input type="date" id="app-date" required class="w-full h-14 input-elegant rounded-2xl px-4 text-cream-900 font-medium bg-transparent cursor-pointer" onchange="checkConflict()"></div><div><label class="block text-[10px] font-bold text-gold-600 uppercase tracking-wider mb-1.5 ml-1">Horário</label><input type="tel" id="app-time" required class="w-full h-14 input-elegant rounded-2xl px-4 text-cream-900 font-medium text-center" placeholder="00:00" maxlength="5" oninput="handleTimeInput(this); checkConflict()"></div></div>
                     <div><label class="block text-[10px] font-bold text-gold-600 uppercase tracking-wider mb-1.5 ml-1">WhatsApp</label><input type="tel" id="app-phone" class="w-full h-14 input-elegant rounded-2xl px-4 text-cream-900 font-medium" placeholder="(00) 00000-0000"></div>
                     <div><label class="block text-[10px] font-bold text-gold-600 uppercase tracking-wider mb-1.5 ml-1">Procedimento</label><select id="app-service" onchange="calculateTotal(); checkConflict()" required class="custom-select w-full h-14 input-elegant rounded-2xl px-4 bg-transparent text-cream-900 font-medium"></select></div>
-                    <div class="bg-cream-50 p-5 rounded-2xl border border-cream-100 dark:bg-dark-900 dark:border-dark-700"><label class="block text-[10px] font-bold text-cream-400 uppercase tracking-wider mb-3">Extras</label><div id="app-extras-list" class="space-y-3"></div></div>
+                    <div class="bg-cream-50 p-5 rounded-2xl border border-cream-100 dark:bg-dark-900 dark:border-dark-700"><label class="block text-[10px] font-bold text-cream-400 uppercase tracking-wider mb-3">Extras (Com Quantidade)</label><div id="app-extras-list" class="space-y-3"></div></div>
                     <div class="flex items-center gap-3"><div class="flex-1"><label class="block text-[10px] font-bold text-gold-600 uppercase tracking-wider mb-1.5 ml-1">Sinal Pago (R$)</label><input type="number" id="app-deposit" step="0.01" class="w-full h-14 input-elegant rounded-2xl px-4 text-cream-900 font-medium" placeholder="0,00" oninput="calculateTotal()"></div><div class="w-px h-10 bg-cream-200 mx-1 dark:bg-dark-600"></div><div class="flex-1 text-right"><span class="block text-[10px] font-bold text-cream-400 uppercase tracking-wider mb-0.5">Falta Pagar</span><span id="app-remaining-display" class="text-xl font-serif font-bold text-gold-600">R$ 0,00</span></div></div>
                     <div class="flex justify-between items-center p-5 bg-cream-900 text-white rounded-2xl shadow-lg dark:bg-black"><span class="text-xs font-medium opacity-80 uppercase tracking-wide">Valor Total</span><span id="app-total-display" class="text-2xl font-serif font-bold text-gold-300">R$ 0,00</span></div>
                     <div><label class="block text-[10px] font-bold text-gold-600 uppercase tracking-wider mb-1.5 ml-1">Observações</label><textarea id="app-notes" class="w-full input-elegant rounded-2xl p-4 text-cream-900" rows="2" placeholder="..."></textarea></div>
@@ -353,8 +353,9 @@
 
     <div id="modal-service" class="fixed inset-0 bg-black/40 z-50 hidden flex items-center justify-center backdrop-blur-sm px-4">
         <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl animate-fade-in-up dark:bg-dark-800">
-            <h3 class="font-serif font-bold text-2xl text-cream-900 mb-6">Novo Item</h3>
+            <h3 class="font-serif font-bold text-2xl text-cream-900 mb-6">Item do Catálogo</h3>
             <form id="form-service" class="space-y-4">
+                <input type="hidden" id="serv-id">
                 <select id="serv-type" onchange="toggleDurationField()" class="custom-select w-full h-12 input-elegant rounded-xl px-4 bg-transparent text-cream-900 dark:bg-dark-900"><option value="service">Procedimento</option><option value="extra">Adicional</option></select>
                 <input type="text" id="serv-name" required class="w-full h-12 input-elegant rounded-xl px-4" placeholder="Nome">
                 <input type="number" id="serv-price" step="0.01" required class="w-full h-12 input-elegant rounded-xl px-4" placeholder="Preço (R$)">
@@ -550,7 +551,15 @@
             if(!sel.value) return alert('Selecione procedimento');
             if(!client) return alert('Nome obrigatório');
             const serv = db.services.find(s => s.id == sel.value);
-            const extras = Array.from(document.querySelectorAll('.extra-checkbox:checked')).map(cb => { const f = db.extras.find(e => e.id == cb.value); return f ? f.name : null; }).filter(i=>i);
+            
+            const extras = Array.from(document.querySelectorAll('.extra-checkbox:checked')).map(cb => { 
+                const f = db.extras.find(e => e.id == cb.value); 
+                const qtyInput = document.getElementById(`extra-qty-${cb.value}`);
+                const qty = qtyInput ? (parseInt(qtyInput.value) || 1) : 1;
+                if (!f) return null;
+                return qty > 1 ? `${f.name} (x${qty})` : f.name; 
+            }).filter(i=>i);
+
             const total = calculateTotal(); 
             const dep = parseFloat(document.getElementById('app-deposit').value) || 0;
             const payload = {
@@ -581,6 +590,7 @@
         document.getElementById('form-service').addEventListener('submit', async e => {
             e.preventDefault();
             if(!_sb) return alert("Conecte-se ao banco primeiro.");
+            const id = document.getElementById('serv-id').value;
             const type = document.getElementById('serv-type').value;
             const name = document.getElementById('serv-name').value;
             const price = parseFloat(document.getElementById('serv-price').value);
@@ -589,7 +599,18 @@
             let table = type === 'service' ? 'services' : 'extras';
             let payload = { name, price };
             if(type === 'service') payload.duration = duration;
-            const { error } = await _sb.from(table).insert(payload);
+            
+            let error = null;
+            if (id) {
+                // UPDATE
+                const { error: err } = await _sb.from(table).update(payload).eq('id', id);
+                error = err;
+            } else {
+                // INSERT
+                const { error: err } = await _sb.from(table).insert(payload);
+                error = err;
+            }
+
             if(error) alert("Erro: " + error.message);
             else { closeModal('modal-service'); e.target.reset(); fetchData(); }
             hideLoading();
@@ -602,6 +623,23 @@
             const { error } = await _sb.from(table).delete().eq('id', id);
             if(error) alert("Erro: " + error.message); else fetchData();
             hideLoading();
+        }
+
+        function openEditService(id, type) {
+            const table = type === 's' ? 'services' : 'extras';
+            const list = type === 's' ? db.services : db.extras;
+            const item = list.find(i => i.id === id);
+            
+            if (!item) return;
+
+            document.getElementById('serv-id').value = id;
+            document.getElementById('serv-type').value = type === 's' ? 'service' : 'extra';
+            document.getElementById('serv-name').value = item.name;
+            document.getElementById('serv-price').value = item.price;
+            document.getElementById('serv-duration').value = item.duration || 90;
+            
+            toggleDurationField();
+            openModal('modal-service');
         }
 
         async function delClient(id) {
@@ -880,8 +918,30 @@
 
         function renderServices() {
             const g1 = document.getElementById('services-grid'), g2 = document.getElementById('extras-grid'); if(!g1 || !g2) return; g1.innerHTML=''; g2.innerHTML='';
-            (db.services||[]).forEach(s => g1.innerHTML+=`<div class="bg-white p-4 rounded-2xl shadow-sm border border-cream-100 flex justify-between items-center dark:bg-dark-800 dark:border-dark-700"><div><h4 class="font-bold text-cream-900 text-sm">${s.name}</h4><span class="text-gold-600 font-bold text-xs">R$ ${s.price.toFixed(2)} • ${s.duration||90}min</span></div><button onclick="delService(${s.id},'s')" class="text-cream-300 hover:text-red-400"><i class="fa-solid fa-trash"></i></button></div>`);
-            (db.extras||[]).forEach(e => g2.innerHTML+=`<div class="bg-white p-4 rounded-2xl shadow-sm border border-cream-100 flex justify-between items-center dark:bg-dark-800 dark:border-dark-700"><div><h4 class="font-bold text-cream-700 text-sm dark:text-cream-300">${e.name}</h4><span class="text-cream-500 font-bold text-xs dark:text-cream-500">R$ ${e.price.toFixed(2)}</span></div><button onclick="delService(${e.id},'e')" class="text-cream-300 hover:text-red-400"><i class="fa-solid fa-trash"></i></button></div>`);
+            
+            (db.services||[]).forEach(s => g1.innerHTML+=`
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-cream-100 flex justify-between items-center dark:bg-dark-800 dark:border-dark-700">
+                    <div>
+                        <h4 class="font-bold text-cream-900 text-sm">${s.name}</h4>
+                        <span class="text-gold-600 font-bold text-xs">R$ ${s.price.toFixed(2)} • ${s.duration||90}min</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="openEditService(${s.id},'s')" class="text-cream-300 hover:text-blue-400 w-8 h-8 flex items-center justify-center rounded-full hover:bg-cream-50 dark:hover:bg-dark-700"><i class="fa-solid fa-pen"></i></button>
+                        <button onclick="delService(${s.id},'s')" class="text-cream-300 hover:text-red-400 w-8 h-8 flex items-center justify-center rounded-full hover:bg-cream-50 dark:hover:bg-dark-700"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>`);
+            
+            (db.extras||[]).forEach(e => g2.innerHTML+=`
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-cream-100 flex justify-between items-center dark:bg-dark-800 dark:border-dark-700">
+                    <div>
+                        <h4 class="font-bold text-cream-700 text-sm dark:text-cream-300">${e.name}</h4>
+                        <span class="text-cream-500 font-bold text-xs dark:text-cream-500">R$ ${e.price.toFixed(2)}</span>
+                    </div>
+                    <div class="flex gap-2">
+                         <button onclick="openEditService(${e.id},'e')" class="text-cream-300 hover:text-blue-400 w-8 h-8 flex items-center justify-center rounded-full hover:bg-cream-50 dark:hover:bg-dark-700"><i class="fa-solid fa-pen"></i></button>
+                        <button onclick="delService(${e.id},'e')" class="text-cream-300 hover:text-red-400 w-8 h-8 flex items-center justify-center rounded-full hover:bg-cream-50 dark:hover:bg-dark-700"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>`);
         }
 
         function renderServiceOptions() {
@@ -889,7 +949,17 @@
             sel.innerHTML='<option value="" disabled selected>Selecione...</option>'; list.innerHTML='';
             // IMPORTANTE: Adicionamos data-duration ao option para leitura fácil
             (db.services||[]).forEach(s => sel.innerHTML+=`<option value="${s.id}" data-price="${s.price}" data-duration="${s.duration||90}">${s.name} - R$${s.price.toFixed(2)} (${s.duration||90}m)</option>`);
-            (db.extras||[]).forEach(e => list.innerHTML+=`<label class="flex items-center gap-3 p-3 bg-white rounded-xl border border-cream-100 transition cursor-pointer dark:bg-dark-800 dark:border-dark-700"><input type="checkbox" id="extra-${e.id}" value="${e.id}" data-price="${e.price}" class="extra-checkbox w-5 h-5 text-gold-600 rounded border-cream-300 focus:ring-gold-400" onchange="calculateTotal()"><div class="flex-1 flex justify-between"><span class="text-sm text-cream-700 dark:text-cream-300">${e.name}</span><span class="font-bold text-gold-600 text-xs">+ R$ ${e.price.toFixed(2)}</span></div></label>`);
+            (db.extras||[]).forEach(e => list.innerHTML+=`
+                <div class="flex items-center gap-2 bg-white rounded-xl border border-cream-100 p-2 dark:bg-dark-800 dark:border-dark-700">
+                    <label class="flex-1 flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" id="extra-${e.id}" value="${e.id}" data-price="${e.price}" class="extra-checkbox w-5 h-5 text-gold-600 rounded border-cream-300 focus:ring-gold-400" onchange="calculateTotal()">
+                        <div class="flex-1">
+                            <span class="text-sm text-cream-700 block dark:text-cream-300 leading-tight">${e.name}</span>
+                            <span class="font-bold text-gold-600 text-xs">+ R$ ${e.price.toFixed(2)}</span>
+                        </div>
+                    </label>
+                    <input type="number" id="extra-qty-${e.id}" value="1" min="1" class="w-12 h-8 text-center border border-cream-200 rounded-lg text-xs font-bold bg-cream-50 outline-none focus:border-gold-400 dark:bg-dark-900 dark:border-dark-600 dark:text-white" onchange="calculateTotal()">
+                </div>`);
         }
 
         function openNewAppointment() {
@@ -908,10 +978,47 @@
             const app = db.appointments.find(a => a.id === id); if(!app) return;
             document.getElementById('modal-title').innerText = 'Editar'; document.getElementById('app-id').value = app.id; document.getElementById('app-client').value = app.client_name || app.client; document.getElementById('app-phone').value = app.phone || app.client_phone || ''; document.getElementById('app-date').value = app.date; document.getElementById('app-time').value = app.time; document.getElementById('app-notes').value = app.notes || ''; document.getElementById('app-deposit').value = app.deposit || '';
             renderServiceOptions(); document.getElementById('app-service').value = app.service_id || app.serviceId; 
-            if(app.extras && Array.isArray(app.extras)) { app.extras.forEach(exName => { const obj = db.extras.find(e => e.name === exName); if(obj) document.getElementById(`extra-${obj.id}`).checked = true; }); }
+            
+            if(app.extras && Array.isArray(app.extras)) { 
+                app.extras.forEach(exName => { 
+                    // Extrai quantidade se existir no formato "Nome (x2)"
+                    let cleanName = exName;
+                    let qty = 1;
+                    const match = exName.match(/(.*) \(x(\d+)\)$/);
+                    if (match) {
+                        cleanName = match[1];
+                        qty = parseInt(match[2]);
+                    }
+
+                    const obj = db.extras.find(e => e.name === cleanName); 
+                    if(obj) {
+                        const cb = document.getElementById(`extra-${obj.id}`);
+                        const qtyInput = document.getElementById(`extra-qty-${obj.id}`);
+                        if(cb) cb.checked = true;
+                        if(qtyInput) qtyInput.value = qty;
+                    } 
+                }); 
+            }
             calculateTotal(); openModal('modal-appointment');
         }
-        function calculateTotal() { const sel = document.getElementById('app-service'); let t = 0; if (sel.selectedIndex >= 0 && sel.options[sel.selectedIndex] && !sel.options[sel.selectedIndex].disabled) { t = parseFloat(sel.options[sel.selectedIndex].dataset.price || 0); } document.querySelectorAll('.extra-checkbox:checked').forEach(cb => t += parseFloat(cb.dataset.price)); const dep = parseFloat(document.getElementById('app-deposit').value) || 0; document.getElementById('app-total-display').innerText = 'R$ ' + t.toFixed(2); document.getElementById('app-remaining-display').innerText = 'R$ ' + (t - dep > 0 ? t - dep : 0).toFixed(2); return t; }
+        function calculateTotal() { 
+            const sel = document.getElementById('app-service'); 
+            let t = 0; 
+            if (sel.selectedIndex >= 0 && sel.options[sel.selectedIndex] && !sel.options[sel.selectedIndex].disabled) { 
+                t = parseFloat(sel.options[sel.selectedIndex].dataset.price || 0); 
+            } 
+            
+            document.querySelectorAll('.extra-checkbox:checked').forEach(cb => {
+                const qtyInput = document.getElementById(`extra-qty-${cb.value}`);
+                const qty = qtyInput ? (parseInt(qtyInput.value) || 1) : 1;
+                t += (parseFloat(cb.dataset.price) * qty);
+            }); 
+            
+            const dep = parseFloat(document.getElementById('app-deposit').value) || 0; 
+            document.getElementById('app-total-display').innerText = 'R$ ' + t.toFixed(2); 
+            document.getElementById('app-remaining-display').innerText = 'R$ ' + (t - dep > 0 ? t - dep : 0).toFixed(2); 
+            return t; 
+        }
         function searchClients(q) { const box = document.getElementById('client-suggestions'); box.innerHTML = ''; if(q.length < 2) { box.classList.add('hidden'); return; } const m = (db.clients||[]).filter(c => c.name.toLowerCase().includes(q.toLowerCase())); if(m.length) { box.classList.remove('hidden'); m.forEach(c => { const div = document.createElement('div'); div.className = "p-3 hover:bg-cream-50 border-b border-cream-50 cursor-pointer dark:border-dark-700 dark:hover:bg-dark-700"; div.innerHTML = `<div class="font-bold text-sm text-cream-900">${c.name}</div>`; div.onclick = () => { document.getElementById('app-client').value=c.name; document.getElementById('app-phone').value=c.phone; box.classList.add('hidden'); }; box.appendChild(div); }); } else { box.classList.add('hidden'); } }
         function updateFinancials() { 
             const m = document.getElementById('fin-month').value; if(!m) return; 
