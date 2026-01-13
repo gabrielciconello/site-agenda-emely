@@ -218,8 +218,21 @@
         <div id="view-financeiro" class="view-section hidden fade-in px-4 pt-6">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-serif font-bold text-cream-900">Caixa</h2>
-                <input type="month" id="fin-month" class="bg-transparent text-gold-700 font-bold outline-none text-sm w-auto min-w-[140px] text-right" onchange="updateFinancials()">
+                <div class="flex items-center gap-2">
+                    <select id="fin-mode" onchange="toggleFinInput()" class="bg-cream-100 border border-cream-200 rounded-lg px-2 py-1.5 text-xs font-bold uppercase text-gold-700 outline-none focus:border-gold-400 dark:bg-dark-900 dark:border-dark-600 dark:text-gold-400">
+                        <option value="day">Dia</option>
+                        <option value="month" selected>Mês</option>
+                        <option value="year">Ano</option>
+                    </select>
+                    
+                    <div class="w-[145px] flex justify-end">
+                        <input type="date" id="fin-date-input" class="hidden w-full bg-transparent text-gold-700 font-bold outline-none text-sm text-right p-0 cursor-pointer" onchange="updateFinancials()">
+                        <input type="month" id="fin-month-input" class="w-full bg-transparent text-gold-700 font-bold outline-none text-sm text-right p-0 cursor-pointer" onchange="updateFinancials()">
+                        <select id="fin-year-input" class="hidden w-full bg-transparent text-gold-700 font-bold outline-none text-sm text-right custom-select p-0 pr-4 cursor-pointer" onchange="updateFinancials()"></select>
+                    </div>
+                </div>
             </div>
+
             <div class="bg-cream-900 rounded-2xl p-6 text-white shadow-lg mb-8 relative overflow-hidden dark:bg-black dark:border dark:border-dark-700" id="financial-summary-card">
                 <div class="absolute top-0 right-0 w-32 h-32 bg-gold-500 opacity-10 rounded-full -mr-10 -mt-10 blur-xl"></div>
                 <p class="text-gold-300 text-xs font-bold uppercase tracking-widest mb-2">Faturamento Total</p>
@@ -812,7 +825,14 @@
             const localD = new Date();
             const y = localD.getFullYear();
             const m = String(localD.getMonth() + 1).padStart(2, '0');
-            document.getElementById('fin-month').value = `${y}-${m}`;
+            const d = String(localD.getDate()).padStart(2, '0');
+            
+            // Define valores padrão para as datas
+            document.getElementById('fin-date-input').value = `${y}-${m}-${d}`;
+            document.getElementById('fin-month-input').value = `${y}-${m}`;
+            populateYearOptions();
+            document.getElementById('fin-year-input').value = y;
+
             renderCalendar();
 
             // SEGUNDO: Tenta conectar ao banco depois da tela carregar
@@ -1020,14 +1040,77 @@
             return t; 
         }
         function searchClients(q) { const box = document.getElementById('client-suggestions'); box.innerHTML = ''; if(q.length < 2) { box.classList.add('hidden'); return; } const m = (db.clients||[]).filter(c => c.name.toLowerCase().includes(q.toLowerCase())); if(m.length) { box.classList.remove('hidden'); m.forEach(c => { const div = document.createElement('div'); div.className = "p-3 hover:bg-cream-50 border-b border-cream-50 cursor-pointer dark:border-dark-700 dark:hover:bg-dark-700"; div.innerHTML = `<div class="font-bold text-sm text-cream-900">${c.name}</div>`; div.onclick = () => { document.getElementById('app-client').value=c.name; document.getElementById('app-phone').value=c.phone; box.classList.add('hidden'); }; box.appendChild(div); }); } else { box.classList.add('hidden'); } }
+        
+        function populateYearOptions() {
+            const select = document.getElementById('fin-year-input');
+            const currentYear = new Date().getFullYear();
+            select.innerHTML = '';
+            // Gera anos de 2 anos atrás até 2 anos no futuro
+            for (let i = currentYear - 2; i <= currentYear + 2; i++) {
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.text = i;
+                select.appendChild(opt);
+            }
+        }
+
+        function toggleFinInput() {
+            const mode = document.getElementById('fin-mode').value;
+            const dayInput = document.getElementById('fin-date-input');
+            const monthInput = document.getElementById('fin-month-input');
+            const yearInput = document.getElementById('fin-year-input');
+
+            dayInput.classList.add('hidden');
+            monthInput.classList.add('hidden');
+            yearInput.classList.add('hidden');
+
+            if(mode === 'day') dayInput.classList.remove('hidden');
+            else if(mode === 'month') monthInput.classList.remove('hidden');
+            else if(mode === 'year') yearInput.classList.remove('hidden');
+
+            updateFinancials();
+        }
+
         function updateFinancials() { 
-            const m = document.getElementById('fin-month').value; if(!m) return; 
-            const apps = (db.appointments||[]).filter(a => a.date.startsWith(m) && a.status === 'completed').sort((a,b) => a.date.localeCompare(b.date)); 
-            const totalRevenue = apps.reduce((s, a) => s + a.price, 0);
+            const mode = document.getElementById('fin-mode').value;
+            let val = '';
+            let filteredApps = [];
+            const allCompleted = (db.appointments||[]).filter(a => a.status === 'completed');
+
+            if (mode === 'day') {
+                val = document.getElementById('fin-date-input').value;
+                if(!val) return;
+                filteredApps = allCompleted.filter(a => a.date === val);
+            } else if (mode === 'month') {
+                val = document.getElementById('fin-month-input').value;
+                if(!val) return;
+                filteredApps = allCompleted.filter(a => a.date.startsWith(val));
+            } else if (mode === 'year') {
+                val = document.getElementById('fin-year-input').value;
+                if(!val) return;
+                filteredApps = allCompleted.filter(a => a.date.startsWith(val));
+            }
+
+            // Ordena por data
+            filteredApps.sort((a,b) => a.date.localeCompare(b.date));
+
+            const totalRevenue = filteredApps.reduce((s, a) => s + a.price, 0);
             document.getElementById('fin-total').innerText = 'R$ ' + totalRevenue.toFixed(2); 
             document.getElementById('fin-emely-share').innerText = 'R$ ' + (totalRevenue * 0.65).toFixed(2);
             document.getElementById('fin-other-share').innerText = 'R$ ' + (totalRevenue * 0.35).toFixed(2);
-            const tb = document.getElementById('financial-table-body'); tb.innerHTML=''; apps.forEach(a => tb.innerHTML+=`<tr class="border-b border-cream-50 hover:bg-cream-50/50 dark:border-dark-700 dark:hover:bg-dark-700"><td class="p-4 text-cream-500 text-xs font-medium dark:text-cream-400">${a.date.split('-')[2]}/${a.date.split('-')[1]}</td><td class="p-4 font-bold text-cream-800 text-xs dark:text-cream-200">${a.client_name || a.client}</td><td class="p-4 font-mono font-bold text-gold-600 text-xs text-right">R$ ${a.price.toFixed(2)}</td></tr>`); 
+            
+            const tb = document.getElementById('financial-table-body'); 
+            tb.innerHTML=''; 
+            
+            if(filteredApps.length === 0) {
+                 tb.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-xs text-cream-400 italic">Nenhum registro encontrado.</td></tr>';
+            } else {
+                filteredApps.forEach(a => {
+                    const dateParts = a.date.split('-');
+                    const dateDisplay = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`; // DD/MM/YYYY
+                    tb.innerHTML+=`<tr class="border-b border-cream-50 hover:bg-cream-50/50 dark:border-dark-700 dark:hover:bg-dark-700"><td class="p-4 text-cream-500 text-xs font-medium dark:text-cream-400">${dateDisplay}</td><td class="p-4 font-bold text-cream-800 text-xs dark:text-cream-200">${a.client_name || a.client}</td><td class="p-4 font-mono font-bold text-gold-600 text-xs text-right">R$ ${a.price.toFixed(2)}</td></tr>`; 
+                });
+            }
         }
         function generateWhatsappMessages() { const c = document.getElementById('ai-output'); c.classList.remove('hidden'); const t = new Date(); t.setDate(t.getDate()+1); const dateStr = t.toLocaleDateString('pt-BR').split('/').reverse().join('-'); const apps = (db.appointments||[]).filter(a => a.date === dateStr && a.status === 'scheduled'); if(!apps.length) { document.getElementById('ai-content').innerHTML = '<p class="italic text-center text-cream-400">Agenda livre.</p>'; return; } let html = `<p class="font-bold text-gold-700 text-xs uppercase tracking-wider mb-3">Amanhã (${dateStr.split('-').reverse().join('/')})</p><div class="space-y-3">`; apps.forEach(a => { const msg = `Olá ${ (a.client_name||a.client).split(' ')[0]}! ✨ Confirmando nosso horário amanhã às ${a.time} (${a.service_name||a.serviceName}). Posso confirmar?`; let link = `https://wa.me/?text=${encodeURIComponent(msg)}`; if(a.phone) link = `https://wa.me/55${String(a.phone).replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`; html += `<a href="${link}" target="_blank" class="block bg-cream-50 p-4 rounded-2xl border border-cream-100 flex justify-between items-center hover:bg-green-50 transition group dark:bg-dark-900 dark:border-dark-700 dark:hover:bg-green-900/30"><div><h5 class="font-bold text-cream-900 text-sm">${a.client_name||a.client}</h5><span class="text-xs text-cream-500">${a.time} • ${a.service_name||a.serviceName}</span></div><div class="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center shadow-sm group-hover:scale-110 transition"><i class="fa-brands fa-whatsapp"></i></div></a>`; }); document.getElementById('ai-content').innerHTML = html + '</div>'; }
         function generateMaintenanceMessages() { const c = document.getElementById('ai-output'); c.classList.remove('hidden'); const today = new Date(); const uniqueClients = [...new Set(db.clients.map(c => c.name))]; let candidates = []; uniqueClients.forEach(name => { const apps = db.appointments.filter(a => (a.client_name===name || a.client===name) && a.status === 'completed').sort((a,b) => new Date(b.date) - new Date(a.date)); if(apps.length) { const last = apps[0]; const diff = Math.ceil(Math.abs(today - new Date(last.date)) / (86400000)); if (diff > 20) { if (!db.appointments.some(a => (a.client_name===name || a.client===name) && a.status === 'scheduled' && new Date(a.date) >= today)) { const cli = db.clients.find(cl => cl.name === name); candidates.push({ name, days: diff, service: last.service_name||last.serviceName, phone: cli?cli.phone:null }); } } } }); if(!candidates.length) { document.getElementById('ai-content').innerHTML = '<p class="italic text-center text-cream-400">Ninguém para retorno.</p>'; return; } let html = `<p class="font-bold text-purple-700 text-xs uppercase tracking-wider mb-3">Retorno</p><div class="space-y-3">`; candidates.forEach(c => { const msg = `Oi ${c.name.split(' ')[0]}! 💖 Fazem ${c.days} dias das unhas (${c.service}). Vamos agendar a manutenção?`; let link = `https://wa.me/?text=${encodeURIComponent(msg)}`; if(c.phone) link = `https://wa.me/55${String(c.phone).replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`; html += `<a href="${link}" target="_blank" class="block bg-cream-50 p-4 rounded-2xl border border-cream-100 flex justify-between items-center hover:bg-purple-50 transition group dark:bg-dark-900 dark:border-dark-700 dark:hover:bg-purple-900/30"><div><h5 class="font-bold text-cream-900 text-sm">${c.name}</h5><span class="text-xs text-red-400 font-bold">Ausente ${c.days}d</span></div><div class="w-8 h-8 bg-purple-500 text-white rounded-full flex items-center justify-center shadow-sm group-hover:scale-110 transition"><i class="fa-brands fa-whatsapp"></i></div></a>`; }); document.getElementById('ai-content').innerHTML = html + '</div>'; }
