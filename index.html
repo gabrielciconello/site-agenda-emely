@@ -816,28 +816,25 @@ function openCustomMsgFromDetails() {
     document.getElementById('msg-phone').value = app.phone || app.client_phone;
     document.getElementById('msg-client-name').value = clientName;
     document.getElementById('msg-time').value = app.time;
-    document.getElementById('msg-date').value = app.date.split('-').reverse().join('/');
+    // Data curta aqui também
+    document.getElementById('msg-date').value = app.date.split('-').reverse().slice(0, 2).join('/');
     document.getElementById('msg-service').value = app.service_name || app.serviceName;
 
-    // --- AQUI ESTÁ A MUDANÇA ---
-    // Tenta pegar o modelo salvo. Se não existir, usa um padrão.
-    let savedTemplate = localStorage.getItem('emely_msg_template');
+    // Recupera modelo
+    let savedTemplate = appConfig.msg_template;
     
     if (!savedTemplate) {
-        // Padrão caso o usuário nunca tenha configurado
         savedTemplate = "Olá [Nome], passando para confirmar seu horário de [Servico] dia [Data] às [Horario]. Posso confirmar?";
     }
 
-    // Já faz a substituição automática para facilitar a vida do usuário
-    // Assim ele vê a mensagem pronta, mas pode editar se quiser
+    // Faz a substituição com a data curta
     let finalMsg = savedTemplate
-        .replace(/\[Nome\]/g, clientName.split(' ')[0]) // Pega só o primeiro nome
+        .replace(/\[Nome\]/g, clientName.split(' ')[0]) 
         .replace(/\[Horario\]/g, app.time)
-        .replace(/\[Data\]/g, app.date.split('-').reverse().join('/'))
+        .replace(/\[Data\]/g, app.date.split('-').reverse().slice(0, 2).join('/')) // DATA CURTA
         .replace(/\[Servico\]/g, app.service_name || app.serviceName);
 
     document.getElementById('custom-msg-area').value = finalMsg;
-    // ---------------------------
 
     closeModal('modal-details');
     openModal('modal-custom-msg');
@@ -887,15 +884,15 @@ function sendCustomWhatsapp() {
     const rawText = document.getElementById('custom-msg-area').value;
     const phone = document.getElementById('msg-phone').value;
     
-    // Substitui as variáveis pelos valores reais
+    // Substitui as variáveis (caso o usuário tenha digitado tags manualmente)
     let finalMsg = rawText
         .replace(/\[Nome\]/g, document.getElementById('msg-client-name').value)
         .replace(/\[Horario\]/g, document.getElementById('msg-time').value)
         .replace(/\[Data\]/g, document.getElementById('msg-date').value)
         .replace(/\[Servico\]/g, document.getElementById('msg-service').value);
 
-    // Cria o link e abre
-    const link = `https://api.whatsapp.com/send?phone=55${phone.replace(/\D/g,'')}&text=${encodeURIComponent(finalMsg)}`;
+    // Link atualizado para wa.me
+    const link = `https://wa.me/55${phone.replace(/\D/g,'')}?text=${encodeURIComponent(finalMsg)}`;
     window.open(link, '_blank');
     
     closeModal('modal-custom-msg');
@@ -1141,12 +1138,11 @@ function sendCustomWhatsapp() {
     
     let total = 0;
     
-    // --- (1) Recupera o modelo salvo ou usa um padrão ---
+    // Recupera o modelo salvo
     let savedTemplate = appConfig.msg_template;
     if (!savedTemplate) {
         savedTemplate = "Olá [Nome], confirmando seu horário de [Servico] dia [Data] às [Horario]. Posso confirmar?";
     }
-    // ----------------------------------------------------
     
     filtered.forEach(a => {
         if(a.status !== 'cancelled') total += a.price;
@@ -1181,23 +1177,26 @@ function sendCustomWhatsapp() {
                <button onclick="event.stopPropagation(); toggleStatus(${a.id},'cancelled')" class="w-9 h-9 rounded-full bg-red-50 text-red-400 flex items-center justify-center hover:bg-red-100 transition dark:bg-red-900/30 dark:text-red-400"><i class="fa-solid fa-times text-sm"></i></button>` 
             : `<button onclick="event.stopPropagation(); toggleStatus(${a.id},'scheduled')" class="text-[10px] font-bold text-gold-600 uppercase bg-gold-50 px-3 py-1 rounded-full dark:bg-gold-900 dark:text-gold-400">Restaurar</button>`;
         
-        // --- (2) LÓGICA ATUALIZADA DO WHATSAPP ---
+        // --- ATUALIZAÇÃO DO WHATSAPP ---
         const safePhone = String(a.phone || a.client_phone || '');
         let wa = '';
         
         if (safePhone) {
-            // Substitui as variáveis no modelo
+            // Data curta: slice(0, 2) pega só dia e mês
+            const shortDate = a.date.split('-').reverse().slice(0, 2).join('/');
+            
             const finalMsg = savedTemplate
                 .replace(/\[Nome\]/g, clientName.split(' ')[0])
                 .replace(/\[Horario\]/g, a.time)
-                .replace(/\[Data\]/g, a.date.split('-').reverse().join('/'))
+                .replace(/\[Data\]/g, shortDate) 
                 .replace(/\[Servico\]/g, serviceName);
             
             const encodedMsg = encodeURIComponent(finalMsg);
             
-            wa = `<a href="https://api.whatsapp.com/send?phone=55${safePhone.replace(/\D/g,'')}&text=${encodedMsg}" target="_blank" onclick="event.stopPropagation()" class="text-green-600 ml-1 dark:text-green-400 hover:scale-110 transition-transform"><i class="fa-brands fa-whatsapp"></i></a>`;
+            // Link atualizado para wa.me
+            wa = `<a href="https://wa.me/55${safePhone.replace(/\D/g,'')}?text=${encodedMsg}" target="_blank" onclick="event.stopPropagation()" class="text-green-600 ml-1 dark:text-green-400 hover:scale-110 transition-transform"><i class="fa-brands fa-whatsapp"></i></a>`;
         }
-        // -------------------------------------------
+        // -------------------------------
 
         let statusClasses = a.status === 'completed' ? 'bg-green-50 border-l-4 border-l-green-400 border-y border-r border-green-100 dark:bg-green-900/10 dark:border-green-800' : (a.status === 'cancelled' ? 'bg-red-50 border-l-4 border-l-red-300 border-y border-r border-red-100 opacity-75 dark:bg-red-900/10 dark:border-red-800' : 'bg-white border-l-4 border-l-gold-400 border-y border-r border-cream-100 dark:bg-dark-800 dark:border-dark-700 dark:border-l-gold-500');
         
